@@ -2,6 +2,13 @@
   "name": "moon-observatory",
   "version": "1.0.0",
   "private": true,
+  "description": "초등 과학 밤하늘 관찰 시뮬레이터 — 2022 개정 교육과정 성취기준 기반",
+  "author": "초인쌤 (김상백) <ksb6857@gmail.com>",
+  "license": "CC-BY-NC-SA-4.0",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/ksb6857/moon-observatory.git"
+  },
   "type": "module",
   "scripts": {
     "dev": "vite",
