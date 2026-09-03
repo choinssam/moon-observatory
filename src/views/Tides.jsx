@@ -148,7 +148,7 @@ export default function Tides({ date, obs }) {
           </div>
         </div>
 
-        <div className="stage" style={{ display: 'flex', alignItems: 'center' }}>
+        <div className="stage" style={{ display: 'flex', alignItems: 'center', width: '100%', maxWidth: 540, margin: '0 auto' }}>
           <svg viewBox={`0 0 ${TW} ${TH}`} style={{ width: '100%', height: 'auto' }}
             role="img" aria-label="위에서 내려다본 밀물과 썰물">
             <ellipse cx={TCX} cy={TCY} rx={ER + 32} ry={ER + 6} fill="#1B3A6B" opacity=".85" />

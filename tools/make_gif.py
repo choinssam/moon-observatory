@@ -9,11 +9,15 @@ os.makedirs(OUT, exist_ok=True)
 SCENES = [
     # (폴더, 결과이름, 자르기(하단), 가로폭, 프레임간격ms, 색수)
     ('01-phase',   'phase',   600, 880, 110, 200),
-    ('02-globe',   'globe',   600, 880, 90,  200),
+    ('02-globe',   'globe',   760, 880, 90,  200),
     ('03-month',   'month',   760, 880, 130, 180),
     ('04-tonight', 'tonight', 760, 880, 110, 180),
     ('05-earth',   'earth',   600, 880, 100, 180),
     ('06-season',  'season',  600, 880, 130, 180),
+    ('07-stars',   'stars',   760, 880, 90,  180),
+    ('08-planets', 'planets', 760, 880, 150, 200),
+    ('09-tide',    'tide',    760, 880, 90,  180),
+    ('10-eclipse', 'eclipse', 620, 880, 150, 200),
 ]
 
 for folder, name, cut, W, dur, colors in SCENES:

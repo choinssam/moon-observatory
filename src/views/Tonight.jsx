@@ -108,11 +108,10 @@ export default function Tonight({ date, setDate, obs, loc, big }) {
                 return (
                   <g key={a}>
                     <line x1={CX - hw} y1={y} x2={CX + hw} y2={y} stroke="var(--line)" strokeDasharray="3 7" />
-                    <text x={CX + hw - 4} y={y - 6} textAnchor="end" fill="var(--muted)" fontSize="12">고도 {a}°</text>
+                    <text x={CX - hw + 6} y={y - 6} fill="var(--muted)" fontSize="12">고도 {a}°</text>
                   </g>
                 )
               })}
-              <text x={CX + 8} y={HY - R + 16} fill="var(--muted)" fontSize="12">머리 위 90°</text>
 
               {/* 방위선 */}
               {[135, 180, 225].map(az => (
@@ -164,8 +163,11 @@ export default function Tonight({ date, setDate, obs, loc, big }) {
                 </g>
               )}
 
-              <text x={W - 12} y={20} textAnchor="end" fill="var(--muted)" fontSize="12">
-                동쪽에서 떠서 남쪽 하늘을 지나 서쪽으로 집니다 · 점선은 태양
+              <text x={14} y={H - 14} fill="var(--muted)" fontSize="12">
+                지평선 0° · 점선은 고도 30°·60° · 반구 꼭대기가 머리 위 90°
+              </text>
+              <text x={W - 14} y={H - 14} textAnchor="end" fill="var(--muted)" fontSize="12">
+                동쪽에서 떠서 남쪽 하늘을 지나 서쪽으로 집니다 · 점선 호는 태양
               </text>
             </svg>
           </div>

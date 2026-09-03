@@ -151,12 +151,9 @@ export default function MoonGlobe({ date }) {
         const facing = tmp.clone().normalize().dot(toCam)
         const proj = tmp.clone().project(camera)
         if (!(facing > 0.12 && proj.z < 1)) { m.el.style.display = 'none'; continue }
-        cand.push({
-          m, facing,
-          score: facing + (m.f.kind === 'apollo' ? -0.3 : 0),
-          x: (proj.x * 0.5 + 0.5) * w,
-          y: (-proj.y * 0.5 + 0.5) * h
-        })
+        const x = (proj.x * 0.5 + 0.5) * w, y = (-proj.y * 0.5 + 0.5) * h
+        if (x < 56 || x > w - 56 || y < 14 || y > h - 14) { m.el.style.display = 'none'; continue }
+        cand.push({ m, facing, score: facing + (m.f.kind === 'apollo' ? -0.3 : 0), x, y })
       }
       // 정면에 가까운 것부터 자리를 잡고, 너무 붙는 이름은 숨긴다
       cand.sort((a, b) => b.score - a.score)
@@ -202,7 +199,7 @@ export default function MoonGlobe({ date }) {
       </p>
 
       <div className="grid" style={{ gridTemplateColumns: narrow ? '1fr' : `${side}px minmax(280px,1fr)`, alignItems: 'stretch' }}>
-        <div className="stage" ref={hostRef} style={{ width: narrow ? '100%' : side, height: side, background: '#05070E' }}>
+        <div className="stage" ref={hostRef} style={{ width: side, maxWidth: '100%', height: side, margin: narrow ? '0 auto' : 0, background: '#05070E' }}>
           <div ref={layerRef} style={{ position: 'absolute', inset: 0, pointerEvents: 'none' }} />
           <button className="fsbtn" onClick={toggleFs} aria-label={fs ? '전체 화면 닫기' : '전체 화면으로 보기'}>
             {fs ? '✕ 닫기' : '⛶ 전체 화면'}
@@ -226,7 +223,7 @@ export default function MoonGlobe({ date }) {
             </div>
           </div>
 
-          <div className="card" style={{ flex: 1 }}>
+          <div className="card">
             <h3>오늘의 칭동
               <span style={{ color: 'var(--muted)', fontWeight: 400, fontSize: '.86em' }}>달이 살짝 흔들려 보이는 정도</span>
             </h3>
@@ -241,6 +238,15 @@ export default function MoonGlobe({ date }) {
               이 흔들림을 <b>칭동</b>이라고 합니다. 덕분에 오랜 기간 모아 보면 표면의 약 59%까지 볼 수 있습니다.
             </div>
           </div>
+
+          <div className="card" style={{ flex: 1 }}>
+            <h3>왜 늘 같은 면만 보일까</h3>
+            <p style={{ color: 'var(--text-2)', fontSize: '.94em', margin: 0 }}>
+              달이 스스로 한 바퀴 도는 시간과 지구를 한 바퀴 도는 시간이 똑같아서
+              지구에서는 언제나 같은 쪽만 보입니다. 반대쪽은 우주선을 보내야 볼 수 있어서,
+              <b> 남극-에이트켄 분지</b>는 지구에서 절대 보이지 않습니다.
+            </p>
+          </div>
         </div>
       </div>
 
@@ -251,14 +257,6 @@ export default function MoonGlobe({ date }) {
             어둡고 평평한 곳을 옛사람들이 바다라고 불렀을 뿐, 물은 한 방울도 없습니다.
             아주 오래전 화산에서 흘러나온 용암이 굳어 만들어진 넓은 평원입니다.
             밝고 오톨도톨한 곳은 운석이 부딪혀 파인 자국인 크레이터입니다.
-          </p>
-        </div>
-        <div className="card">
-          <h3>왜 늘 같은 면만 보일까</h3>
-          <p style={{ color: 'var(--text-2)', fontSize: '.94em', margin: 0 }}>
-            달이 스스로 한 바퀴 도는 시간과 지구를 한 바퀴 도는 시간이 똑같아서
-            지구에서는 언제나 같은 쪽만 보입니다. 반대쪽은 우주선을 보내야 볼 수 있어서,
-            <b> 남극-에이트켄 분지</b>는 지구에서 절대 보이지 않습니다.
           </p>
         </div>
         <div className="card">
