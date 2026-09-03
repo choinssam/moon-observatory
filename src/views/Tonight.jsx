@@ -7,7 +7,7 @@ import {
   riseSetTransit, horizonOf, trackFrom, nightWindowStart, azName, fmtKST, kstMidnight, searchPhase
 } from '../lib/astro.js'
 
-const W = 960, H = 330, PAD_L = 46, PAD_R = 16, PAD_T = 18, PAD_B = 34
+const W = 900, H = 440, PAD_L = 46, PAD_R = 16, PAD_T = 18, PAD_B = 34
 const AZ0 = 40, AZ1 = 320            // 북동 ~ 북서
 const ALT1 = 90
 

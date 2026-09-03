@@ -85,8 +85,8 @@ export default function MoonGlobe({ date }) {
     function resize() {
       const w = host.clientWidth
       if (!w) return
-      const cap = Math.round(window.innerHeight * (window.innerHeight < 860 ? 0.5 : 0.56))
-      const h = Math.max(300, Math.min(Math.round(w * 0.82), cap))
+      const cap = Math.round(window.innerHeight * (window.innerHeight < 860 ? 0.52 : 0.6))
+      const h = Math.max(300, Math.min(Math.round(w * 0.68), cap))
       renderer.setSize(w, h, false)
       renderer.domElement.style.width = w + 'px'
       renderer.domElement.style.height = h + 'px'
@@ -184,7 +184,7 @@ export default function MoonGlobe({ date }) {
         미국 항공우주국 달 정찰 궤도선(LRO)이 찍은 실제 표면 사진과 높낮이 자료입니다.
       </p>
 
-      <div className="grid" style={{ gridTemplateColumns: 'minmax(0,1.5fr) minmax(300px,1fr)', alignItems: 'start' }}>
+      <div className="grid" style={{ gridTemplateColumns: 'minmax(0,2fr) minmax(260px,1fr)', alignItems: 'start' }}>
         <div className="stage" ref={hostRef} style={{ position: 'relative' }}>
           <div ref={layerRef} style={{ position: 'absolute', inset: 0, pointerEvents: 'none' }} />
         </div>
@@ -210,11 +210,15 @@ export default function MoonGlobe({ date }) {
           <div className="card">
             <h3>오늘의 칭동</h3>
             <div className="rows">
-              <div className="r"><span>위아래로 기운 정도</span><b>{lib.elat.toFixed(2)}°</b></div>
-              <div className="r"><span>좌우로 흔들린 정도</span><b>{lib.elon.toFixed(2)}°</b></div>
-              <div className="r"><span>달의 겉보기 크기</span><b>{(lib.diam_deg * 60).toFixed(1)}′</b></div>
+              <div className="r"><span>위아래 흔들림</span><b>{lib.elat.toFixed(2)}°</b></div>
+              <div className="r"><span>좌우 흔들림</span><b>{lib.elon.toFixed(2)}°</b></div>
+              <div className="r"><span>겉보기 크기</span><b>{(lib.diam_deg * 60).toFixed(1)}′</b></div>
             </div>
-            <p className="hint">달이 조금씩 흔들려서, 오랜 기간 모아 보면 표면의 약 59%까지 볼 수 있습니다.</p>
+            <p className="hint" style={{ lineHeight: 1.55 }}>
+              <b style={{ color: 'var(--moon)' }}>칭동이란?</b> 달은 늘 같은 면만 보여 주지만, 궤도가 타원이고 자전축이 약간 기울어 있어서
+              가장자리가 조금씩 앞뒤좌우로 흔들립니다. 이 흔들림을 칭동(秤動, libration)이라 합니다.
+              덕분에 오랜 기간 관찰하면 달 표면의 약 59%까지 볼 수 있습니다.
+            </p>
           </div>
         </div>
       </div>

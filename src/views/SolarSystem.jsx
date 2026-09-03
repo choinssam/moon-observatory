@@ -23,7 +23,7 @@ const FACTS = {
     note: '가장 바깥 행성입니다. 시속 2,000km가 넘는, 태양계에서 가장 빠른 바람이 붑니다. 햇빛이 지구의 900분의 1밖에 닿지 않습니다.' }
 }
 
-const W = 1080, H = 800, CX = W / 2, CY = H / 2, RMAX = 358
+const W = 780, H = 780, CX = W / 2, CY = H / 2, RMAX = 340
 const maxDia = 142984
 
 export default function SolarSystem({ date }) {
@@ -61,7 +61,7 @@ export default function SolarSystem({ date }) {
         <b style={{ color: 'var(--moon)' }}> 행성을 누르면 오른쪽에서 실제 사진으로 돌려볼 수 있습니다.</b>
       </p>
 
-      <div className="grid" style={{ gridTemplateColumns: 'minmax(0,1.15fr) minmax(320px,1fr)', alignItems: 'start' }}>
+      <div className="grid" style={{ gridTemplateColumns: 'minmax(0,1fr) minmax(320px,1fr)', alignItems: 'start' }}>
         <div className="stage">
           <svg viewBox={`0 0 ${W} ${H}`} style={{ width: '100%', height: 'auto' }} role="img" aria-label="태양계">
             <defs>
@@ -75,7 +75,7 @@ export default function SolarSystem({ date }) {
             <g onClick={() => setPicked('태양')} style={{ cursor: 'pointer' }}>
               {isSun && <circle cx={CX} cy={CY} r="40" fill="none" stroke="var(--moon)" strokeWidth="2" />}
               <circle cx={CX} cy={CY} r="30" fill="url(#sun2)" />
-              <text x={CX} y={CY + 58} textAnchor="middle" fill="var(--sun)" fontSize="24" fontWeight="700">태양</text>
+              <text x={CX} y={CY + 50} textAnchor="middle" fill="var(--sun)" fontSize="18" fontWeight="700">태양</text>
             </g>
 
             {PLANETS.map((p, i) => {
@@ -94,15 +94,15 @@ export default function SolarSystem({ date }) {
                     <circle cx={x} cy={y} r={rr + 12} fill="transparent" />
                     {on && <circle cx={x} cy={y} r={rr + 8} fill="none" stroke="var(--moon)" strokeWidth="2" />}
                     <circle cx={x} cy={y} r={rr} fill={p.color} />
-                    <text x={x} y={y - rr - 11} textAnchor="middle"
-                      fill={on ? 'var(--moon)' : 'var(--text-2)'} fontSize="23" fontWeight={on ? 700 : 500}>
+                    <text x={x} y={y - rr - 9} textAnchor="middle"
+                      fill={on ? 'var(--moon)' : 'var(--text-2)'} fontSize="17" fontWeight={on ? 700 : 500}>
                       {p.ko}
                     </text>
                   </g>
                 </g>
               )
             })}
-            <text x={W - 16} y={H - 16} textAnchor="end" fill="var(--muted)" fontSize="19">
+            <text x={W - 16} y={H - 16} textAnchor="end" fill="var(--muted)" fontSize="14">
               {fmtDateKST(at)} · {mode === 'real' ? '거리 실제 비율' : '거리를 고르게 벌린 그림'}
             </text>
           </svg>

@@ -3,14 +3,14 @@ import { moonPathD } from '../lib/moon.jsx'
 import { Astronomy, moonPhase01, phaseName, riseSetTransit, fmtKST } from '../lib/astro.js'
 
 /* ---------- 바닷가 옆모습 ---------- */
-const SW = 900, SH = 430
-const HIGH_Y = 196          // 만조선
-const LOW_Y = 330           // 간조선
+const SW = 900, SH = 220
+const HIGH_Y = 90           // 만조선
+const LOW_Y = 170           // 간조선
 /* 바닥 단면 — 왼쪽은 뭍, 오른쪽으로 완만하게 깊어진다 */
-const GROUND = `0,120 150,122 250,168 380,232 520,286 680,330 800,356 900,368 900,${SH} 0,${SH}`
+const GROUND = `0,56 150,58 250,82 380,118 520,148 680,172 800,190 900,198 900,${SH} 0,${SH}`
 
 /* ---------- 위에서 내려다본 그림 ---------- */
-const TW = 560, TH = 330, TCX = 210, TCY = 168, ER = 78
+const TW = 400, TH = 220, TCX = 150, TCY = 112, ER = 56
 
 export default function Tides({ date, obs }) {
   const [t, setT] = useState(0.0)            // 0~1 : 지구가 한 바퀴 자전
@@ -46,7 +46,7 @@ export default function Tides({ date, obs }) {
   const meters = (1.2 + lvl * 7.6).toFixed(1)              // 서해안 정도의 조차로 환산
 
   /* 물에 잠기지 않은 갯벌 위의 생물 */
-  const CREATURES = [[430, 252], [500, 279], [560, 292], [620, 311], [470, 268], [660, 322]]
+  const CREATURES = [[430, 128], [500, 142], [560, 150], [620, 162], [470, 136], [660, 168]]
 
   const sx = TCX + ER * Math.cos(spot)
   const sy = TCY - ER * Math.sin(spot)
@@ -79,7 +79,7 @@ export default function Tides({ date, obs }) {
           {/* 바닥 — 갯벌 색, 위쪽만 뭍 */}
           <polygon points={GROUND} fill="#6B5A44" />
           <g clipPath="url(#landClip)">
-            <rect x="0" y="0" width={SW} height={HIGH_Y} fill="#3B5A3C" />
+            <rect x="0" y="0" width={SW} height={HIGH_Y - 4} fill="#3B5A3C" />
           </g>
 
           {/* 드러난 갯벌의 생물 */}
@@ -105,7 +105,7 @@ export default function Tides({ date, obs }) {
           {/* 배 — 물이 깊으면 뜨고, 빠지면 갯벌에 앉는다 */}
           {(() => {
             const boatX = 560
-            const groundY = 292
+            const groundY = 150
             const afloat = waterY < groundY - 8
             const by = afloat ? waterY : groundY
             const tiltDeg = afloat ? 0 : -12
@@ -133,7 +133,7 @@ export default function Tides({ date, obs }) {
         </svg>
       </div>
 
-      <div className="grid" style={{ gridTemplateColumns: 'minmax(320px,1fr) minmax(0,1.1fr)', alignItems: 'start' }}>
+      <div className="grid" style={{ gridTemplateColumns: 'minmax(300px,1.4fr) minmax(0,1fr)', alignItems: 'start' }}>
         <div className="card">
           <h3>바닷가의 지금</h3>
           <div className="big" style={{ color: bulge > 0.5 ? 'var(--sky)' : 'var(--moon)' }}>{level}</div>
@@ -163,7 +163,7 @@ export default function Tides({ date, obs }) {
           </p>
         </div>
 
-        <div className="stage">
+        <div className="stage" style={{ maxWidth: 420 }}>
           <svg viewBox={`0 0 ${TW} ${TH}`} style={{ width: '100%', height: 'auto' }}
             role="img" aria-label="위에서 내려다본 밀물과 썰물">
             <ellipse cx={TCX} cy={TCY} rx={ER + 26} ry={ER + 5} fill="#1B3A6B" opacity=".85" />
@@ -176,14 +176,14 @@ export default function Tides({ date, obs }) {
             <circle cx={sx} cy={sy} r="8" fill="var(--warn)" stroke="#000" strokeWidth="1.5" />
             <text x={sx} y={sy - 15} textAnchor="middle" fill="var(--warn)" fontSize="13" fontWeight="700">바닷가</text>
 
-            <g transform={`translate(${TW - 62},${TCY})`}>
+            <g transform={`translate(${TW - 54},${TCY})`}>
               <circle r="26" fill="var(--shadow-side)" />
               <path d={moonPathD(26, p)} fill="var(--moon)" />
               <circle r="26" fill="none" stroke="rgba(255,255,255,.25)" />
               <text y="46" textAnchor="middle" fill="var(--moon)" fontSize="14" fontWeight="700">달</text>
             </g>
             {Array.from({ length: 5 }, (_, i) => (
-              <line key={i} x1={TCX + ER + 30} y1={TCY - 36 + i * 18} x2={TW - 92} y2={TCY - 36 + i * 18}
+              <line key={i} x1={TCX + ER + 26} y1={TCY - 36 + i * 18} x2={TW - 84} y2={TCY - 36 + i * 18}
                 stroke="var(--moon)" strokeOpacity=".25" strokeWidth="1.5" strokeDasharray="4 6" />
             ))}
             <text x={TW / 2} y={26} textAnchor="middle" fill="var(--muted)" fontSize="13">

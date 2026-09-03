@@ -39,8 +39,8 @@ const GROUPS = [
  * 이렇게 그려야 별들이 북극성을 중심으로 '동그랗게' 돈다.
  * (방위·고도를 가로세로에 그대로 놓으면 원이 찌그러진다)
  */
-const W = 760, H = 640, CX = W / 2, CY = 296
-const SCALE = 2.7                    // 1도 = 2.7px
+const W = 700, H = 700, CX = W / 2, CY = W / 2
+const SCALE = 2.8                    // 1도 = 2.8px
 const RAD = Math.PI / 180
 
 function project(polarAlt, alt, az) {
@@ -112,26 +112,33 @@ export default function StarMap({ date, setDate, obs, loc }) {
         실제로 도는 것은 별이 아니라 지구입니다.
       </p>
 
-      <div className="grid" style={{ gridTemplateColumns: 'minmax(0,1.3fr) minmax(300px,1fr)', alignItems: 'start' }}>
+      <div className="grid" style={{ gridTemplateColumns: 'minmax(0,1.6fr) minmax(280px,1fr)', alignItems: 'start' }}>
         <div className="stage">
         <svg viewBox={`0 0 ${W} ${H}`} style={{ width: '100%', height: 'auto' }}
           role="img" aria-label="북쪽 하늘 별자리">
           <defs>
             <clipPath id="skyClip"><polygon points={horizon} /></clipPath>
+            <radialGradient id="skyGrad" cx="50%" cy="50%" r="50%">
+              <stop offset="0%" stopColor={dark ? '#0C1228' : '#1A2D54'} />
+              <stop offset="85%" stopColor={dark ? '#060A18' : '#152040'} />
+              <stop offset="100%" stopColor="#030610" />
+            </radialGradient>
+            <clipPath id="domeClip"><circle cx={CX} cy={CY} r={Math.min(CX, CY) - 4} /></clipPath>
           </defs>
 
-          {/* 지평선 아래는 땅, 위는 하늘 */}
-          <rect x="0" y="0" width={W} height={H} fill="#0A0D16" />
+          <rect x="0" y="0" width={W} height={H} fill="#030610" />
+          <circle cx={CX} cy={CY} r={Math.min(CX, CY) - 4} fill="url(#skyGrad)" />
           <polygon points={horizon} fill={dark ? '#070B16' : '#16233E'} />
 
-          <g clipPath="url(#skyClip)">
-            {[20, 40, 60].map(d => (
-              <circle key={d} cx={CX} cy={CY} r={d * SCALE} fill="none"
-                stroke="var(--line)" strokeDasharray="3 7" />
-            ))}
-          </g>
+          <g clipPath="url(#domeClip)">
+            <g clipPath="url(#skyClip)">
+              {[20, 40, 60].map(d => (
+                <circle key={d} cx={CX} cy={CY} r={d * SCALE} fill="none"
+                  stroke="var(--line)" strokeDasharray="3 7" />
+              ))}
+            </g>
 
-          <polygon points={horizon} fill="none" stroke="var(--muted)" strokeOpacity=".6" strokeWidth="1.6" />
+            <polygon points={horizon} fill="none" stroke="var(--muted)" strokeOpacity=".5" strokeWidth="1.6" />
 
           {/* 북극성 찾는 길잡이 */}
           {merak.alt > 0 && polaris.alt > 0 && (
@@ -178,6 +185,10 @@ export default function StarMap({ date, setDate, obs, loc }) {
                 fill="var(--muted)" fontSize="16" fontWeight="600">{ko}</text>
             )
           })}
+          </g>
+
+          <circle cx={CX} cy={CY} r={Math.min(CX, CY) - 4} fill="none"
+            stroke="var(--line)" strokeOpacity=".4" strokeWidth="1.5" />
 
           <text x={W - 14} y={24} textAnchor="end" fill="var(--muted)" fontSize="13">
             {dark ? '하늘이 충분히 어둡습니다' : '아직 밝아 별이 보이지 않는 시각입니다'}
