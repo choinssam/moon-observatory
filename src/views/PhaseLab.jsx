@@ -21,6 +21,8 @@ export default function PhaseLab({ date, big }) {
   const [p, setP] = useState(() => moonPhase01(date))
   const [playing, setPlaying] = useState(false)
   const raf = useRef(0)
+  const svgRef = useRef(null)
+  const [dragging, setDragging] = useState(false)
   const vp = useViewport()
 
   useEffect(() => {
@@ -45,15 +47,43 @@ export default function PhaseLab({ date, big }) {
   const mx = cx + R * Math.cos(a)
   const my = cy - R * Math.sin(a)
 
+  /* 달을 끌어서 궤도를 돌린다 */
+  function phaseFromEvent(e) {
+    const svg = svgRef.current
+    if (!svg) return null
+    const r = svg.getBoundingClientRect()
+    const x = ((e.clientX - r.left) / r.width) * W
+    const y = ((e.clientY - r.top) / r.height) * H
+    const ang = Math.atan2(cy - y, x - cx) * 180 / Math.PI      // 화면 위쪽이 +
+    return (((ang - 180) / 360) % 1 + 1) % 1
+  }
+  function onDragStart(e) {
+    setPlaying(false)
+    setDragging(true)
+    e.currentTarget.setPointerCapture?.(e.pointerId)
+    const v = phaseFromEvent(e); if (v != null) setP(v)
+  }
+  function onDragMove(e) {
+    if (!dragging) return
+    const v = phaseFromEvent(e); if (v != null) setP(v)
+  }
+  function onDragEnd(e) {
+    setDragging(false)
+    e.currentTarget.releasePointerCapture?.(e.pointerId)
+  }
+
   return (
     <>
       <p className="hint" style={{ color: 'var(--muted)', margin: 0, maxWidth: '78ch' }}>
-        왼쪽은 우주에서 내려다본 모습, 오른쪽은 그때 지구에서 올려다본 달입니다. 슬라이더를 밀면 두 그림이 함께 움직입니다.
+        왼쪽은 우주에서 내려다본 모습, 오른쪽은 그때 지구에서 올려다본 달입니다.
+        <b style={{ color: 'var(--moon)' }}> 왼쪽 그림의 달을 직접 끌어서 궤도를 돌려 보세요.</b> 슬라이더로도 됩니다.
       </p>
 
       <div className="grid" style={{ gridTemplateColumns: 'minmax(0,1.25fr) minmax(320px,0.95fr)', alignItems: 'start' }}>
         <div className="stage">
-          <svg viewBox={`0 0 ${W} ${H}`} style={{ width: '100%', height: 'auto' }}
+          <svg ref={svgRef} viewBox={`0 0 ${W} ${H}`}
+            style={{ width: '100%', height: 'auto', touchAction: 'none' }}
+            onPointerMove={onDragMove} onPointerUp={onDragEnd} onPointerCancel={onDragEnd}
             role="img" aria-label="태양 지구 달 배치도">
             <defs>
               <radialGradient id="sunG">
@@ -90,12 +120,16 @@ export default function PhaseLab({ date, big }) {
             <line x1={cx} y1={cy} x2={mx} y2={my} stroke="var(--sky)" strokeOpacity=".45"
               strokeWidth="1.5" strokeDasharray="3 5" />
 
-            <g transform={`translate(${mx},${my})`}>
+            <g transform={`translate(${mx},${my})`} onPointerDown={onDragStart}
+              style={{ cursor: dragging ? 'grabbing' : 'grab' }}>
+              <circle r="30" fill="transparent" />
+              <circle r="24" fill="none" stroke="var(--moon)" strokeOpacity={dragging ? '.9' : '.35'}
+                strokeWidth="1.5" strokeDasharray="3 4" />
               <circle r="17" fill="var(--shadow-side)" />
               <path d="M0,-17 A17,17 0 0 0 0,17 Z" fill="var(--moon)" />
               <circle r="17" fill="none" stroke="rgba(255,255,255,.3)" />
             </g>
-            <text x={mx} y={my - 26} textAnchor="middle" fill="var(--moon)" fontSize="14" fontWeight="700">달</text>
+            <text x={mx} y={my - 33} textAnchor="middle" fill="var(--moon)" fontSize="14" fontWeight="700">달</text>
 
             <text x={W - 12} y={H - 10} textAnchor="end" fill="var(--muted)" fontSize="12">
               북극 위에서 내려다본 그림 · 크기와 거리는 실제 비율이 아닙니다

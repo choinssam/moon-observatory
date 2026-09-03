@@ -127,16 +127,30 @@ export function horizonOf(body, obs, date) {
   return { az: h.azimuth, alt: h.altitude, ra: eq.ra, dec: eq.dec }
 }
 
-/** 하루 동안의 궤적 */
+/** 하루 동안의 궤적 (KST 0시부터) */
 export function dayTrack(body, obs, date, stepMin = 10) {
-  const t0 = kstMidnight(date)
+  return trackFrom(body, obs, kstMidnight(date), 24 * 60, stepMin)
+}
+
+/** 임의의 시각부터 minutes 분 동안의 궤적 */
+export function trackFrom(body, obs, start, minutes, stepMin = 10) {
   const out = []
-  for (let m = 0; m <= 24 * 60; m += stepMin) {
-    const t = new Date(t0.getTime() + m * 60000)
+  for (let m = 0; m <= minutes; m += stepMin) {
+    const t = new Date(start.getTime() + m * 60000)
     const h = horizonOf(body, obs, t)
     out.push({ t, min: m, az: h.az, alt: h.alt })
   }
   return out
+}
+
+/**
+ * '오늘 밤'을 담는 24시간 창의 시작(=낮 12시).
+ * 정오 이전이면 전날 낮 12시부터 본다.
+ */
+export function nightWindowStart(date) {
+  const mid = kstMidnight(date)
+  const noon = new Date(mid.getTime() + 12 * 3600000)
+  return date.getTime() < noon.getTime() ? new Date(noon.getTime() - 86400000) : noon
 }
 
 export function azName(az) {

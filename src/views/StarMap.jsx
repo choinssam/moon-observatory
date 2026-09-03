@@ -34,47 +34,71 @@ const GROUPS = [
   { key: 'umi', ko: '작은곰자리', color: '#B7C0DA', stars: UMI, links: [[0, 1], [1, 2], [2, 3], [3, 4], [4, 5], [5, 6], [6, 3]] }
 ]
 
-const W = 960, H = 460, PAD_L = 46, PAD_R = 16, PAD_T = 16, PAD_B = 34
-const SPAN = 95
+/*
+ * 하늘의 북극을 한가운데 두고, 거기서 떨어진 각도를 그대로 반지름으로 삼는다.
+ * 이렇게 그려야 별들이 북극성을 중심으로 '동그랗게' 돈다.
+ * (방위·고도를 가로세로에 그대로 놓으면 원이 찌그러진다)
+ */
+const W = 760, H = 640, CX = W / 2, CY = 296
+const SCALE = 2.7                    // 1도 = 2.7px
+const RAD = Math.PI / 180
 
-function xOf(azn) { return PAD_L + ((azn + SPAN) / (2 * SPAN)) * (W - PAD_L - PAD_R) }
-function yOf(alt) { return H - PAD_B - (Math.max(0, Math.min(90, alt)) / 90) * (H - PAD_T - PAD_B) }
-function norm(az) { let a = ((az % 360) + 360) % 360; if (a > 180) a -= 360; return a }
+function project(polarAlt, alt, az) {
+  const aC = polarAlt * RAD, aS = alt * RAD, dz = az * RAD    // 북극의 방위는 0°(정북)
+  const cosR = Math.sin(aC) * Math.sin(aS) + Math.cos(aC) * Math.cos(aS) * Math.cos(dz)
+  const rho = Math.acos(Math.max(-1, Math.min(1, cosR)))
+  const sinR = Math.sin(rho)
+  if (sinR < 1e-9) return { x: CX, y: CY, deg: 0 }
+  const sinPhi = (Math.cos(aS) * Math.sin(dz)) / sinR
+  const cosPhi = (Math.sin(aS) - Math.sin(aC) * cosR) / (Math.cos(aC) * sinR)
+  const phi = Math.atan2(sinPhi, cosPhi)                      // 0 = 천정 쪽(위)
+  const r = (rho / RAD) * SCALE
+  return { x: CX + r * Math.sin(phi), y: CY - r * Math.cos(phi), deg: rho / RAD }
+}
 
 export default function StarMap({ date, setDate, obs, loc }) {
   const dayKey = kstMidnight(date).getTime()
   const minutesOfDay = Math.round((date.getTime() - dayKey) / 60000)
+  const polarAlt = loc.lat                                    // 북극의 고도 = 그 지역의 위도
 
   const placed = useMemo(() => GROUPS.map(g => ({
     ...g,
     pts: g.stars.map(s => {
       const h = Astronomy.Horizon(date, obs, s.ra, s.dec, 'normal')
-      return { ...s, azn: norm(h.azimuth), alt: h.altitude }
+      return { ...s, ...project(polarAlt, h.altitude, h.azimuth), alt: h.altitude }
     })
   })), [date.getTime(), loc.lat, loc.lon])
 
-  const polaris = placed[2].pts[0]
-  const merak = placed[0].pts[1]
-  const dubhe = placed[0].pts[0]
+  /* 지평선 — 별이 도는 동안에도 관측자에게 고정된 곡선 */
+  const horizon = useMemo(() => {
+    const pts = []
+    for (let az = 0; az <= 360; az += 2) {
+      const p = project(polarAlt, 0, az)
+      pts.push(`${p.x.toFixed(1)},${p.y.toFixed(1)}`)
+    }
+    return pts.join(' ')
+  }, [loc.lat])
 
-  // 이름이 서로 겹치지 않게, 밝은 별부터 자리를 잡는다
   const labels = useMemo(() => {
     const all = []
     placed.forEach(g => g.pts.forEach(s => {
-      if (s.alt < 0 || Math.abs(s.azn) > SPAN) return
+      if (s.alt < 0) return
       if (!(s.polaris || s.pointer || s.m < 2.4)) return
-      all.push({ ...s, color: g.color, x: xOf(s.azn), y: yOf(s.alt) })
+      all.push({ ...s, color: g.color })
     }))
     const rank = s => (s.polaris ? 0 : s.pointer ? 1 : 2 + s.m)
     all.sort((a, b) => rank(a) - rank(b))
     const keep = []
     for (const l of all) {
-      const dy = l.pointer === 'below' ? 30 : 0     // 메라크는 아래쪽에 적는다
-      if (keep.some(k => Math.abs(k.x - l.x) < 74 && Math.abs(k.y - (l.y + dy)) < 21)) continue
+      const dy = l.pointer === 'below' ? 26 : 0
+      if (keep.some(k => Math.abs(k.x - l.x) < 68 && Math.abs(k.y - (l.y + dy)) < 20)) continue
       keep.push({ ...l, y: l.y + dy, below: l.pointer === 'below' })
     }
     return keep
   }, [placed])
+
+  const polaris = placed[2].pts[0]
+  const merak = placed[0].pts[1]
 
   const sunEq = Astronomy.Equator(Astronomy.Body.Sun, date, obs, true, true)
   const sunAlt = Astronomy.Horizon(date, obs, sunEq.ra, sunEq.dec, 'normal').altitude
@@ -82,32 +106,36 @@ export default function StarMap({ date, setDate, obs, loc }) {
 
   return (
     <>
-      <p className="hint" style={{ color: 'var(--muted)', margin: 0, maxWidth: '74ch' }}>
-        북쪽 하늘을 바라본 모습입니다. 별은 스스로 빛을 내고, 행성은 태양 빛을 반사해 빛납니다.
-        북극성은 거의 움직이지 않아서 밤에 방향을 찾는 기준이 됩니다.
+      <p className="hint" style={{ color: 'var(--muted)', margin: 0, maxWidth: 'none' }}>
+        북쪽 하늘을 올려다본 모습입니다.
+        <b style={{ color: 'var(--moon)' }}> 북극성을 한가운데 두고 그려서, 시각을 밀면 별들이 동그랗게 돕니다.</b>
+        실제로 도는 것은 별이 아니라 지구입니다.
       </p>
 
-      <div className="stage">
-        <svg viewBox={`0 0 ${W} ${H}`} style={{ width: '100%', height: 'auto' }} role="img" aria-label="북쪽 하늘 별자리">
-          <rect x={PAD_L} y={PAD_T} width={W - PAD_L - PAD_R} height={H - PAD_T - PAD_B}
-            fill={dark ? '#070B16' : '#16233E'} stroke="var(--line)" />
+      <div className="grid" style={{ gridTemplateColumns: 'minmax(0,1.3fr) minmax(300px,1fr)', alignItems: 'start' }}>
+        <div className="stage">
+        <svg viewBox={`0 0 ${W} ${H}`} style={{ width: '100%', height: 'auto' }}
+          role="img" aria-label="북쪽 하늘 별자리">
+          <defs>
+            <clipPath id="skyClip"><polygon points={horizon} /></clipPath>
+          </defs>
 
-          {[0, 30, 60, 90].map(a => (
-            <g key={a}>
-              <line x1={PAD_L} y1={yOf(a)} x2={W - PAD_R} y2={yOf(a)} stroke="var(--line)" strokeDasharray={a === 0 ? '' : '3 7'} />
-              <text x={PAD_L - 8} y={yOf(a) + 4} textAnchor="end" fill="var(--muted)" fontSize="13">{a}°</text>
-            </g>
-          ))}
-          {[[-90, '서북서'], [-45, '북서'], [0, '북'], [45, '북동'], [90, '동북동']].map(([a, ko]) => (
-            <g key={a}>
-              <line x1={xOf(a)} y1={PAD_T} x2={xOf(a)} y2={H - PAD_B} stroke="var(--line)" strokeDasharray="3 7" />
-              <text x={xOf(a)} y={H - PAD_B + 20} textAnchor="middle" fill="var(--muted)" fontSize="13">{ko}</text>
-            </g>
-          ))}
+          {/* 지평선 아래는 땅, 위는 하늘 */}
+          <rect x="0" y="0" width={W} height={H} fill="#0A0D16" />
+          <polygon points={horizon} fill={dark ? '#070B16' : '#16233E'} />
+
+          <g clipPath="url(#skyClip)">
+            {[20, 40, 60].map(d => (
+              <circle key={d} cx={CX} cy={CY} r={d * SCALE} fill="none"
+                stroke="var(--line)" strokeDasharray="3 7" />
+            ))}
+          </g>
+
+          <polygon points={horizon} fill="none" stroke="var(--muted)" strokeOpacity=".6" strokeWidth="1.6" />
 
           {/* 북극성 찾는 길잡이 */}
-          {merak.alt > 0 && dubhe.alt > 0 && polaris.alt > 0 && (
-            <line x1={xOf(merak.azn)} y1={yOf(merak.alt)} x2={xOf(polaris.azn)} y2={yOf(polaris.alt)}
+          {merak.alt > 0 && polaris.alt > 0 && (
+            <line x1={merak.x} y1={merak.y} x2={polaris.x} y2={polaris.y}
               stroke="var(--moon)" strokeOpacity=".45" strokeWidth="1.6" strokeDasharray="6 7" />
           )}
 
@@ -116,18 +144,16 @@ export default function StarMap({ date, setDate, obs, loc }) {
               {g.links.map(([a, b], i) => {
                 const p1 = g.pts[a], p2 = g.pts[b]
                 if (p1.alt < 0 || p2.alt < 0) return null
-                return <line key={i} x1={xOf(p1.azn)} y1={yOf(p1.alt)} x2={xOf(p2.azn)} y2={yOf(p2.alt)}
-                  stroke={g.color} strokeOpacity=".5" strokeWidth="1.8" />
+                return <line key={i} x1={p1.x} y1={p1.y} x2={p2.x} y2={p2.y}
+                  stroke={g.color} strokeOpacity=".55" strokeWidth="1.8" />
               })}
               {g.pts.map((s, i) => {
-                if (s.alt < 0 || Math.abs(s.azn) > SPAN) return null
+                if (s.alt < 0) return null
                 const r = Math.max(2.2, 7.4 - s.m * 1.15)
                 return (
                   <g key={i}>
-                    <circle cx={xOf(s.azn)} cy={yOf(s.alt)} r={r + (s.polaris ? 5 : 0)}
-                      fill={s.polaris ? 'none' : '#fff'}
-                      stroke={s.polaris ? 'var(--moon)' : 'none'} strokeWidth="2" />
-                    {s.polaris && <circle cx={xOf(s.azn)} cy={yOf(s.alt)} r={r} fill="var(--moon)" />}
+                    {s.polaris && <circle cx={s.x} cy={s.y} r={r + 5} fill="none" stroke="var(--moon)" strokeWidth="2" />}
+                    <circle cx={s.x} cy={s.y} r={r} fill={s.polaris ? 'var(--moon)' : '#fff'} />
                   </g>
                 )
               })}
@@ -137,17 +163,32 @@ export default function StarMap({ date, setDate, obs, loc }) {
           {labels.map((l, i) => (
             <text key={i} x={l.x}
               y={l.below ? l.y + 4 : l.y - Math.max(2.2, 7.4 - l.m * 1.15) - (l.polaris ? 15 : 9)}
-              textAnchor="middle" fill={l.polaris ? 'var(--moon)' : 'var(--text-2)'} fontSize="13"
+              textAnchor="middle" fill={l.polaris ? 'var(--moon)' : 'var(--text-2)'} fontSize="14"
               fontWeight={l.polaris ? 700 : 400}
               stroke="#070B16" strokeWidth="3.5" paintOrder="stroke">{l.ko}</text>
           ))}
 
-          <text x={W - PAD_R - 10} y={PAD_T + 20} textAnchor="end" fill="var(--muted)" fontSize="13">
+          {/* 지평선 위의 방위 */}
+          {[[0, '북'], [90, '동'], [270, '서']].map(([az, ko]) => {
+            const p = project(polarAlt, 0, az)
+            const dx = p.x - CX, dy = p.y - CY
+            const len = Math.hypot(dx, dy) || 1
+            return (
+              <text key={az} x={p.x + dx / len * 20} y={p.y + dy / len * 20 + 5} textAnchor="middle"
+                fill="var(--muted)" fontSize="16" fontWeight="600">{ko}</text>
+            )
+          })}
+
+          <text x={W - 14} y={24} textAnchor="end" fill="var(--muted)" fontSize="13">
             {dark ? '하늘이 충분히 어둡습니다' : '아직 밝아 별이 보이지 않는 시각입니다'}
           </text>
+          <text x={14} y={H - 12} fill="var(--muted)" fontSize="12">
+            가운데 = 하늘의 북극 · 점선 원은 북극에서 20°·40°·60° 떨어진 거리 · 바깥 곡선이 지평선
+          </text>
         </svg>
-      </div>
+        </div>
 
+        <div style={{ display: 'flex', flexDirection: 'column', gap: 14 }}>
       <div className="card">
         <div className="toolrow">
           <span className="mono" style={{ color: 'var(--muted)' }}>시각</span>
@@ -158,13 +199,13 @@ export default function StarMap({ date, setDate, obs, loc }) {
             {String(Math.floor(minutesOfDay / 60)).padStart(2, '0')}:{String(minutesOfDay % 60).padStart(2, '0')}
           </b>
           <button className="btn" onClick={() => setDate(new Date(dayKey + 21 * 3600000))}>밤 9시</button>
+          <button className="btn" onClick={() => setDate(new Date(dayKey + 3 * 3600000))}>새벽 3시</button>
         </div>
         <p className="hint">
-          시각을 밀어 보면 별자리가 북극성을 중심으로 도는 것이 보입니다. 실제로 도는 것은 별이 아니라 지구입니다.
+          별자리 모양은 그대로인 채 통째로 돌아갑니다. 하루에 한 바퀴, 시계 반대 방향입니다.
         </p>
       </div>
 
-      <div className="grid" style={{ gridTemplateColumns: 'repeat(auto-fit,minmax(250px,1fr))' }}>
         <div className="card">
           <h3>북극성 찾는 법</h3>
           <p style={{ color: 'var(--text-2)', margin: 0, fontSize: '.94em' }}>
@@ -172,21 +213,25 @@ export default function StarMap({ date, setDate, obs, loc }) {
             그림의 노란 점선이 그 길입니다. 북두칠성이 지평선 아래일 때는 반대편 카시오페이아자리로 찾습니다.
           </p>
         </div>
+        </div>
+      </div>
+
+      <div className="grid" style={{ gridTemplateColumns: 'repeat(auto-fit,minmax(280px,1fr))' }}>
         <div className="card">
-          <h3>별과 행성</h3>
+          <h3>왜 북극성만 안 움직일까</h3>
           <p style={{ color: 'var(--text-2)', margin: 0, fontSize: '.94em' }}>
-            별은 태양처럼 스스로 빛을 내는 천체입니다. 너무 멀어서 하룻밤 사이에는 서로의 자리가 바뀌지 않아
-            늘 같은 모양의 별자리를 이룹니다. 반대로 행성은 별들 사이를 옮겨 다녀서 <b>떠돌이별</b>이라 불립니다.
+            지구의 자전축을 하늘 쪽으로 쭉 늘이면 그 끝 근처에 북극성이 있습니다.
+            축 위에 있으니 지구가 아무리 돌아도 자리가 거의 바뀌지 않고, 나머지 별들이 그 둘레를 도는 것처럼 보입니다.
           </p>
         </div>
         <div className="card">
-          <h3>지금 시각</h3>
+          <h3>지금 하늘</h3>
           <div className="rows">
             <div className="r"><span>보고 있는 시각</span><b>{fmtKST(date, true)}</b></div>
-            <div className="r"><span>북극성의 고도</span><b>{polaris.alt.toFixed(1)}°</b></div>
+            <div className="r"><span>북극성의 고도</span><b>{polarAlt.toFixed(1)}°</b></div>
             <div className="r"><span>이 지역의 위도</span><b>{loc.lat.toFixed(2)}°</b></div>
           </div>
-          <p className="hint">북극성의 고도는 그 지역의 위도와 거의 같습니다. 직접 견주어 보세요.</p>
+          <p className="hint">북극성의 고도는 그 지역의 위도와 같습니다. 제주에서는 낮게, 강원도에서는 높게 보입니다.</p>
         </div>
       </div>
     </>

@@ -86,7 +86,7 @@ export default function MoonGlobe({ date }) {
       const w = host.clientWidth
       if (!w) return
       const cap = Math.round(window.innerHeight * (window.innerHeight < 860 ? 0.5 : 0.56))
-      const h = Math.max(280, Math.min(Math.round(w * 0.62), cap))
+      const h = Math.max(300, Math.min(Math.round(w * 0.82), cap))
       renderer.setSize(w, h, false)
       renderer.domElement.style.width = w + 'px'
       renderer.domElement.style.height = h + 'px'
@@ -184,23 +184,42 @@ export default function MoonGlobe({ date }) {
         미국 항공우주국 달 정찰 궤도선(LRO)이 찍은 실제 표면 사진과 높낮이 자료입니다.
       </p>
 
-      <div className="stage" ref={hostRef} style={{ position: 'relative' }}>
-        <div ref={layerRef} style={{ position: 'absolute', inset: 0, pointerEvents: 'none' }} />
-      </div>
+      <div className="grid" style={{ gridTemplateColumns: 'minmax(0,1.5fr) minmax(300px,1fr)', alignItems: 'start' }}>
+        <div className="stage" ref={hostRef} style={{ position: 'relative' }}>
+          <div ref={layerRef} style={{ position: 'absolute', inset: 0, pointerEvents: 'none' }} />
+        </div>
 
-      <div className="toolrow">
-        <button className={'btn' + (labels ? ' on' : '')} onClick={() => setLabels(!labels)}>이름 보기</button>
-        <button className={'btn' + (realLight ? ' on' : '')} onClick={() => setRealLight(!realLight)}>
-          오늘의 햇빛으로 비추기
-        </button>
-        <button className={'btn' + (spin ? ' on' : '')} onClick={() => setSpin(!spin)}>천천히 돌리기</button>
-        <div className="legend" style={{ marginLeft: 'auto' }}>
-          <span><i style={{ background: 'var(--moon)' }} />바다 · 크레이터</span>
-          <span><i style={{ background: 'var(--sky)' }} />사람이 내린 곳</span>
+        <div style={{ display: 'flex', flexDirection: 'column', gap: 14 }}>
+          <div className="card">
+            <h3>이렇게 보세요</h3>
+            <div className="toolrow">
+              <button className={'btn' + (labels ? ' on' : '')} onClick={() => setLabels(!labels)}>이름 보기</button>
+              <button className={'btn' + (spin ? ' on' : '')} onClick={() => setSpin(!spin)}>천천히 돌리기</button>
+            </div>
+            <div className="toolrow" style={{ marginTop: 8 }}>
+              <button className={'btn' + (realLight ? ' on' : '')} onClick={() => setRealLight(!realLight)}>
+                오늘의 햇빛으로 비추기
+              </button>
+            </div>
+            <div className="legend" style={{ marginTop: 10 }}>
+              <span><i style={{ background: 'var(--moon)' }} />바다 · 크레이터</span>
+              <span><i style={{ background: 'var(--sky)' }} />사람이 내린 곳</span>
+            </div>
+          </div>
+
+          <div className="card">
+            <h3>오늘의 칭동</h3>
+            <div className="rows">
+              <div className="r"><span>위아래로 기운 정도</span><b>{lib.elat.toFixed(2)}°</b></div>
+              <div className="r"><span>좌우로 흔들린 정도</span><b>{lib.elon.toFixed(2)}°</b></div>
+              <div className="r"><span>달의 겉보기 크기</span><b>{(lib.diam_deg * 60).toFixed(1)}′</b></div>
+            </div>
+            <p className="hint">달이 조금씩 흔들려서, 오랜 기간 모아 보면 표면의 약 59%까지 볼 수 있습니다.</p>
+          </div>
         </div>
       </div>
 
-      <div className="grid" style={{ gridTemplateColumns: 'repeat(auto-fit,minmax(260px,1fr))' }}>
+      <div className="grid" style={{ gridTemplateColumns: 'repeat(auto-fit,minmax(300px,1fr))' }}>
         <div className="card">
           <h3>달의 바다는 바다가 아닙니다</h3>
           <p style={{ color: 'var(--text-2)', fontSize: '.94em', margin: 0 }}>
@@ -218,13 +237,12 @@ export default function MoonGlobe({ date }) {
           </p>
         </div>
         <div className="card">
-          <h3>오늘의 칭동</h3>
-          <div className="rows">
-            <div className="r"><span>위아래로 기운 정도</span><b>{lib.elat.toFixed(2)}°</b></div>
-            <div className="r"><span>좌우로 흔들린 정도</span><b>{lib.elon.toFixed(2)}°</b></div>
-            <div className="r"><span>달의 겉보기 크기</span><b>{(lib.diam_deg * 60).toFixed(1)}′</b></div>
-          </div>
-          <p className="hint">달이 조금씩 흔들려서, 오랜 기간 모아 보면 표면의 약 59%까지 볼 수 있습니다.</p>
+          <h3>크레이터는 어떻게 생겼을까</h3>
+          <p style={{ color: 'var(--text-2)', fontSize: '.94em', margin: 0 }}>
+            달에는 공기가 없어서 운석이 속도를 잃지 않고 그대로 부딪힙니다. 부딪힌 자리가 움푹 파여 크레이터가 됩니다.
+            비바람도 없어 한번 생긴 자국이 수십억 년 동안 그대로 남아 있습니다.
+            티코 크레이터에서 뻗어 나온 밝은 줄무늬는 부딪힐 때 튀어 나간 부스러기 자국입니다.
+          </p>
         </div>
       </div>
     </>

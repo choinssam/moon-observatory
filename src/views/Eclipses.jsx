@@ -1,7 +1,23 @@
 import React, { useMemo, useState } from 'react'
 import { nextEclipses, ECLIPSE_KIND, fmtKST } from '../lib/astro.js'
 
+const BASE = import.meta.env.BASE_URL
 const W = 780, H = 250
+
+const PHOTO = {
+  solar: {
+    src: BASE + 'photo/solar_eclipse.jpg',
+    alt: '개기일식 때 달 뒤로 태양이 가려지고 가장자리만 밝게 빛나는 모습',
+    cap: '2017년 8월 21일 미국에서 찍은 개기일식. 달에 가려진 태양의 가장자리가 반지처럼 빛나는 순간을 다이아몬드 링이라고 합니다.',
+    credit: 'NASA / Carla Thomas'
+  },
+  lunar: {
+    src: BASE + 'photo/lunar_eclipse.jpg',
+    alt: '개기월식 때 붉게 물든 보름달',
+    cap: '2022년 11월 8일 개기월식. 지구 그림자 속에 들어간 달이 붉게 보입니다.',
+    credit: 'NASA / Bill Ingalls'
+  }
+}
 
 function Diagram({ kind }) {
   const solar = kind === 'solar'
@@ -20,13 +36,12 @@ function Diagram({ kind }) {
         </radialGradient>
       </defs>
 
-      {/* 그림자 */}
       {solar ? (
-        <polygon points={`${moonX},${cy - moonR} ${moonX},${cy + moonR} ${earthX + 6},${cy + 5} ${earthX + 6},${cy - 5}`}
-          fill="#000" opacity=".62" />
+        <polygon points={`${moonX},${cy - moonR} ${moonX},${cy + moonR} ${earthX + 4},${cy + 4} ${earthX + 4},${cy - 4}`}
+          fill="#000" opacity=".68" />
       ) : (
-        <polygon points={`${earthX},${cy - earthR} ${earthX},${cy + earthR} ${moonX + 90},${cy + 3} ${moonX + 90},${cy - 3}`}
-          fill="#000" opacity=".62" />
+        <polygon points={`${earthX},${cy - earthR} ${earthX},${cy + earthR} ${moonX + 80},${cy + 3} ${moonX + 80},${cy - 3}`}
+          fill="#000" opacity=".68" />
       )}
 
       {Array.from({ length: 7 }, (_, i) => (
@@ -42,8 +57,9 @@ function Diagram({ kind }) {
       <circle cx={earthX} cy={cy} r={earthR} fill="none" stroke="rgba(255,255,255,.25)" />
       <text x={earthX} y={cy + earthR + 22} textAnchor="middle" fill="var(--sky)" fontSize="15" fontWeight="700">지구</text>
 
-      <circle cx={moonX} cy={cy} r={moonR} fill="var(--shadow-side)" />
-      <path d={`M${moonX},${cy - moonR} A${moonR},${moonR} 0 0 0 ${moonX},${cy + moonR} Z`} fill="var(--moon)" />
+      <circle cx={moonX} cy={cy} r={moonR} fill={kind === 'lunar' ? '#7A3B2E' : 'var(--shadow-side)'} />
+      {kind === 'solar' &&
+        <path d={`M${moonX},${cy - moonR} A${moonR},${moonR} 0 0 0 ${moonX},${cy + moonR} Z`} fill="var(--moon)" />}
       <text x={moonX} y={cy - moonR - 12} textAnchor="middle" fill="var(--moon)" fontSize="15" fontWeight="700">달</text>
     </svg>
   )
@@ -53,10 +69,11 @@ export default function Eclipses({ date }) {
   const [kind, setKind] = useState('solar')
   const list = useMemo(() => nextEclipses(date, 4), [Math.floor(date.getTime() / 86400000)])
   const rows = kind === 'solar' ? list.solar : list.lunar
+  const ph = PHOTO[kind]
 
   return (
     <>
-      <p className="hint" style={{ color: 'var(--muted)', margin: 0, maxWidth: '74ch' }}>
+      <p className="hint" style={{ color: 'var(--muted)', margin: 0, maxWidth: 'none' }}>
         해와 지구와 달이 한 줄로 늘어설 때 생기는 일입니다. 교육과정에 나오는 내용은 아니지만,
         달의 위상을 배우고 나면 아이들이 가장 많이 묻는 것이기도 합니다.
       </p>
@@ -66,11 +83,27 @@ export default function Eclipses({ date }) {
         <button aria-pressed={kind === 'lunar'} onClick={() => setKind('lunar')}>월식 — 지구 그림자에 달이 들어감</button>
       </div>
 
-      <div className="stage" style={{ padding: 8 }}>
-        <Diagram kind={kind} />
+      <div className="grid" style={{ gridTemplateColumns: 'minmax(0,1.1fr) minmax(320px,1fr)', alignItems: 'start' }}>
+        <div className="stage" style={{ padding: 8 }}>
+          <Diagram kind={kind} />
+          <p style={{ margin: '4px 12px 10px', color: 'var(--muted)', fontSize: '.85em' }}>
+            크기와 거리는 실제 비율이 아닙니다. 실제로는 태양이 달보다 400배 크고 400배 멀리 있어서
+            하늘에서 보이는 크기가 거의 같습니다 — 그래서 달이 해를 꼭 맞게 가릴 수 있습니다.
+          </p>
+        </div>
+
+        <div className="card" style={{ padding: 0, overflow: 'hidden' }}>
+          <img src={ph.src} alt={ph.alt}
+            style={{ width: '100%', height: 'auto', display: 'block', background: '#05070E' }} />
+          <div style={{ padding: '12px 16px 14px' }}>
+            <h3 style={{ marginBottom: 6 }}>실제로 찍은 사진</h3>
+            <p style={{ color: 'var(--text-2)', fontSize: '.92em', margin: 0 }}>{ph.cap}</p>
+            <p className="hint" style={{ marginTop: 8 }}>사진 {ph.credit} (공개 자료)</p>
+          </div>
+        </div>
       </div>
 
-      <div className="grid" style={{ gridTemplateColumns: 'minmax(0,1fr) minmax(280px,1fr)' }}>
+      <div className="grid" style={{ gridTemplateColumns: 'repeat(auto-fit,minmax(300px,1fr))' }}>
         <div className="card">
           <h3>{kind === 'solar' ? '앞으로의 일식' : '앞으로의 월식'}</h3>
           {rows.length === 0 && <p className="hint">계산할 수 없습니다.</p>}
@@ -78,7 +111,9 @@ export default function Eclipses({ date }) {
             {rows.map((e, i) => (
               <div className="r" key={i}>
                 <span>{fmtKST(e.peak.date, true)}</span>
-                <b style={{ color: 'var(--moon)' }}>{ECLIPSE_KIND[e.kind] || e.kind}{kind === 'solar' ? '일식' : e.kind === 'penumbral' ? '' : '월식'}</b>
+                <b style={{ color: 'var(--moon)' }}>
+                  {ECLIPSE_KIND[e.kind] || e.kind}{kind === 'solar' ? '일식' : e.kind === 'penumbral' ? '' : '월식'}
+                </b>
               </div>
             ))}
           </div>
@@ -101,9 +136,16 @@ export default function Eclipses({ date }) {
             <div className="r"><span>월식이 생기는 때</span><b>보름 (달이 반대쪽)</b></div>
             <div className="r"><span>달의 궤도 기울기</span><b>약 5.1°</b></div>
           </div>
-          <p className="hint">
-            개기월식 때 달이 붉게 보이는 것은, 지구 대기를 통과하며 휘어 들어온 붉은 빛이 달을 비추기 때문입니다.
+        </div>
+
+        <div className="card">
+          <h3>개기월식은 왜 붉을까</h3>
+          <p style={{ color: 'var(--text-2)', margin: 0, fontSize: '.94em' }}>
+            지구 그림자에 완전히 들어가도 달이 새까매지지는 않습니다.
+            지구의 공기를 스치며 휘어 들어온 빛이 달을 비추는데, 이때 파란빛은 공기에 흩어지고
+            붉은빛만 남아 달을 물들입니다. 노을이 붉은 것과 같은 이유입니다.
           </p>
+          <p className="hint">이런 달을 <b>블러드 문</b>이라고 부르기도 합니다.</p>
         </div>
       </div>
     </>

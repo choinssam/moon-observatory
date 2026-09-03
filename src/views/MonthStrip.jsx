@@ -60,9 +60,8 @@ export default function MonthStrip({ date, setDate, obs, loc, big }) {
 
   return (
     <>
-      <p className="hint" style={{ color: 'var(--muted)', margin: 0, maxWidth: '74ch' }}>
-        삭(달이 안 보이는 날)부터 30일을 늘어놓았습니다. 재생을 누르면 한 달 동안 모양이 어떻게 되풀이되는지 볼 수 있고,
-        날짜를 누르면 그날로 옮겨 갑니다. 흐려서 못 본 날도 여기서 다시 볼 수 있습니다.
+      <p className="hint" style={{ color: 'var(--muted)', margin: 0, maxWidth: 'none' }}>
+        삭(달이 안 보이는 날)부터 30일을 늘어놓았습니다. 날짜를 누르면 그날로 옮겨 가고, 흐려서 못 본 날도 여기서 다시 볼 수 있습니다.
       </p>
 
       <div className="grid" style={{ gridTemplateColumns: 'minmax(250px,300px) minmax(0,1fr)' }}>

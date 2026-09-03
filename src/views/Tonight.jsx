@@ -4,7 +4,7 @@ import MoonImage from '../lib/MoonImage.jsx'
 import { useViewport, moonSize } from '../lib/useViewport.js'
 import {
   Astronomy, moonPhase01, moonIllum, moonAge, phaseName, phaseTip,
-  riseSetTransit, horizonOf, dayTrack, azName, fmtKST, kstMidnight, searchPhase
+  riseSetTransit, horizonOf, trackFrom, nightWindowStart, azName, fmtKST, kstMidnight, searchPhase
 } from '../lib/astro.js'
 
 const W = 960, H = 330, PAD_L = 46, PAD_R = 16, PAD_T = 18, PAD_B = 34
@@ -24,12 +24,13 @@ function yOf(alt) {
 export default function Tonight({ date, setDate, obs, loc, big }) {
   const vp = useViewport()
   const dayKey = kstMidnight(date).getTime()
+  const win = nightWindowStart(date)            // 낮 12시 ~ 다음날 낮 12시
+  const winKey = win.getTime()
 
-  const data = useMemo(() => {
-    const moon = dayTrack(Astronomy.Body.Moon, obs, date, 10)
-    const sun = dayTrack(Astronomy.Body.Sun, obs, date, 10)
-    return { moon, sun }
-  }, [dayKey, loc.lat, loc.lon])
+  const data = useMemo(() => ({
+    moon: trackFrom(Astronomy.Body.Moon, obs, win, 24 * 60, 10),
+    sun: trackFrom(Astronomy.Body.Sun, obs, win, 24 * 60, 10)
+  }), [winKey, loc.lat, loc.lon])
 
   const rs = useMemo(() => riseSetTransit(Astronomy.Body.Moon, obs, date), [dayKey, loc.lat, loc.lon])
   const sunRs = useMemo(() => riseSetTransit(Astronomy.Body.Sun, obs, date), [dayKey, loc.lat, loc.lon])
@@ -41,10 +42,16 @@ export default function Tonight({ date, setDate, obs, loc, big }) {
   const illum = moonIllum(date)
   const discR = moonSize(vp, big, { min: 96, max: 230 })
 
-  const minutesOfDay = Math.round((date.getTime() - dayKey) / 60000)
+  // 슬라이더는 '창' 안에서의 위치. 표시는 실제 시계 시각.
+  const minInWin = Math.max(0, Math.min(1439, Math.round((date.getTime() - winKey) / 60000)))
+  const clockAt = m => {
+    const h = Math.floor(((12 * 60 + m) % 1440) / 60)
+    const mm = ((12 * 60 + m) % 1440) % 60
+    return String(h).padStart(2, '0') + ':' + String(mm).padStart(2, '0')
+  }
 
   function setMinutes(m) {
-    setDate(new Date(dayKey + m * 60000))
+    setDate(new Date(winKey + m * 60000))
   }
 
   const segs = []
@@ -115,7 +122,7 @@ export default function Tonight({ date, setDate, obs, loc, big }) {
                 <g key={q.min}>
                   <circle cx={xOf(q.az)} cy={yOf(q.alt)} r="3" fill="var(--moon)" opacity=".7" />
                   <text x={xOf(q.az)} y={yOf(q.alt) - 10} textAnchor="middle" fill="var(--text-2)" fontSize="12">
-                    {String(Math.floor(q.min / 60)).padStart(2, '0')}시
+                    {clockAt(q.min).slice(0, 2)}시
                   </text>
                 </g>
               ))}
@@ -130,7 +137,7 @@ export default function Tonight({ date, setDate, obs, loc, big }) {
               )}
 
               <text x={W - PAD_R} y={PAD_T - 5} textAnchor="end" fill="var(--muted)" fontSize="12">
-                가로 = 방위, 세로 = 고도 · 점선은 태양
+                낮 12시부터 다음날 낮 12시까지 · 가로 = 방위, 세로 = 고도 · 점선은 태양
               </text>
             </svg>
           </div>
@@ -138,11 +145,9 @@ export default function Tonight({ date, setDate, obs, loc, big }) {
           <div className="toolrow" style={{ marginTop: 10 }}>
             <span className="mono" style={{ color: 'var(--muted)' }}>시각</span>
             <input className="slider" style={{ flex: 1 }} type="range" min="0" max="1439" step="10"
-              value={minutesOfDay} onChange={e => setMinutes(Number(e.target.value))}
+              value={minInWin} onChange={e => setMinutes(Number(e.target.value))}
               aria-label="하루 중 시각" />
-            <b className="mono" style={{ minWidth: '4.5em', textAlign: 'right' }}>
-              {String(Math.floor(minutesOfDay / 60)).padStart(2, '0')}:{String(minutesOfDay % 60).padStart(2, '0')}
-            </b>
+            <b className="mono" style={{ minWidth: '4.5em', textAlign: 'right' }}>{clockAt(minInWin)}</b>
           </div>
         </div>
       </div>

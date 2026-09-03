@@ -17,6 +17,24 @@
 - **NASA가 보증하는 것처럼 보이게 하지 말 것** — 이 프로젝트는 NASA와 무관한 개인 제작물입니다.
 - **NASA 로고·엠블럼은 쓰지 말 것** — 쓰지 않았습니다.
 
+## 1-2. 행성·태양 표면 이미지
+
+**Solar System Scope — Solar System Textures** (CC BY 4.0)
+https://www.solarsystemscope.com/textures/
+
+태양, 수성, 금성, 지구, 화성, 목성, 토성(고리 포함), 천왕성, 해왕성의 표면 지도입니다.
+NASA 의 탐사선 자료를 바탕으로 만들어졌으며, **저작자 표시(BY)** 조건으로 자유롭게 쓸 수 있습니다.
+이 프로젝트는 태양계 화면 안과 이 문서에 출처를 밝힙니다.
+
+## 1-3. 일식·월식 사진
+
+미국항공우주국(NASA)이 공개한 사진입니다. 미국 정부 저작물이라 저작권이 없습니다(public domain).
+
+| 파일 | 내용 | 촬영 |
+|---|---|---|
+| `public/photo/solar_eclipse.jpg` | 2017년 8월 21일 개기일식 (다이아몬드 링) | NASA / Carla Thomas |
+| `public/photo/lunar_eclipse.jpg` | 2022년 11월 8일 개기월식 | NASA / Bill Ingalls |
+
 ## 2. 천체 위치 계산
 
 **astronomy-engine** (MIT License) — https://github.com/cosinekitty/astronomy
