@@ -7,19 +7,19 @@ import {
   riseSetTransit, horizonOf, trackFrom, nightWindowStart, azName, fmtKST, kstMidnight, searchPhase
 } from '../lib/astro.js'
 
-const W = 900, H = 440, PAD_L = 46, PAD_R = 16, PAD_T = 18, PAD_B = 34
-const AZ0 = 40, AZ1 = 320            // 북동 ~ 북서
-const ALT1 = 90
-
-function xOf(az) {
-  const a = ((az % 360) + 360) % 360
-  const t = (a - AZ0) / (AZ1 - AZ0)
-  return PAD_L + Math.max(-0.05, Math.min(1.05, t)) * (W - PAD_L - PAD_R)
+/*
+ * 남쪽을 바라보고 선 사람 머리 위로 펼쳐진 하늘의 반구.
+ * 동쪽 지평선에서 떠서 남쪽 하늘을 지나 서쪽으로 지는 길이 매끈한 호로 보인다.
+ * (방위와 고도를 가로세로 눈금에 그대로 놓으면 호가 찌그러진다)
+ */
+const W = 900, H = 470, CX = W / 2, HY = 392, R = 366
+const RAD = Math.PI / 180
+function pt(alt, az) {
+  const a = alt * RAD, z = az * RAD
+  return { x: CX - R * Math.cos(a) * Math.sin(z), y: HY - R * Math.sin(a) }
 }
-function yOf(alt) {
-  const t = Math.max(-6, Math.min(ALT1, alt)) / ALT1
-  return H - PAD_B - t * (H - PAD_T - PAD_B)
-}
+const P = q => { const p = pt(q.alt, q.az); return `${p.x.toFixed(1)},${p.y.toFixed(1)}` }
+const DOME = `M${CX - R},${HY} A${R},${R} 0 0 1 ${CX + R},${HY} Z`
 
 export default function Tonight({ date, setDate, obs, loc, big }) {
   const vp = useViewport()
@@ -49,27 +49,29 @@ export default function Tonight({ date, setDate, obs, loc, big }) {
     const mm = ((12 * 60 + m) % 1440) % 60
     return String(h).padStart(2, '0') + ':' + String(mm).padStart(2, '0')
   }
-
-  function setMinutes(m) {
-    setDate(new Date(winKey + m * 60000))
-  }
+  function setMinutes(m) { setDate(new Date(winKey + m * 60000)) }
 
   const segs = []
   {
     let cur = []
     for (const q of data.moon) {
-      if (q.alt > -1) cur.push(q)
+      if (q.alt > -0.5) cur.push(q)
       else if (cur.length) { segs.push(cur); cur = [] }
     }
     if (cur.length) segs.push(cur)
   }
+  const sunPts = data.sun.filter(q => q.alt > -0.5).map(P).join(' ')
+
+  /* 방위선 — 지평선에서 천정까지 올라가는 곡선 */
+  const meridian = az => Array.from({ length: 19 }, (_, i) => P({ alt: i * 5, az })).join(' ')
 
   const nextFull = searchPhase(180, date)
   const nextNew = searchPhase(0, date)
+  const nowPt = pt(now.alt, now.az)
 
   return (
     <>
-      <div className="grid" style={{ gridTemplateColumns: 'minmax(260px,320px) minmax(0,1fr)' }}>
+      <div className="grid" style={{ gridTemplateColumns: 'minmax(250px,300px) minmax(0,1fr)', alignItems: 'stretch' }}>
         <div className="card center" style={{ flexDirection: 'column', gap: 12 }}>
           <MoonImage size={discR} phase={p} elat={lib.elat} elon={lib.elon} />
           <div className="big" style={{ color: 'var(--moon)' }}>{phaseName(p)}</div>
@@ -82,67 +84,93 @@ export default function Tonight({ date, setDate, obs, loc, big }) {
           <div className="note" style={{ width: '100%' }}>{phaseTip(p)}</div>
         </div>
 
-        <div className="card">
-          <h3>오늘 밤 달이 지나가는 길</h3>
-          <div style={{ overflowX: 'auto' }}>
-            <svg viewBox={`0 0 ${W} ${H}`} style={{ width: '100%', minWidth: 560, height: 'auto' }}
-              role="img" aria-label="달의 하루 궤적">
-              <rect x={PAD_L} y={PAD_T} width={W - PAD_L - PAD_R} height={H - PAD_T - PAD_B}
-                fill="#0C1120" stroke="var(--line)" />
+        <div className="card" style={{ display: 'flex', flexDirection: 'column' }}>
+          <h3>오늘 밤 달이 지나가는 길
+            <span style={{ color: 'var(--muted)', fontWeight: 400, fontSize: '.86em' }}>남쪽을 바라보고 선 사람 머리 위의 하늘</span>
+          </h3>
+          <div style={{ flex: 1, display: 'flex', alignItems: 'center' }}>
+            <svg viewBox={`0 0 ${W} ${H}`} style={{ width: '100%', height: 'auto' }}
+              role="img" aria-label="오늘 밤 달이 지나가는 길">
+              <defs>
+                <radialGradient id="domeG" cx="50%" cy="100%" r="78%">
+                  <stop offset="0%" stopColor="#1C2C56" />
+                  <stop offset="65%" stopColor="#0F1734" />
+                  <stop offset="100%" stopColor="#090D20" />
+                </radialGradient>
+              </defs>
+
+              {/* 하늘 반구 */}
+              <path d={DOME} fill="url(#domeG)" stroke="var(--line)" strokeWidth="1.5" />
 
               {/* 고도 눈금 */}
-              {[0, 30, 60, 90].map(a => (
-                <g key={a}>
-                  <line x1={PAD_L} y1={yOf(a)} x2={W - PAD_R} y2={yOf(a)}
-                    stroke="var(--line)" strokeDasharray={a === 0 ? '' : '3 6'} />
-                  <text x={PAD_L - 8} y={yOf(a) + 4} textAnchor="end" fill="var(--muted)" fontSize="13">{a}°</text>
-                </g>
+              {[30, 60].map(a => {
+                const hw = R * Math.cos(a * RAD), y = HY - R * Math.sin(a * RAD)
+                return (
+                  <g key={a}>
+                    <line x1={CX - hw} y1={y} x2={CX + hw} y2={y} stroke="var(--line)" strokeDasharray="3 7" />
+                    <text x={CX + hw - 4} y={y - 6} textAnchor="end" fill="var(--muted)" fontSize="12">고도 {a}°</text>
+                  </g>
+                )
+              })}
+              <text x={CX + 8} y={HY - R + 16} fill="var(--muted)" fontSize="12">머리 위 90°</text>
+
+              {/* 방위선 */}
+              {[135, 180, 225].map(az => (
+                <polyline key={az} points={meridian(az)} fill="none" stroke="var(--line)" strokeDasharray="3 7" />
               ))}
-              {/* 방위 눈금 */}
+
+              {/* 땅과 지평선 */}
+              <rect x="0" y={HY} width={W} height={H - HY} fill="#0E1712" />
+              <line x1="0" y1={HY} x2={W} y2={HY} stroke="var(--muted)" strokeOpacity=".7" strokeWidth="1.5" />
               {[[90, '동'], [135, '남동'], [180, '남'], [225, '남서'], [270, '서']].map(([az, ko]) => (
-                <g key={az}>
-                  <line x1={xOf(az)} y1={PAD_T} x2={xOf(az)} y2={H - PAD_B} stroke="var(--line)" strokeDasharray="3 6" />
-                  <text x={xOf(az)} y={H - PAD_B + 20} textAnchor="middle" fill="var(--muted)" fontSize="13">{ko}</text>
-                </g>
+                <text key={az} x={CX - R * Math.sin(az * RAD)} y={HY + 24} textAnchor="middle"
+                  fill="var(--text-2)" fontSize="15" fontWeight="600">{ko}</text>
               ))}
 
-              {/* 태양 궤적 */}
-              <polyline
-                points={data.sun.filter(q => q.alt > -1).map(q => `${xOf(q.az)},${yOf(q.alt)}`).join(' ')}
-                fill="none" stroke="var(--sun)" strokeOpacity=".35" strokeWidth="2.5" strokeDasharray="5 6" />
+              {/* 관찰자 */}
+              <g transform={`translate(${CX},${HY})`} stroke="var(--text-2)" strokeWidth="2.2" strokeLinecap="round">
+                <circle cy="-24" r="5" fill="var(--text-2)" stroke="none" />
+                <path d="M0,-18 V-5 M-7,-13 H7 M0,-5 L-5,4 M0,-5 L5,4" fill="none" />
+              </g>
 
-              {/* 달 궤적 */}
+              {/* 태양의 길 */}
+              <polyline points={sunPts} fill="none" stroke="var(--sun)" strokeOpacity=".4" strokeWidth="2.5" strokeDasharray="5 6" />
+
+              {/* 달의 길 */}
               {segs.map((s, i) => (
-                <polyline key={i} points={s.map(q => `${xOf(q.az)},${yOf(q.alt)}`).join(' ')}
-                  fill="none" stroke="var(--moon)" strokeWidth="3.4" strokeLinecap="round" />
+                <polyline key={i} points={s.map(P).join(' ')}
+                  fill="none" stroke="var(--moon)" strokeWidth="3.4" strokeLinecap="round" strokeLinejoin="round" />
               ))}
 
               {/* 시각 표시 */}
-              {data.moon.filter(q => q.min % 120 === 0 && q.alt > 2).map(q => (
-                <g key={q.min}>
-                  <circle cx={xOf(q.az)} cy={yOf(q.alt)} r="3" fill="var(--moon)" opacity=".7" />
-                  <text x={xOf(q.az)} y={yOf(q.alt) - 10} textAnchor="middle" fill="var(--text-2)" fontSize="12">
-                    {clockAt(q.min).slice(0, 2)}시
-                  </text>
-                </g>
-              ))}
+              {data.moon.filter(q => q.min % 120 === 0 && q.alt > 3).map(q => {
+                const c = pt(q.alt, q.az)
+                return (
+                  <g key={q.min}>
+                    <circle cx={c.x} cy={c.y} r="3.2" fill="var(--moon)" opacity=".8" />
+                    <text x={c.x} y={c.y - 10} textAnchor="middle" fill="var(--text-2)" fontSize="12">
+                      {clockAt(q.min).slice(0, 2)}시
+                    </text>
+                  </g>
+                )
+              })}
 
               {/* 지금 위치 */}
-              {now.alt > -2 && (
-                <g transform={`translate(${xOf(now.az)},${yOf(now.alt)})`}>
-                  <circle r="13" fill="none" stroke="var(--sky)" strokeWidth="2" />
-                  <circle r="8" fill="var(--shadow-side)" />
-                  <path d={moonPathD(8, p)} fill="var(--moon)" />
+              {now.alt > -1 && (
+                <g transform={`translate(${nowPt.x},${nowPt.y})`}>
+                  <circle r="14" fill="none" stroke="var(--sky)" strokeWidth="2" />
+                  <circle r="9" fill="var(--shadow-side)" />
+                  <path d={moonPathD(9, p)} fill="var(--moon)" />
                 </g>
               )}
 
-              <text x={W - PAD_R} y={PAD_T - 5} textAnchor="end" fill="var(--muted)" fontSize="12">
-                낮 12시부터 다음날 낮 12시까지 · 가로 = 방위, 세로 = 고도 · 점선은 태양
+              <text x={W - 12} y={20} textAnchor="end" fill="var(--muted)" fontSize="12">
+                동쪽에서 떠서 남쪽 하늘을 지나 서쪽으로 집니다 · 점선은 태양
               </text>
             </svg>
           </div>
 
-          <div className="toolrow" style={{ marginTop: 10 }}>
+          <div className="toolrow" style={{ marginTop: 8 }}>
             <span className="mono" style={{ color: 'var(--muted)' }}>시각</span>
             <input className="slider" style={{ flex: 1 }} type="range" min="0" max="1439" step="10"
               value={minInWin} onChange={e => setMinutes(Number(e.target.value))}

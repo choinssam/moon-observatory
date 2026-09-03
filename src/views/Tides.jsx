@@ -3,14 +3,14 @@ import { moonPathD } from '../lib/moon.jsx'
 import { Astronomy, moonPhase01, phaseName, riseSetTransit, fmtKST } from '../lib/astro.js'
 
 /* ---------- 바닷가 옆모습 ---------- */
-const SW = 900, SH = 220
-const HIGH_Y = 90           // 만조선
-const LOW_Y = 170           // 간조선
+const SW = 900, SH = 430
+const HIGH_Y = 196          // 만조선
+const LOW_Y = 330           // 간조선
 /* 바닥 단면 — 왼쪽은 뭍, 오른쪽으로 완만하게 깊어진다 */
-const GROUND = `0,56 150,58 250,82 380,118 520,148 680,172 800,190 900,198 900,${SH} 0,${SH}`
+const GROUND = `0,120 150,122 250,168 380,232 520,286 680,330 800,356 900,368 900,${SH} 0,${SH}`
 
 /* ---------- 위에서 내려다본 그림 ---------- */
-const TW = 400, TH = 220, TCX = 150, TCY = 112, ER = 56
+const TW = 520, TH = 430, TCX = 200, TCY = 222, ER = 96
 
 export default function Tides({ date, obs }) {
   const [t, setT] = useState(0.0)            // 0~1 : 지구가 한 바퀴 자전
@@ -46,7 +46,7 @@ export default function Tides({ date, obs }) {
   const meters = (1.2 + lvl * 7.6).toFixed(1)              // 서해안 정도의 조차로 환산
 
   /* 물에 잠기지 않은 갯벌 위의 생물 */
-  const CREATURES = [[430, 128], [500, 142], [560, 150], [620, 162], [470, 136], [660, 168]]
+  const CREATURES = [[430, 252], [500, 279], [560, 292], [620, 311], [470, 268], [660, 322]]
 
   const sx = TCX + ER * Math.cos(spot)
   const sy = TCY - ER * Math.sin(spot)
@@ -58,138 +58,148 @@ export default function Tides({ date, obs }) {
         지구가 하루에 한 바퀴 자전하면서 이 부푼 곳을 두 번 지나기 때문에, 밀물과 썰물이 하루에 약 두 번씩 되풀이됩니다.
       </p>
 
-      {/* ---------- 바닷가에서 본 모습 ---------- */}
-      <div className="stage">
-        <svg viewBox={`0 0 ${SW} ${SH}`} style={{ width: '100%', height: 'auto' }}
-          role="img" aria-label="바닷가의 밀물과 썰물">
-          <defs>
-            <linearGradient id="skyG" x1="0" y1="0" x2="0" y2="1">
-              <stop offset="0%" stopColor="#101A33" />
-              <stop offset="100%" stopColor="#1E2C4E" />
-            </linearGradient>
-            <linearGradient id="seaG" x1="0" y1="0" x2="0" y2="1">
-              <stop offset="0%" stopColor="#2E6FB8" stopOpacity=".78" />
-              <stop offset="100%" stopColor="#123A6B" stopOpacity=".92" />
-            </linearGradient>
-            <clipPath id="landClip"><polygon points={GROUND} /></clipPath>
-          </defs>
+      {/* 세 가지를 한 줄에: 바닷가 옆모습 · 위에서 본 그림 · 지금 상태 */}
+      <div className="grid" style={{ gridTemplateColumns: 'minmax(0,1.6fr) minmax(0,1fr) 280px', alignItems: 'stretch' }}>
+        <div style={{ display: 'flex', flexDirection: 'column', gap: 10, minWidth: 0 }}>
+          <div className="stage" style={{ flex: 1, display: 'flex', alignItems: 'center' }}>
+            <svg viewBox={`0 0 ${SW} ${SH}`} style={{ width: '100%', height: 'auto' }}
+              role="img" aria-label="바닷가의 밀물과 썰물">
+              <defs>
+                <linearGradient id="skyG" x1="0" y1="0" x2="0" y2="1">
+                  <stop offset="0%" stopColor="#101A33" />
+                  <stop offset="100%" stopColor="#1E2C4E" />
+                </linearGradient>
+                <linearGradient id="seaG" x1="0" y1="0" x2="0" y2="1">
+                  <stop offset="0%" stopColor="#2E6FB8" stopOpacity=".78" />
+                  <stop offset="100%" stopColor="#123A6B" stopOpacity=".92" />
+                </linearGradient>
+                <clipPath id="landClip"><polygon points={GROUND} /></clipPath>
+              </defs>
 
-          <rect width={SW} height={SH} fill="url(#skyG)" />
+              <rect width={SW} height={SH} fill="url(#skyG)" />
 
-          {/* 바닥 — 갯벌 색, 위쪽만 뭍 */}
-          <polygon points={GROUND} fill="#6B5A44" />
-          <g clipPath="url(#landClip)">
-            <rect x="0" y="0" width={SW} height={HIGH_Y - 4} fill="#3B5A3C" />
-          </g>
-
-          {/* 드러난 갯벌의 생물 */}
-          {CREATURES.map(([x, y], i) => y < waterY && (
-            <g key={i} opacity=".85">
-              <ellipse cx={x} cy={y} rx="6" ry="4" fill="#C9B48E" />
-              <ellipse cx={x} cy={y - 1} rx="3" ry="2" fill="#8B7A5C" />
-            </g>
-          ))}
-
-          {/* 바닷물 */}
-          <rect x="0" y={waterY} width={SW} height={SH - waterY} fill="url(#seaG)" />
-          <path d={`M0,${waterY} ${Array.from({ length: 19 }, (_, i) =>
-            `Q ${i * 50 + 25},${waterY + (i % 2 ? 5 : -5)} ${i * 50 + 50},${waterY}`).join(' ')}`}
-            fill="none" stroke="#8FC4F0" strokeOpacity=".7" strokeWidth="2" />
-
-          {/* 만조선·간조선 */}
-          <line x1="0" y1={HIGH_Y} x2={SW} y2={HIGH_Y} stroke="var(--warn)" strokeOpacity=".55" strokeDasharray="7 7" />
-          <text x="10" y={HIGH_Y - 8} fill="var(--warn)" fontSize="14" fontWeight="600">만조선</text>
-          <line x1="0" y1={LOW_Y} x2={SW} y2={LOW_Y} stroke="var(--sky)" strokeOpacity=".45" strokeDasharray="7 7" />
-          <text x="10" y={LOW_Y + 20} fill="var(--sky)" fontSize="14" fontWeight="600">간조선</text>
-
-          {/* 배 — 물이 깊으면 뜨고, 빠지면 갯벌에 앉는다 */}
-          {(() => {
-            const boatX = 560
-            const groundY = 150
-            const afloat = waterY < groundY - 8
-            const by = afloat ? waterY : groundY
-            const tiltDeg = afloat ? 0 : -12
-            return (
-              <g transform={`translate(${boatX},${by}) rotate(${tiltDeg})`}>
-                <path d="M-34,0 L34,0 L24,17 L-24,17 Z" fill="#C6552F" />
-                <rect x="-2" y="-30" width="3" height="30" fill="#E3D9C6" />
-                <path d="M2,-28 L24,-6 L2,-6 Z" fill="#E3D9C6" />
+              {/* 바닥 — 갯벌 색, 위쪽만 뭍 */}
+              <polygon points={GROUND} fill="#6B5A44" />
+              <g clipPath="url(#landClip)">
+                <rect x="0" y="0" width={SW} height={HIGH_Y} fill="#3B5A3C" />
               </g>
-            )
-          })()}
 
-          {/* 물 높이 눈금 */}
-          <g transform={`translate(${SW - 74},0)`}>
-            <rect x="0" y={HIGH_Y - 14} width="30" height={LOW_Y - HIGH_Y + 28} rx="7"
-              fill="#0C1120" stroke="var(--line)" />
-            <rect x="4" y={waterY} width="22" height={LOW_Y + 14 - waterY} rx="4" fill="#2E6FB8" opacity=".85" />
-            <text x="15" y={HIGH_Y - 22} textAnchor="middle" fill="var(--muted)" fontSize="12">높이</text>
-            <text x="15" y={LOW_Y + 44} textAnchor="middle" fill="var(--text)" fontSize="15" fontWeight="700">{meters}m</text>
-          </g>
+              {/* 드러난 갯벌의 생물 */}
+              {CREATURES.map(([x, y], i) => y < waterY && (
+                <g key={i} opacity=".85">
+                  <ellipse cx={x} cy={y} rx="6" ry="4" fill="#C9B48E" />
+                  <ellipse cx={x} cy={y - 1} rx="3" ry="2" fill="#8B7A5C" />
+                </g>
+              ))}
 
-          <text x={SW / 2} y={26} textAnchor="middle" fill="var(--muted)" fontSize="14">
-            바닷가에서 본 모습 · 물 높이는 서해안 정도의 조차로 나타냈습니다
-          </text>
-        </svg>
-      </div>
+              {/* 바닷물 */}
+              <rect x="0" y={waterY} width={SW} height={SH - waterY} fill="url(#seaG)" />
+              <path d={`M0,${waterY} ${Array.from({ length: 19 }, (_, i) =>
+                `Q ${i * 50 + 25},${waterY + (i % 2 ? 5 : -5)} ${i * 50 + 50},${waterY}`).join(' ')}`}
+                fill="none" stroke="#8FC4F0" strokeOpacity=".7" strokeWidth="2" />
 
-      <div className="grid" style={{ gridTemplateColumns: 'minmax(300px,1.4fr) minmax(0,1fr)', alignItems: 'start' }}>
-        <div className="card">
-          <h3>바닷가의 지금</h3>
-          <div className="big" style={{ color: bulge > 0.5 ? 'var(--sky)' : 'var(--moon)' }}>{level}</div>
-          <div className="rows" style={{ marginTop: 10 }}>
-            <div className="r"><span>자전 시작부터</span><b>{hours}시간</b></div>
-            <div className="r"><span>물 높이</span><b>{meters} m</b></div>
-            <div className="r"><span>오늘의 달</span><b>{phaseName(p)}</b></div>
-            <div className="r"><span>조수</span>
-              <b style={{ color: spring ? 'var(--warn)' : 'var(--sky)' }}>
-                {spring ? '사리 (차이가 큼)' : '조금 (차이가 작음)'}
-              </b>
-            </div>
-            <div className="r"><span>달의 남중</span><b>{fmtKST(rs.transit)}</b></div>
+              {/* 만조선·간조선 */}
+              <line x1="0" y1={HIGH_Y} x2={SW} y2={HIGH_Y} stroke="var(--warn)" strokeOpacity=".55" strokeDasharray="7 7" />
+              <text x="10" y={HIGH_Y - 8} fill="var(--warn)" fontSize="15" fontWeight="600">만조선</text>
+              <line x1="0" y1={LOW_Y} x2={SW} y2={LOW_Y} stroke="var(--sky)" strokeOpacity=".45" strokeDasharray="7 7" />
+              <text x="10" y={LOW_Y + 20} fill="var(--sky)" fontSize="15" fontWeight="600">간조선</text>
+
+              {/* 배 — 물이 깊으면 뜨고, 빠지면 갯벌에 앉는다 */}
+              {(() => {
+                const boatX = 560
+                const groundY = 292
+                const afloat = waterY < groundY - 8
+                const by = afloat ? waterY : groundY
+                const tiltDeg = afloat ? 0 : -12
+                return (
+                  <g transform={`translate(${boatX},${by}) rotate(${tiltDeg})`}>
+                    <path d="M-34,0 L34,0 L24,17 L-24,17 Z" fill="#C6552F" />
+                    <rect x="-2" y="-30" width="3" height="30" fill="#E3D9C6" />
+                    <path d="M2,-28 L24,-6 L2,-6 Z" fill="#E3D9C6" />
+                  </g>
+                )
+              })()}
+
+              {/* 물 높이 눈금 */}
+              <g transform={`translate(${SW - 74},0)`}>
+                <rect x="0" y={HIGH_Y - 14} width="30" height={LOW_Y - HIGH_Y + 28} rx="7"
+                  fill="#0C1120" stroke="var(--line)" />
+                <rect x="4" y={waterY} width="22" height={LOW_Y + 14 - waterY} rx="4" fill="#2E6FB8" opacity=".85" />
+                <text x="15" y={HIGH_Y - 22} textAnchor="middle" fill="var(--muted)" fontSize="12">높이</text>
+                <text x="15" y={LOW_Y + 44} textAnchor="middle" fill="var(--text)" fontSize="16" fontWeight="700">{meters}m</text>
+              </g>
+
+              <text x={SW / 2} y={26} textAnchor="middle" fill="var(--muted)" fontSize="14">
+                바닷가에서 본 모습 · 물 높이는 서해안 정도의 조차로 나타냈습니다
+              </text>
+            </svg>
           </div>
-          <div className="toolrow" style={{ marginTop: 12 }}>
+
+          {/* 이 그림을 움직이는 도구는 그림 바로 아래에 */}
+          <div className="toolrow">
             <button className={'btn' + (playing ? ' on' : '')} onClick={() => setPlaying(!playing)}>
               {playing ? '멈춤' : '하루 재생'}
             </button>
             <button className="btn" onClick={() => { setPlaying(false); setT(0) }}>만조로</button>
             <button className="btn" onClick={() => { setPlaying(false); setT(0.25) }}>간조로</button>
+            <input className="slider" style={{ flex: 1, minWidth: 120 }} type="range" min="0" max="0.999" step="0.001" value={t}
+              onChange={e => { setPlaying(false); setT(Number(e.target.value)) }} aria-label="하루 중 시각" />
+            <b className="mono" style={{ minWidth: '5em', textAlign: 'right' }}>{hours}시간</b>
           </div>
-          <input className="slider" type="range" min="0" max="0.999" step="0.001" value={t}
-            onChange={e => { setPlaying(false); setT(Number(e.target.value)) }} aria-label="하루 중 시각" />
-          <p className="hint">
+        </div>
+
+        <div className="stage" style={{ display: 'flex', alignItems: 'center' }}>
+          <svg viewBox={`0 0 ${TW} ${TH}`} style={{ width: '100%', height: 'auto' }}
+            role="img" aria-label="위에서 내려다본 밀물과 썰물">
+            <ellipse cx={TCX} cy={TCY} rx={ER + 32} ry={ER + 6} fill="#1B3A6B" opacity=".85" />
+            <ellipse cx={TCX} cy={TCY} rx={ER + 32} ry={ER + 6} fill="none" stroke="var(--sky)" strokeOpacity=".45" />
+            <circle cx={TCX} cy={TCY} r={ER} fill="#2C4A2E" />
+            <circle cx={TCX} cy={TCY} r={ER} fill="none" stroke="rgba(255,255,255,.2)" />
+            <text x={TCX} y={TCY + 6} textAnchor="middle" fill="#BFD8C2" fontSize="18" fontWeight="700">지구</text>
+
+            <line x1={TCX} y1={TCY} x2={sx} y2={sy} stroke="var(--line)" strokeDasharray="3 5" />
+            <circle cx={sx} cy={sy} r="9" fill="var(--warn)" stroke="#000" strokeWidth="1.5" />
+            <text x={sx} y={sy - 16} textAnchor="middle" fill="var(--warn)" fontSize="14" fontWeight="700">바닷가</text>
+
+            <g transform={`translate(${TW - 66},${TCY})`}>
+              <circle r="30" fill="var(--shadow-side)" />
+              <path d={moonPathD(30, p)} fill="var(--moon)" />
+              <circle r="30" fill="none" stroke="rgba(255,255,255,.25)" />
+              <text y="52" textAnchor="middle" fill="var(--moon)" fontSize="15" fontWeight="700">달</text>
+            </g>
+            {Array.from({ length: 5 }, (_, i) => (
+              <line key={i} x1={TCX + ER + 40} y1={TCY - 40 + i * 20} x2={TW - 106} y2={TCY - 40 + i * 20}
+                stroke="var(--moon)" strokeOpacity=".28" strokeWidth="1.5" strokeDasharray="4 6" />
+            ))}
+            <text x={TW / 2} y={26} textAnchor="middle" fill="var(--muted)" fontSize="14">
+              북극 위에서 내려다본 그림
+            </text>
+            <text x={TW / 2} y={46} textAnchor="middle" fill="var(--muted)" fontSize="12">
+              부풀기는 크게 과장했습니다
+            </text>
+            <text x={TW / 2} y={TH - 16} textAnchor="middle" fill="var(--text-2)" fontSize="13">
+              지구가 돌면서 바닷가가 부푼 곳을 하루에 두 번 지납니다
+            </text>
+          </svg>
+        </div>
+
+        <div className="card" style={{ display: 'flex', flexDirection: 'column' }}>
+          <h3>바닷가의 지금</h3>
+          <div className="big" style={{ color: bulge > 0.5 ? 'var(--sky)' : 'var(--moon)' }}>{level}</div>
+          <div className="rows" style={{ marginTop: 10 }}>
+            <div className="r"><span>물 높이</span><b>{meters} m</b></div>
+            <div className="r"><span>오늘의 달</span><b>{phaseName(p)}</b></div>
+            <div className="r"><span>조수</span>
+              <b style={{ color: spring ? 'var(--warn)' : 'var(--sky)' }}>
+                {spring ? '사리 (차이 큼)' : '조금 (차이 작음)'}
+              </b>
+            </div>
+            <div className="r"><span>달의 남중</span><b>{fmtKST(rs.transit)}</b></div>
+          </div>
+          <p className="hint" style={{ marginTop: 'auto', paddingTop: 10 }}>
             밀물과 썰물이 한 번 되풀이되는 데 약 12시간 25분이 걸립니다.
             보름과 삭에는 태양까지 한 줄로 서서 힘이 합쳐지므로 물 높이 차가 커집니다(사리).
           </p>
-        </div>
-
-        <div className="stage" style={{ maxWidth: 420 }}>
-          <svg viewBox={`0 0 ${TW} ${TH}`} style={{ width: '100%', height: 'auto' }}
-            role="img" aria-label="위에서 내려다본 밀물과 썰물">
-            <ellipse cx={TCX} cy={TCY} rx={ER + 26} ry={ER + 5} fill="#1B3A6B" opacity=".85" />
-            <ellipse cx={TCX} cy={TCY} rx={ER + 26} ry={ER + 5} fill="none" stroke="var(--sky)" strokeOpacity=".45" />
-            <circle cx={TCX} cy={TCY} r={ER} fill="#2C4A2E" />
-            <circle cx={TCX} cy={TCY} r={ER} fill="none" stroke="rgba(255,255,255,.2)" />
-            <text x={TCX} y={TCY + 5} textAnchor="middle" fill="#BFD8C2" fontSize="16" fontWeight="700">지구</text>
-
-            <line x1={TCX} y1={TCY} x2={sx} y2={sy} stroke="var(--line)" strokeDasharray="3 5" />
-            <circle cx={sx} cy={sy} r="8" fill="var(--warn)" stroke="#000" strokeWidth="1.5" />
-            <text x={sx} y={sy - 15} textAnchor="middle" fill="var(--warn)" fontSize="13" fontWeight="700">바닷가</text>
-
-            <g transform={`translate(${TW - 54},${TCY})`}>
-              <circle r="26" fill="var(--shadow-side)" />
-              <path d={moonPathD(26, p)} fill="var(--moon)" />
-              <circle r="26" fill="none" stroke="rgba(255,255,255,.25)" />
-              <text y="46" textAnchor="middle" fill="var(--moon)" fontSize="14" fontWeight="700">달</text>
-            </g>
-            {Array.from({ length: 5 }, (_, i) => (
-              <line key={i} x1={TCX + ER + 26} y1={TCY - 36 + i * 18} x2={TW - 84} y2={TCY - 36 + i * 18}
-                stroke="var(--moon)" strokeOpacity=".25" strokeWidth="1.5" strokeDasharray="4 6" />
-            ))}
-            <text x={TW / 2} y={26} textAnchor="middle" fill="var(--muted)" fontSize="13">
-              북극 위에서 내려다본 그림 · 부풀기는 크게 과장했습니다
-            </text>
-          </svg>
         </div>
       </div>
 

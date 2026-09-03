@@ -3,21 +3,40 @@ import * as THREE from 'three'
 import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls.js'
 import { FEATURES, FEATURE_KIND, lonLatToVec3 } from '../lib/moon.jsx'
 import { moonPhase01, Astronomy } from '../lib/astro.js'
+import { useViewport } from '../lib/useViewport.js'
 
 const BASE = import.meta.env.BASE_URL
 
 export default function MoonGlobe({ date }) {
   const hostRef = useRef(null)
   const layerRef = useRef(null)
+  const vp = useViewport()
   const [labels, setLabels] = useState(true)
   const [realLight, setRealLight] = useState(false)
   const [spin, setSpin] = useState(false)
+  const [fs, setFs] = useState(false)
   const stateRef = useRef({ labels: true, realLight: false, spin: false, phase: 0.5 })
 
   stateRef.current.labels = labels
   stateRef.current.realLight = realLight
   stateRef.current.spin = spin
   stateRef.current.phase = moonPhase01(date)
+
+  /* 달은 둥글다 — 무대도 정사각형으로, 화면 높이에 맞춰 최대한 크게 */
+  const narrow = vp.w < 1000
+  const side = narrow
+    ? Math.max(280, Math.min(vp.w - 24, Math.round(vp.h * 0.55)))
+    : Math.max(340, Math.min(Math.round(vp.w * 0.46), Math.round(vp.h * 0.7)))
+
+  useEffect(() => {
+    const on = () => setFs(!!document.fullscreenElement)
+    document.addEventListener('fullscreenchange', on)
+    return () => document.removeEventListener('fullscreenchange', on)
+  }, [])
+  const toggleFs = () => {
+    if (document.fullscreenElement) document.exitFullscreen?.()
+    else hostRef.current?.requestFullscreen?.()
+  }
 
   useEffect(() => {
     const host = hostRef.current
@@ -26,7 +45,7 @@ export default function MoonGlobe({ date }) {
 
     const scene = new THREE.Scene()
     const camera = new THREE.PerspectiveCamera(38, 1, 0.1, 100)
-    camera.position.set(4.2, 0.7, 0)
+    camera.position.set(3.25, 0.45, 0)
 
     const renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true })
     renderer.setPixelRatio(Math.min(devicePixelRatio, 2))
@@ -35,7 +54,7 @@ export default function MoonGlobe({ date }) {
     const controls = new OrbitControls(camera, renderer.domElement)
     controls.enableDamping = true
     controls.dampingFactor = 0.07
-    controls.minDistance = 1.6
+    controls.minDistance = 1.5
     controls.maxDistance = 9
     controls.enablePan = false
 
@@ -83,10 +102,8 @@ export default function MoonGlobe({ date }) {
     })
 
     function resize() {
-      const w = host.clientWidth
-      if (!w) return
-      const cap = Math.round(window.innerHeight * (window.innerHeight < 860 ? 0.52 : 0.6))
-      const h = Math.max(300, Math.min(Math.round(w * 0.68), cap))
+      const w = host.clientWidth, h = host.clientHeight
+      if (!w || !h) return
       renderer.setSize(w, h, false)
       renderer.domElement.style.width = w + 'px'
       renderer.domElement.style.height = h + 'px'
@@ -179,27 +196,29 @@ export default function MoonGlobe({ date }) {
 
   return (
     <>
-      <p className="hint" style={{ color: 'var(--muted)', margin: 0, maxWidth: '72ch' }}>
+      <p className="hint" style={{ color: 'var(--muted)', margin: 0, maxWidth: 'none' }}>
         마우스나 손가락으로 끌어 돌리고, 휠이나 두 손가락으로 확대해 보세요.
         미국 항공우주국 달 정찰 궤도선(LRO)이 찍은 실제 표면 사진과 높낮이 자료입니다.
       </p>
 
-      <div className="grid" style={{ gridTemplateColumns: 'minmax(0,2fr) minmax(260px,1fr)', alignItems: 'start' }}>
-        <div className="stage" ref={hostRef} style={{ position: 'relative' }}>
+      <div className="grid" style={{ gridTemplateColumns: narrow ? '1fr' : `${side}px minmax(280px,1fr)`, alignItems: 'stretch' }}>
+        <div className="stage" ref={hostRef} style={{ width: narrow ? '100%' : side, height: side, background: '#05070E' }}>
           <div ref={layerRef} style={{ position: 'absolute', inset: 0, pointerEvents: 'none' }} />
+          <button className="fsbtn" onClick={toggleFs} aria-label={fs ? '전체 화면 닫기' : '전체 화면으로 보기'}>
+            {fs ? '✕ 닫기' : '⛶ 전체 화면'}
+          </button>
         </div>
 
-        <div style={{ display: 'flex', flexDirection: 'column', gap: 14 }}>
+        <div style={{ display: 'flex', flexDirection: 'column', gap: 14, minWidth: 0 }}>
           <div className="card">
             <h3>이렇게 보세요</h3>
             <div className="toolrow">
               <button className={'btn' + (labels ? ' on' : '')} onClick={() => setLabels(!labels)}>이름 보기</button>
               <button className={'btn' + (spin ? ' on' : '')} onClick={() => setSpin(!spin)}>천천히 돌리기</button>
-            </div>
-            <div className="toolrow" style={{ marginTop: 8 }}>
               <button className={'btn' + (realLight ? ' on' : '')} onClick={() => setRealLight(!realLight)}>
                 오늘의 햇빛으로 비추기
               </button>
+              <button className="btn" onClick={toggleFs}>⛶ 달만 크게 보기</button>
             </div>
             <div className="legend" style={{ marginTop: 10 }}>
               <span><i style={{ background: 'var(--moon)' }} />바다 · 크레이터</span>
@@ -207,18 +226,20 @@ export default function MoonGlobe({ date }) {
             </div>
           </div>
 
-          <div className="card">
-            <h3>오늘의 칭동</h3>
+          <div className="card" style={{ flex: 1 }}>
+            <h3>오늘의 칭동
+              <span style={{ color: 'var(--muted)', fontWeight: 400, fontSize: '.86em' }}>달이 살짝 흔들려 보이는 정도</span>
+            </h3>
             <div className="rows">
-              <div className="r"><span>위아래 흔들림</span><b>{lib.elat.toFixed(2)}°</b></div>
-              <div className="r"><span>좌우 흔들림</span><b>{lib.elon.toFixed(2)}°</b></div>
-              <div className="r"><span>겉보기 크기</span><b>{(lib.diam_deg * 60).toFixed(1)}′</b></div>
+              <div className="r"><span>위아래로 기운 정도</span><b>{lib.elat.toFixed(2)}°</b></div>
+              <div className="r"><span>좌우로 흔들린 정도</span><b>{lib.elon.toFixed(2)}°</b></div>
+              <div className="r"><span>달의 겉보기 크기</span><b>{(lib.diam_deg * 60).toFixed(1)}′</b></div>
             </div>
-            <p className="hint" style={{ lineHeight: 1.55 }}>
-              <b style={{ color: 'var(--moon)' }}>칭동이란?</b> 달은 늘 같은 면만 보여 주지만, 궤도가 타원이고 자전축이 약간 기울어 있어서
-              가장자리가 조금씩 앞뒤좌우로 흔들립니다. 이 흔들림을 칭동(秤動, libration)이라 합니다.
-              덕분에 오랜 기간 관찰하면 달 표면의 약 59%까지 볼 수 있습니다.
-            </p>
+            <div className="note" style={{ marginTop: 12 }}>
+              <b style={{ color: 'var(--moon)' }}>칭동이 뭐지?</b> 달은 늘 같은 면만 보여 주지만, 지구를 도는 길이 타원이고
+              자전축도 살짝 기울어 있어서 가장자리가 조금씩 위아래·좌우로 흔들려 보입니다.
+              이 흔들림을 <b>칭동</b>이라고 합니다. 덕분에 오랜 기간 모아 보면 표면의 약 59%까지 볼 수 있습니다.
+            </div>
           </div>
         </div>
       </div>

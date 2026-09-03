@@ -175,3 +175,19 @@ body[data-big="on"]{ --stage-max:52vh }
   background:var(--panel-2);border:1px solid var(--line);border-bottom-width:2px;
   border-radius:5px;padding:1px 6px;font-family:ui-monospace,monospace;font-size:.92em;color:var(--text-2);
 }
+
+/* ---------- 전체 화면 · 3D 하늘 ---------- */
+.stage:fullscreen{width:100vw!important;height:100vh!important;border-radius:0;border:0;background:#05070E}
+.stage:fullscreen canvas{width:100vw!important;height:100vh!important}
+.fsbtn{
+  position:absolute;right:10px;top:10px;z-index:2;
+  border:1px solid rgba(255,255,255,.18);background:rgba(8,11,19,.72);color:var(--text-2);
+  padding:6px 11px;border-radius:9px;cursor:pointer;font-weight:600;font-size:.84em;backdrop-filter:blur(4px);
+}
+.fsbtn:hover{color:var(--text);border-color:var(--muted)}
+.fsbtn:focus-visible{outline:2px solid var(--sky);outline-offset:2px}
+.lbl.sky{transform:translate(-50%,-150%);font-size:.82em;color:var(--text-2)}
+.lbl.sky.polaris{color:var(--moon);font-weight:700;font-size:.9em}
+.lbl.sky.group{font-size:.92em;font-weight:700;letter-spacing:.02em;opacity:.9}
+.lbl.sky.compass{font-size:1.05em;font-weight:700;color:var(--muted);letter-spacing:.06em}
+@media (pointer:coarse){ .fsbtn{min-height:40px} }

@@ -23,8 +23,17 @@ const FACTS = {
     note: '가장 바깥 행성입니다. 시속 2,000km가 넘는, 태양계에서 가장 빠른 바람이 붑니다. 햇빛이 지구의 900분의 1밖에 닿지 않습니다.' }
 }
 
-const W = 780, H = 780, CX = W / 2, CY = H / 2, RMAX = 340
+const W = 900, H = 720, CX = W / 2, CY = H / 2, RMAX = 330
 const maxDia = 142984
+
+function Fact({ k, v }) {
+  return (
+    <div style={{ background: 'var(--panel-2)', borderRadius: 9, padding: '7px 11px', minWidth: 0 }}>
+      <div style={{ color: 'var(--muted)', fontSize: '.78em' }}>{k}</div>
+      <div style={{ fontWeight: 600, fontVariantNumeric: 'tabular-nums', whiteSpace: 'nowrap', fontSize: '.95em' }}>{v}</div>
+    </div>
+  )
+}
 
 export default function SolarSystem({ date }) {
   const [mode, setMode] = useState('even')      // even | real
@@ -56,14 +65,10 @@ export default function SolarSystem({ date }) {
 
   return (
     <>
-      <p className="hint" style={{ color: 'var(--muted)', margin: 0, maxWidth: 'none' }}>
-        왼쪽은 태양계를 북쪽 위에서 내려다본 그림입니다. 행성의 위치는 오늘 실제 위치를 계산한 것입니다.
-        <b style={{ color: 'var(--moon)' }}> 행성을 누르면 오른쪽에서 실제 사진으로 돌려볼 수 있습니다.</b>
-      </p>
-
-      <div className="grid" style={{ gridTemplateColumns: 'minmax(0,1fr) minmax(320px,1fr)', alignItems: 'start' }}>
-        <div className="stage">
-          <svg viewBox={`0 0 ${W} ${H}`} style={{ width: '100%', height: 'auto' }} role="img" aria-label="태양계">
+      {/* 윗줄: 궤도 그림 | 고른 천체. 두 칸의 높이가 같도록 오른쪽 내용을 맞췄다 */}
+      <div className="grid" style={{ gridTemplateColumns: 'minmax(0,1fr) minmax(320px,1fr)', alignItems: 'stretch' }}>
+        <div className="stage" style={{ display: 'flex', alignItems: 'center', minHeight: 0 }}>
+          <svg viewBox={`0 0 ${W} ${H}`} style={{ width: '100%', height: '100%', maxHeight: 'none' }} role="img" aria-label="태양계">
             <defs>
               <radialGradient id="sun2">
                 <stop offset="0%" stopColor="#FFF3C4" />
@@ -72,10 +77,12 @@ export default function SolarSystem({ date }) {
               </radialGradient>
             </defs>
 
+            <text x="16" y="28" fill="var(--muted)" fontSize="15">북쪽 위에서 내려다본 태양계 · 행성을 누르면 오른쪽에 실제 모습</text>
+
             <g onClick={() => setPicked('태양')} style={{ cursor: 'pointer' }}>
               {isSun && <circle cx={CX} cy={CY} r="40" fill="none" stroke="var(--moon)" strokeWidth="2" />}
               <circle cx={CX} cy={CY} r="30" fill="url(#sun2)" />
-              <text x={CX} y={CY + 50} textAnchor="middle" fill="var(--sun)" fontSize="18" fontWeight="700">태양</text>
+              <text x={CX} y={CY + 52} textAnchor="middle" fill="var(--sun)" fontSize="20" fontWeight="700">태양</text>
             </g>
 
             {PLANETS.map((p, i) => {
@@ -94,100 +101,97 @@ export default function SolarSystem({ date }) {
                     <circle cx={x} cy={y} r={rr + 12} fill="transparent" />
                     {on && <circle cx={x} cy={y} r={rr + 8} fill="none" stroke="var(--moon)" strokeWidth="2" />}
                     <circle cx={x} cy={y} r={rr} fill={p.color} />
-                    <text x={x} y={y - rr - 9} textAnchor="middle"
-                      fill={on ? 'var(--moon)' : 'var(--text-2)'} fontSize="17" fontWeight={on ? 700 : 500}>
+                    <text x={x} y={y - rr - 10} textAnchor="middle"
+                      fill={on ? 'var(--moon)' : 'var(--text-2)'} fontSize="19" fontWeight={on ? 700 : 500}>
                       {p.ko}
                     </text>
                   </g>
                 </g>
               )
             })}
-            <text x={W - 16} y={H - 16} textAnchor="end" fill="var(--muted)" fontSize="14">
+            <text x={W - 16} y={H - 16} textAnchor="end" fill="var(--muted)" fontSize="15">
               {fmtDateKST(at)} · {mode === 'real' ? '거리 실제 비율' : '거리를 고르게 벌린 그림'}
             </text>
           </svg>
         </div>
 
-        <div style={{ display: 'flex', flexDirection: 'column', gap: 14 }}>
-          <div className="card" style={{ padding: 0, overflow: 'hidden' }}>
-            <PlanetGlobe texture={f.tex} ring={!!f.ring} tilt={f.tilt} sun={isSun} height={0.72} />
-            <div style={{ padding: '12px 16px 14px' }}>
+        <div className="card" style={{ padding: 0, overflow: 'hidden', display: 'flex', flexDirection: 'column', minWidth: 0 }}>
+          <PlanetGlobe texture={f.tex} ring={!!f.ring} tilt={f.tilt} sun={isSun} height={0.44} />
+          <div style={{ padding: '12px 16px 14px', display: 'flex', flexDirection: 'column', gap: 10, flex: 1 }}>
+            <div>
               <h3 style={{ marginBottom: 6 }}>
                 {picked}
-                <span style={{ color: 'var(--muted)', fontWeight: 400, fontSize: '.8em', marginLeft: 8 }}>
-                  끌어서 돌려보세요
-                </span>
+                <span style={{ color: 'var(--muted)', fontWeight: 400, fontSize: '.8em' }}>끌어서 돌려보세요</span>
               </h3>
               <p style={{ color: 'var(--text-2)', fontSize: '.92em', margin: 0 }}>{f.note}</p>
             </div>
-          </div>
-
-          <div className="card">
-            <div className="rows">
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3,minmax(0,1fr))', gap: 8, marginTop: 'auto' }}>
               {sel && <>
-                <div className="r"><span>지름</span><b>{sel.dia.toLocaleString()} km</b></div>
-                <div className="r"><span>지구의 몇 배</span><b>{(sel.dia / 12756).toFixed(2)}배</b></div>
-                <div className="r"><span>태양까지 거리</span><b>{sel.au.toFixed(3)} AU</b></div>
+                <Fact k="지름" v={sel.dia.toLocaleString() + ' km'} />
+                <Fact k="지구의 몇 배" v={(sel.dia / 12756).toFixed(2) + '배'} />
+                <Fact k="태양까지 거리" v={sel.au.toFixed(2) + ' AU'} />
               </>}
               {isSun && <>
-                <div className="r"><span>지름</span><b>1,392,700 km</b></div>
-                <div className="r"><span>지구의 몇 배</span><b>109배</b></div>
-                <div className="r"><span>표면 온도</span><b>약 5,500 ℃</b></div>
+                <Fact k="지름" v="1,392,700 km" />
+                <Fact k="지구의 몇 배" v="109배" />
+                <Fact k="표면 온도" v="약 5,500 ℃" />
               </>}
-              {f.period && <div className="r"><span>공전 주기</span>
-                <b>{f.period < 1 ? (f.period * 365.25).toFixed(0) + '일' : f.period + '년'}</b></div>}
-              <div className="r"><span>자전 주기</span><b>{f.day}</b></div>
-              <div className="r"><span>자전축 기울기</span><b>{f.tilt}°</b></div>
+              {f.period && <Fact k="공전 주기" v={f.period < 1 ? (f.period * 365.25).toFixed(0) + '일' : f.period + '년'} />}
+              <Fact k="자전 주기" v={f.day} />
+              <Fact k="자전축 기울기" v={f.tilt + '°'} />
             </div>
-          </div>
-
-          <div className="card">
-            <div className="toolrow">
-              <div className="seg">
-                <button aria-pressed={mode === 'even'} onClick={() => setMode('even')}>고르게</button>
-                <button aria-pressed={mode === 'real'} onClick={() => setMode('real')}>실제 비율</button>
-              </div>
-              <button className={'btn' + (playing ? ' on' : '')} onClick={() => setPlaying(!playing)}>
-                {playing ? '멈춤' : '돌려보기'}
-              </button>
-              <button className="btn" onClick={() => { setPlaying(false); setOffset(0) }}>오늘로</button>
-            </div>
-            <p className="hint">
-              실제 비율로 보면 안쪽 네 행성이 태양 가까이 몰려 있습니다. 태양계는 거의 텅 빈 공간입니다.
-            </p>
           </div>
         </div>
       </div>
 
-      <div className="card">
-        <h3>크기 비교 (실제 비율)</h3>
-        <div style={{ overflowX: 'auto' }}>
-          <svg viewBox="0 0 440 100" style={{ width: '100%', minWidth: 420, height: 'auto' }}
-            role="img" aria-label="행성 크기 비교">
-            {(() => {
-              let x = 6
-              return PLANETS.map((p, i) => {
-                const r = 3 + 40 * (p.dia / maxDia)
-                const cx = x + r
-                x += r * 2 + 9
-                const small = r < 12
-                const ly = small ? (i % 2 ? 92 : 80) : 92
-                return (
-                  <g key={p.ko} onClick={() => setPicked(p.ko)} style={{ cursor: 'pointer' }}>
-                    <circle cx={cx} cy={52} r={r} fill={p.color}
-                      stroke={p.ko === picked ? 'var(--moon)' : 'none'} strokeWidth="2" />
-                    {small && <line x1={cx} y1={52 + r + 2} x2={cx} y2={ly - 9} stroke="var(--line)" strokeWidth="1" />}
-                    <text x={cx} y={ly} textAnchor="middle"
-                      fill={p.ko === picked ? 'var(--moon)' : 'var(--muted)'} fontSize="11">{p.ko}</text>
-                  </g>
-                )
-              })
-            })()}
-          </svg>
+      {/* 아랫줄: 궤도 그림을 움직이는 도구 | 크기 비교 */}
+      <div className="grid" style={{ gridTemplateColumns: 'minmax(0,1fr) minmax(320px,1fr)', alignItems: 'stretch' }}>
+        <div className="card">
+          <h3>궤도 그림 움직이기</h3>
+          <div className="toolrow">
+            <div className="seg">
+              <button aria-pressed={mode === 'even'} onClick={() => setMode('even')}>고르게</button>
+              <button aria-pressed={mode === 'real'} onClick={() => setMode('real')}>실제 비율</button>
+            </div>
+            <button className={'btn' + (playing ? ' on' : '')} onClick={() => setPlaying(!playing)}>
+              {playing ? '멈춤' : '돌려보기'}
+            </button>
+            <button className="btn" onClick={() => { setPlaying(false); setOffset(0) }}>오늘로</button>
+          </div>
+          <p className="hint">
+            행성 위치는 오늘의 실제 위치입니다. 실제 비율로 보면 안쪽 네 행성이 태양 가까이 몰려 있습니다 — 태양계는 거의 텅 빈 공간입니다.
+            1 AU = 태양과 지구 사이 거리 약 1억 5천만 km.
+          </p>
         </div>
-        <p className="hint">
-          1 AU = 태양과 지구 사이 거리 약 1억 5천만 km · 행성 사진은 실제 탐사선이 찍은 자료로 만든 지도입니다
-        </p>
+
+        <div className="card">
+          <h3>크기 비교 (실제 비율)</h3>
+          <div style={{ overflowX: 'auto' }}>
+            <svg viewBox="0 0 440 100" style={{ width: '100%', minWidth: 380, height: 'auto', maxHeight: 150 }}
+              role="img" aria-label="행성 크기 비교">
+              {(() => {
+                let x = 6
+                return PLANETS.map((p, i) => {
+                  const r = 3 + 40 * (p.dia / maxDia)
+                  const cx = x + r
+                  x += r * 2 + 9
+                  const small = r < 12
+                  const ly = small ? (i % 2 ? 92 : 80) : 92
+                  return (
+                    <g key={p.ko} onClick={() => setPicked(p.ko)} style={{ cursor: 'pointer' }}>
+                      <circle cx={cx} cy={52} r={r} fill={p.color}
+                        stroke={p.ko === picked ? 'var(--moon)' : 'none'} strokeWidth="2" />
+                      {small && <line x1={cx} y1={52 + r + 2} x2={cx} y2={ly - 9} stroke="var(--line)" strokeWidth="1" />}
+                      <text x={cx} y={ly} textAnchor="middle"
+                        fill={p.ko === picked ? 'var(--moon)' : 'var(--muted)'} fontSize="11">{p.ko}</text>
+                    </g>
+                  )
+                })
+              })()}
+            </svg>
+          </div>
+          <p className="hint">행성 사진은 실제 탐사선이 찍은 자료로 만든 지도입니다. 여기서 눌러도 골라집니다.</p>
+        </div>
       </div>
     </>
   )
