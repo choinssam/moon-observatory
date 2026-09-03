@@ -1,6 +1,6 @@
 # 달 관찰소
 
-**바로 열기 → https://ksb6857.github.io/moon-observatory/**
+**바로 열기 → https://choinssam.github.io/moon-observatory/**
 
 만든 사람 **초인쌤** · 문의 ksb6857@gmail.com
 [![License: CC BY-NC-SA 4.0](https://img.shields.io/badge/License-CC%20BY--NC--SA%204.0-c08a2e.svg)](LICENSE)
@@ -100,7 +100,7 @@ NASA 달 이미지는 public domain 이라 이 비영리 조건의 적용을 받
 수업에 쓰다가 이상한 점을 찾았거나, 이런 화면이 있으면 좋겠다는 생각이 들면 알려주세요.
 
 - 메일: **ksb6857@gmail.com** (초인쌤)
-- 또는 이 저장소의 [Issues](https://github.com/ksb6857/moon-observatory/issues) 에 남겨주세요
+- 또는 이 저장소의 [Issues](https://github.com/choinssam/moon-observatory/issues) 에 남겨주세요
 
 ## 화면 크기 대응
 

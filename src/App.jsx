@@ -188,7 +188,7 @@ export default function App() {
               <span>천체 위치 계산: astronomy-engine</span>
               <span>2022 개정 과학과 교육과정 기준</span>
               <span>
-                <a href="https://github.com/ksb6857/moon-observatory/blob/main/LICENSE"
+                <a href="https://github.com/choinssam/moon-observatory/blob/main/LICENSE"
                   target="_blank" rel="noreferrer" style={{ color: 'var(--muted)' }}>
                   CC BY-NC-SA 4.0
                 </a>

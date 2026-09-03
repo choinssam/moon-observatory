@@ -7,7 +7,7 @@
   "license": "CC-BY-NC-SA-4.0",
   "repository": {
     "type": "git",
-    "url": "https://github.com/ksb6857/moon-observatory.git"
+    "url": "https://github.com/choinssam/moon-observatory.git"
   },
   "type": "module",
   "scripts": {
