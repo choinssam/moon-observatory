@@ -2,6 +2,8 @@
 
 **바로 열기 → https://ksb6857.github.io/moon-observatory/**
 
+만든 사람 **초인쌤** · 문의 ksb6857@gmail.com
+
 초등 과학 **밤하늘 관찰** 단원을 교실에서 그대로 다룰 수 있게 만든 한국어 시뮬레이터입니다.
 학생 기록을 받지 않고 **보여주는 데만** 집중합니다 — 서버도, 계정도, 로그인도 없습니다.
 
@@ -63,11 +65,23 @@ npm run build   # dist/ 에 정적 파일 생성
 빌드 결과물은 서버 없이 어떤 정적 호스팅에도 그대로 올릴 수 있습니다.
 `main` 에 push 하면 GitHub Actions 가 빌드해 GitHub Pages 로 자동 배포합니다.
 
-## 자료 출처
+## 자료 출처와 권리
 
-- 달 표면 색·높낮이: NASA/GSFC/Arizona State University — LRO CGI Moon Kit (public domain)
-- 천체 위치 계산: [astronomy-engine](https://github.com/cosinekitty/astronomy) (MIT)
-- 성취기준·성취수준: 교육부 고시 제2022-33호 [별책 9] 과학과 교육과정
+- **달 표면 색·높낮이 이미지**: NASA/GSFC/Arizona State University — LRO CGI Moon Kit.
+  미국 정부 저작물이라 저작권이 붙지 않습니다(public domain). 출처 표기가 조건입니다.
+- **천체 위치 계산**: [astronomy-engine](https://github.com/cosinekitty/astronomy) (MIT)
+- **화면 라이브러리**: three.js, React, Vite (모두 MIT)
+- **성취기준·성취수준**: 교육부 고시 제2022-33호 [별책 9] 과학과 교육과정
+
+위의 자료를 뺀 나머지 — 화면 구성, 설명 문장, 시뮬레이션 방식, 교육과정 분석 — 는 초인쌤이 만든 것이고
+그에 대한 권리도 초인쌤에게 있습니다. 자세한 내용은 [CREDITS.md](CREDITS.md) 를 보세요.
+
+## 문의
+
+수업에 쓰다가 이상한 점을 찾았거나, 이런 화면이 있으면 좋겠다는 생각이 들면 알려주세요.
+
+- 메일: **ksb6857@gmail.com** (초인쌤)
+- 또는 이 저장소의 [Issues](https://github.com/ksb6857/moon-observatory/issues) 에 남겨주세요
 
 ## 화면 크기 대응
 

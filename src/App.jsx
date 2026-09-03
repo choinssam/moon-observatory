@@ -167,14 +167,27 @@ export default function App() {
 
           <footer style={{
             marginTop: 22, paddingTop: 14, borderTop: '1px solid var(--line)',
-            color: 'var(--muted)', fontSize: '.82em', display: 'flex', gap: '6px 18px', flexWrap: 'wrap'
+            color: 'var(--muted)', fontSize: '.82em',
+            display: 'flex', flexDirection: 'column', gap: 8
           }}>
-            <span>달 표면 이미지 · 높낮이 자료: NASA/GSFC/Arizona State University (LRO)</span>
-            <span>천체 위치 계산: astronomy-engine</span>
-            <span>2022 개정 과학과 교육과정 기준</span>
-            <span className="kbdhint" style={{ marginLeft: 'auto' }}>
-              <kbd>←</kbd><kbd>→</kbd> 하루씩 <kbd>Shift</kbd>+<kbd>←</kbd><kbd>→</kbd> 한 시간씩
-            </span>
+            <div style={{ display: 'flex', gap: '6px 18px', flexWrap: 'wrap', alignItems: 'center' }}>
+              <span style={{ color: 'var(--text-2)' }}>
+                만든 사람 <b style={{ color: 'var(--moon)' }}>초인쌤</b>
+              </span>
+              <span>
+                문의 ·{' '}
+                <a href="mailto:ksb6857@gmail.com?subject=%5B%EB%8B%AC%20%EA%B4%80%EC%B0%B0%EC%86%8C%5D%20%EB%AC%B8%EC%9D%98"
+                  style={{ color: 'var(--sky)' }}>ksb6857@gmail.com</a>
+              </span>
+              <span className="kbdhint" style={{ marginLeft: 'auto' }}>
+                <kbd>←</kbd><kbd>→</kbd> 하루씩 <kbd>Shift</kbd>+<kbd>←</kbd><kbd>→</kbd> 한 시간씩
+              </span>
+            </div>
+            <div style={{ display: 'flex', gap: '6px 18px', flexWrap: 'wrap' }}>
+              <span>달 표면 이미지 · 높낮이 자료: NASA/GSFC/Arizona State University (LRO)</span>
+              <span>천체 위치 계산: astronomy-engine</span>
+              <span>2022 개정 과학과 교육과정 기준</span>
+            </div>
           </footer>
         </div>
       </main>
