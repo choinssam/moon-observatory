@@ -22,7 +22,7 @@ const VIEWS = {
   earth:   { ko: '지구의 운동',  std: '[6과12]',    C: EarthMotion },
   season:  { ko: '계절 변화',    std: '[6과13]',    C: SeasonLab },
   tide:    { ko: '밀물·썰물',    std: '[4과06-03]', C: Tides },
-  eclipse: { ko: '일식·월식',    std: '더 알아보기', C: Eclipses }
+  eclipse: { ko: '일식·월식',    std: '더 알아보기', extra: true, C: Eclipses }
 }
 
 const ORDER = {
@@ -81,6 +81,21 @@ export default function App() {
     const msInDay = prev.getTime() - kstMidnight(prev).getTime()
     setDate(new Date(midnight.getTime() + msInDay))
   }
+
+  // 교실에서 앞에 서서 넘기기 좋도록 키보드로도 날짜를 옮긴다
+  useEffect(() => {
+    function onKey(e) {
+      const t = e.target
+      if (t && (t.tagName === 'INPUT' || t.tagName === 'SELECT' || t.tagName === 'TEXTAREA')) return
+      if (e.key !== 'ArrowLeft' && e.key !== 'ArrowRight') return
+      const dir = e.key === 'ArrowRight' ? 1 : -1
+      const stepMs = e.shiftKey ? 3600000 : 86400000
+      setDate(d => new Date(d.getTime() + dir * stepMs))
+      e.preventDefault()
+    }
+    window.addEventListener('keydown', onKey)
+    return () => window.removeEventListener('keydown', onKey)
+  }, [])
 
   const View = VIEWS[tab].C
   const ctx = { date, setDate, loc, obs, grade, big, goTo: setTab }
@@ -143,7 +158,7 @@ export default function App() {
       <main>
         <div className="view">
           <div className="vhead">
-            <h2>{VIEWS[tab].ko}<span className="std">{VIEWS[tab].std}</span></h2>
+            <h2>{VIEWS[tab].ko}<span className={VIEWS[tab].extra ? 'std extra' : 'std'}>{VIEWS[tab].std}</span></h2>
             <p className="mono" style={{ color: 'var(--muted)' }}>
               {fmtDateKST(date)} · {loc.name} (북위 {loc.lat.toFixed(2)}° 동경 {loc.lon.toFixed(2)}°)
             </p>
@@ -157,6 +172,9 @@ export default function App() {
             <span>달 표면 이미지 · 높낮이 자료: NASA/GSFC/Arizona State University (LRO)</span>
             <span>천체 위치 계산: astronomy-engine</span>
             <span>2022 개정 과학과 교육과정 기준</span>
+            <span className="kbdhint" style={{ marginLeft: 'auto' }}>
+              <kbd>←</kbd><kbd>→</kbd> 하루씩 <kbd>Shift</kbd>+<kbd>←</kbd><kbd>→</kbd> 한 시간씩
+            </span>
           </footer>
         </div>
       </main>

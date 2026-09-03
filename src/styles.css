@@ -16,6 +16,8 @@
   --ok:#5FD1A0;
   --warn:#FF8B6B;
   --r:10px;
+  --maxw:1280px;
+  --stage-max:58vh;
   color-scheme: dark;
 }
 *{box-sizing:border-box}
@@ -78,7 +80,7 @@ h1,h2,h3,h4{margin:0;font-weight:700;letter-spacing:-.01em}
 
 /* ---------- content ---------- */
 main{flex:1 1 auto;min-height:0;overflow:auto;padding:18px 16px 40px}
-.view{max-width:1280px;margin:0 auto;display:flex;flex-direction:column;gap:16px}
+.view{max-width:var(--maxw);margin:0 auto;display:flex;flex-direction:column;gap:16px}
 .vhead h2{font-size:1.32em}
 .vhead p{margin:5px 0 0;color:var(--muted);max-width:70ch;font-size:.94em}
 .std{
@@ -86,6 +88,7 @@ main{flex:1 1 auto;min-height:0;overflow:auto;padding:18px 16px 40px}
   background:var(--moon-dim);padding:2px 7px;border-radius:5px;white-space:nowrap;margin-left:6px;
   vertical-align:middle;letter-spacing:.02em;
 }
+.std.extra{color:var(--muted);background:var(--panel-2);border:1px solid var(--line)}
 .grid{display:grid;gap:14px}
 .card{background:var(--panel);border:1px solid var(--line);border-radius:14px;padding:16px}
 .card h3{font-size:1em;margin-bottom:10px;display:flex;align-items:center;gap:8px}
@@ -119,3 +122,56 @@ svg{display:block}
   .brand small{display:none}
 }
 @media (prefers-reduced-motion:reduce){*{transition:none!important}}
+
+/* ---------- 화면 크기별 대응 ----------
+   기본은 교실 PC·전자칠판(가로 넓은 모니터).
+   크롬북은 세로가 좁고, 태블릿은 손가락으로 누른다. */
+
+/* 큰 모니터: 폭을 더 쓴다 */
+@media (min-width:1500px){ :root{ --maxw:1460px } }
+@media (min-width:1800px){ :root{ --maxw:1660px; } body{ font-size:16px } }
+
+/* 3D·그림 무대는 화면 높이를 넘지 않게 */
+.stage > svg, .card svg{ max-height:var(--stage-max) }
+
+/* 크롬북처럼 세로가 좁은 화면: 여백과 글자를 줄여 한 화면에 담는다 */
+@media (max-height:860px){
+  :root{ --stage-max:52vh }
+  .topbar{padding:7px 14px;gap:10px}
+  .tabs{padding-top:6px}
+  .tabs button{padding:7px 13px}
+  main{padding:12px 16px 28px}
+  .view{gap:12px}
+  .vhead h2{font-size:1.2em}
+  .vhead p{margin-top:3px}
+  .card{padding:13px}
+  .big{font-size:1.45em}
+}
+@media (max-height:700px){
+  :root{ --stage-max:46vh }
+  .brand small{display:none}
+}
+
+/* 태블릿 이하: 두 칸 배치를 한 칸으로 */
+@media (max-width:1000px){
+  .grid{grid-template-columns:1fr !important}
+  :root{ --stage-max:54vh }
+}
+
+/* 손가락으로 누르는 기기: 누를 곳을 키운다 */
+@media (pointer:coarse){
+  .btn,.seg button{min-height:44px;display:inline-flex;align-items:center}
+  .tabs button{min-height:44px;display:inline-flex;align-items:center}
+  .ctl{min-height:44px}
+  .slider{height:38px}
+  .rows .r{padding:12px 13px}
+}
+
+/* 큰 글씨 모드에서도 무대가 넘치지 않게 */
+body[data-big="on"]{ --stage-max:52vh }
+
+.kbdhint{color:var(--muted);font-size:.78em;display:flex;gap:10px;flex-wrap:wrap;align-items:center}
+.kbdhint kbd{
+  background:var(--panel-2);border:1px solid var(--line);border-bottom-width:2px;
+  border-radius:5px;padding:1px 6px;font-family:ui-monospace,monospace;font-size:.92em;color:var(--text-2);
+}

@@ -36,14 +36,15 @@ export default function SeasonLab({ date, setDate, obs, loc }) {
   const stick = 90
   const shadow = now.alt > 1 ? Math.min(stick / Math.tan(now.alt * Math.PI / 180), 460) : null
 
+  const okProfile = profile.filter(p => p.alt != null && p.dayHours != null)
   const mx = m => 52 + ((m - 1) / 11) * (CW - 52 - 52)
-  const myA = a => CH - MB - (a / 90) * (CH - MT - MB)
-  const myD = h => CH - MB - ((h - 8) / 8) * (CH - MT - MB)
+  const myA = a => CH - MB - (Math.max(0, Math.min(90, a)) / 90) * (CH - MT - MB)
+  const myD = h => CH - MB - (Math.max(0, Math.min(24, h)) - 8) / 8 * (CH - MT - MB)
 
   return (
     <>
       <p className="hint" style={{ color: 'var(--muted)', margin: 0, maxWidth: '74ch' }}>
-        태양이 하루 중 가장 높이 뜨는 때를 남중, 그때의 고도를 남중 고도라고 합니다.
+        태양이 하루 중 가장 높이 뜨는 때를 남중, 그때의 고도를 남중 고도라고 합니다.{' '}
         {loc.name}에서 계절에 따라 남중 고도와 낮의 길이가 어떻게 달라지는지 봅니다.
       </p>
 
@@ -116,12 +117,12 @@ export default function SeasonLab({ date, setDate, obs, loc }) {
                   {p.month}
                 </text>
               ))}
-              <polyline points={profile.map(p => `${mx(p.month)},${myA(p.alt)}`).join(' ')}
+              <polyline points={okProfile.map(p => `${mx(p.month)},${myA(p.alt)}`).join(' ')}
                 fill="none" stroke="var(--moon)" strokeWidth="3" />
-              {profile.map(p => <circle key={p.month} cx={mx(p.month)} cy={myA(p.alt)} r="4" fill="var(--moon)" />)}
-              <polyline points={profile.map(p => `${mx(p.month)},${myD(p.dayHours)}`).join(' ')}
+              {okProfile.map(p => <circle key={p.month} cx={mx(p.month)} cy={myA(p.alt)} r="4" fill="var(--moon)" />)}
+              <polyline points={okProfile.map(p => `${mx(p.month)},${myD(p.dayHours)}`).join(' ')}
                 fill="none" stroke="var(--sky)" strokeWidth="3" strokeDasharray="6 5" />
-              {profile.map(p => <circle key={'d' + p.month} cx={mx(p.month)} cy={myD(p.dayHours)} r="4" fill="var(--sky)" />)}
+              {okProfile.map(p => <circle key={'d' + p.month} cx={mx(p.month)} cy={myD(p.dayHours)} r="4" fill="var(--sky)" />)}
             </svg>
           </div>
           <div className="legend" style={{ marginTop: 8 }}>

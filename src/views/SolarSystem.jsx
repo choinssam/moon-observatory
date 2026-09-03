@@ -12,7 +12,7 @@ const FACTS = {
   해왕성: { period: 164.8, day: '16.1시간', note: '가장 바깥 행성. 시속 2000km가 넘는 바람이 붑니다.' }
 }
 
-const W = 900, H = 900, CX = W / 2, CY = H / 2, RMAX = 400
+const W = 1080, H = 800, CX = W / 2, CY = H / 2, RMAX = 358
 
 export default function SolarSystem({ date, big }) {
   const [mode, setMode] = useState('even')      // even | real
@@ -60,8 +60,8 @@ export default function SolarSystem({ date, big }) {
                 <stop offset="100%" stopColor="#C25A00" />
               </radialGradient>
             </defs>
-            <circle cx={CX} cy={CY} r="26" fill="url(#sun2)" />
-            <text x={CX} y={CY + 48} textAnchor="middle" fill="var(--sun)" fontSize="19" fontWeight="700">태양</text>
+            <circle cx={CX} cy={CY} r="30" fill="url(#sun2)" />
+            <text x={CX} y={CY + 54} textAnchor="middle" fill="var(--sun)" fontSize="24" fontWeight="700">태양</text>
 
             {PLANETS.map((p, i) => {
               const R = radiusOf(p, i)
@@ -69,7 +69,7 @@ export default function SolarSystem({ date, big }) {
               const ang = Math.atan2(v.y, v.x)
               const x = CX + R * Math.cos(ang)
               const y = CY - R * Math.sin(ang)
-              const rr = 5 + 9 * Math.sqrt(p.dia / maxDia)
+              const rr = 6 + 10 * Math.sqrt(p.dia / maxDia)
               const on = p.ko === picked
               return (
                 <g key={p.ko}>
@@ -79,15 +79,15 @@ export default function SolarSystem({ date, big }) {
                     <circle cx={x} cy={y} r={rr + 10} fill="transparent" />
                     {on && <circle cx={x} cy={y} r={rr + 7} fill="none" stroke="var(--moon)" strokeWidth="2" />}
                     <circle cx={x} cy={y} r={rr} fill={p.color} />
-                    <text x={x} y={y - rr - 9} textAnchor="middle"
-                      fill={on ? 'var(--moon)' : 'var(--text-2)'} fontSize="17" fontWeight={on ? 700 : 500}>
+                    <text x={x} y={y - rr - 11} textAnchor="middle"
+                      fill={on ? 'var(--moon)' : 'var(--text-2)'} fontSize="23" fontWeight={on ? 700 : 500}>
                       {p.ko}
                     </text>
                   </g>
                 </g>
               )
             })}
-            <text x={W - 14} y={H - 14} textAnchor="end" fill="var(--muted)" fontSize="15">
+            <text x={W - 16} y={H - 16} textAnchor="end" fill="var(--muted)" fontSize="19">
               {fmtDateKST(at)} · {mode === 'real' ? '거리 실제 비율' : '거리를 고르게 벌린 그림'}
             </text>
           </svg>
@@ -124,18 +124,23 @@ export default function SolarSystem({ date, big }) {
 
           <div className="card">
             <h3>크기 비교 (실제 비율)</h3>
-            <svg viewBox="0 0 420 96" style={{ width: '100%', height: 'auto' }} role="img" aria-label="행성 크기 비교">
+            <svg viewBox="0 0 440 100" style={{ width: '100%', height: 'auto' }} role="img" aria-label="행성 크기 비교">
               {(() => {
                 let x = 6
-                return PLANETS.map(p => {
+                return PLANETS.map((p, i) => {
                   const r = 3 + 40 * (p.dia / maxDia)
                   const cx = x + r
-                  x += r * 2 + 7
+                  x += r * 2 + 9
+                  const small = r < 12
+                  const ly = small ? (i % 2 ? 92 : 80) : 92
                   return (
                     <g key={p.ko} onClick={() => setPicked(p.ko)} style={{ cursor: 'pointer' }}>
                       <circle cx={cx} cy={52} r={r} fill={p.color}
                         stroke={p.ko === picked ? 'var(--moon)' : 'none'} strokeWidth="2" />
-                      <text x={cx} y={92} textAnchor="middle" fill="var(--muted)" fontSize="11">{p.ko}</text>
+                      {small && <line x1={cx} y1={52 + r + 2} x2={cx} y2={ly - 9}
+                        stroke="var(--line)" strokeWidth="1" />}
+                      <text x={cx} y={ly} textAnchor="middle"
+                        fill={p.ko === picked ? 'var(--moon)' : 'var(--muted)'} fontSize="11">{p.ko}</text>
                     </g>
                   )
                 })

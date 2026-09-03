@@ -1,6 +1,7 @@
 import React, { useMemo } from 'react'
 import { moonPathD } from '../lib/moon.jsx'
 import MoonImage from '../lib/MoonImage.jsx'
+import { useViewport, moonSize } from '../lib/useViewport.js'
 import {
   Astronomy, moonPhase01, moonIllum, moonAge, phaseName, phaseTip,
   riseSetTransit, horizonOf, dayTrack, azName, fmtKST, kstMidnight, searchPhase
@@ -21,6 +22,7 @@ function yOf(alt) {
 }
 
 export default function Tonight({ date, setDate, obs, loc, big }) {
+  const vp = useViewport()
   const dayKey = kstMidnight(date).getTime()
 
   const data = useMemo(() => {
@@ -37,7 +39,7 @@ export default function Tonight({ date, setDate, obs, loc, big }) {
   const p = moonPhase01(date)
   const lib = Astronomy.Libration(date)
   const illum = moonIllum(date)
-  const discR = big ? 132 : 112
+  const discR = moonSize(vp, big, { min: 96, max: 230 })
 
   const minutesOfDay = Math.round((date.getTime() - dayKey) / 60000)
 

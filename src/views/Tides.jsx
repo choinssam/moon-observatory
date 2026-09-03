@@ -2,7 +2,7 @@ import React, { useEffect, useRef, useState } from 'react'
 import { moonPathD } from '../lib/moon.jsx'
 import { Astronomy, moonPhase01, phaseName, riseSetTransit, fmtKST, kstMidnight } from '../lib/astro.js'
 
-const W = 640, H = 520, CX = 300, CY = 260, ER = 92
+const W = 660, H = 400, CX = 250, CY = 205, ER = 92
 
 export default function Tides({ date, obs, loc }) {
   const [t, setT] = useState(0)          // 0~1 : 지구가 한 바퀴 자전
@@ -72,7 +72,7 @@ export default function Tides({ date, obs, loc }) {
               <line key={i} x1={CX + ER + 34} y1={CY - 40 + i * 20} x2={W - 112} y2={CY - 40 + i * 20}
                 stroke="var(--moon)" strokeOpacity=".25" strokeWidth="1.5" strokeDasharray="4 6" />
             ))}
-            <text x={CX} y={44} textAnchor="middle" fill="var(--muted)" fontSize="14">
+            <text x={W / 2} y={32} textAnchor="middle" fill="var(--muted)" fontSize="14">
               북극 위에서 내려다본 그림 · 바닷물의 부풀기는 크게 과장했습니다
             </text>
           </svg>

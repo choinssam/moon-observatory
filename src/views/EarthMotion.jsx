@@ -32,6 +32,10 @@ export default function EarthMotion({ date, setDate }) {
     return Math.round((d - y) / 86400000)
   }
 
+  function daysInYear(y) {
+    return (y % 4 === 0 && y % 100 !== 0) || y % 400 === 0 ? 366 : 365
+  }
+
   const year = date.getUTCFullYear()
   const shown = new Date(Date.UTC(year, 0, 1) + dayOfYear * 86400000)
   const angleDeg = earthOrbitAngle(shown)
@@ -42,9 +46,9 @@ export default function EarthMotion({ date, setDate }) {
 
   useEffect(() => {
     if (!orbiting) return
-    const id = setInterval(() => setDayOfYear(d => (d + 2) % 365), 60)
+    const id = setInterval(() => setDayOfYear(d => (d + 2) % daysInYear(year)), 60)
     return () => clearInterval(id)
-  }, [orbiting])
+  }, [orbiting, year])
 
   useEffect(() => {
     const host = hostRef.current
@@ -52,8 +56,8 @@ export default function EarthMotion({ date, setDate }) {
     if (!host) return
 
     const scene = new THREE.Scene()
-    const camera = new THREE.PerspectiveCamera(42, 1, 0.1, 200)
-    camera.position.set(0, 13, 15)
+    const camera = new THREE.PerspectiveCamera(44, 1, 0.1, 200)
+    camera.position.set(0, 15, 21)
 
     const renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true })
     renderer.setPixelRatio(Math.min(devicePixelRatio, 2))
@@ -62,7 +66,7 @@ export default function EarthMotion({ date, setDate }) {
     const controls = new OrbitControls(camera, renderer.domElement)
     controls.enableDamping = true
     controls.minDistance = 6
-    controls.maxDistance = 46
+    controls.maxDistance = 60
     controls.enablePan = false
 
     // 태양
@@ -85,7 +89,7 @@ export default function EarthMotion({ date, setDate }) {
     const glow = new THREE.Sprite(new THREE.SpriteMaterial({
       map: glowTex, blending: THREE.AdditiveBlending, depthWrite: false, transparent: true
     }))
-    glow.scale.set(9, 9, 1)
+    glow.scale.set(6, 6, 1)
     scene.add(glow)
     const light = new THREE.PointLight(0xfff0d8, 320, 0, 2)
     scene.add(light)
@@ -105,14 +109,14 @@ export default function EarthMotion({ date, setDate }) {
     const tiltGroup = new THREE.Group()
     pivot.add(tiltGroup)
     const earth = new THREE.Mesh(
-      new THREE.SphereGeometry(0.95, 64, 48),
+      new THREE.SphereGeometry(1.15, 64, 48),
       new THREE.MeshStandardMaterial({ color: 0x3f7fd0, roughness: 0.85, metalness: 0 })
     )
     tiltGroup.add(earth)
 
     // 위도선 (적도)
     const eq = new THREE.Mesh(
-      new THREE.TorusGeometry(0.96, 0.012, 8, 96),
+      new THREE.TorusGeometry(1.16, 0.014, 8, 96),
       new THREE.MeshBasicMaterial({ color: 0xe9edf8 })
     )
     eq.rotation.x = Math.PI / 2
@@ -120,18 +124,18 @@ export default function EarthMotion({ date, setDate }) {
 
     // 자전축
     const axis = new THREE.Mesh(
-      new THREE.CylinderGeometry(0.018, 0.018, 3.1, 8),
+      new THREE.CylinderGeometry(0.021, 0.021, 3.7, 8),
       new THREE.MeshBasicMaterial({ color: 0xf2c879 })
     )
     tiltGroup.add(axis)
 
     // 우리나라 위치 표시
     const mark = new THREE.Mesh(
-      new THREE.SphereGeometry(0.075, 16, 12),
+      new THREE.SphereGeometry(0.09, 16, 12),
       new THREE.MeshBasicMaterial({ color: 0xff8b6b })
     )
     const latRad = 37.5 * Math.PI / 180
-    mark.position.set(Math.cos(latRad) * 0.97, Math.sin(latRad) * 0.97, 0)
+    mark.position.set(Math.cos(latRad) * 1.17, Math.sin(latRad) * 1.17, 0)
     earth.add(mark)
 
     // 별
@@ -155,12 +159,14 @@ export default function EarthMotion({ date, setDate }) {
       el.appendChild(dot); el.appendChild(txt)
       layer.appendChild(el)
       const a = z.elon * Math.PI / 180
-      return { z, el, dot, v: new THREE.Vector3(Math.cos(a) * 26, 0, -Math.sin(a) * 26) }
+      return { z, el, dot, v: new THREE.Vector3(Math.cos(a) * 12.2, 0, -Math.sin(a) * 12.2) }
     })
 
     function resize() {
       const w = host.clientWidth
-      const h = Math.max(360, Math.round(w * 0.58))
+      if (!w) return
+      const cap = Math.round(window.innerHeight * (window.innerHeight < 860 ? 0.48 : 0.54))
+      const h = Math.max(280, Math.min(Math.round(w * 0.58), cap))
       renderer.setSize(w, h, false)
       renderer.domElement.style.width = w + 'px'
       renderer.domElement.style.height = h + 'px'
@@ -170,6 +176,7 @@ export default function EarthMotion({ date, setDate }) {
     resize()
     const ro = new ResizeObserver(resize)
     ro.observe(host)
+    window.addEventListener('resize', resize)
 
     const tmp = new THREE.Vector3()
     let raf = 0, prev = performance.now()
@@ -204,6 +211,7 @@ export default function EarthMotion({ date, setDate }) {
     return () => {
       cancelAnimationFrame(raf)
       ro.disconnect()
+      window.removeEventListener('resize', resize)
       controls.dispose()
       zLabels.forEach(l => l.el.remove())
       scene.traverse(o => {
@@ -245,7 +253,7 @@ export default function EarthMotion({ date, setDate }) {
             {fmtDateKST(shown)} · 공전 위치 {angleDeg.toFixed(0)}°
           </span>
         </div>
-        <input className="slider" type="range" min="0" max="364" step="1" value={dayOfYear}
+        <input className="slider" type="range" min="0" max={daysInYear(year) - 1} step="1" value={dayOfYear}
           onChange={e => { setOrbiting(false); setDayOfYear(Number(e.target.value)) }}
           aria-label="일 년 중 날짜" />
         <div className="toolrow" style={{ marginTop: 8 }}>

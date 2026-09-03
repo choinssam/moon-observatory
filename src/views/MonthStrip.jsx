@@ -1,11 +1,13 @@
 import React, { useEffect, useMemo, useRef, useState } from 'react'
 import MoonImage from '../lib/MoonImage.jsx'
+import { useViewport, moonSize } from '../lib/useViewport.js'
 import {
   Astronomy, SYNODIC, moonPhase01, phaseName, riseSetTransit,
   kstMidnight, addDays, fmtKST, fmtMD, searchPhase
 } from '../lib/astro.js'
 
 export default function MonthStrip({ date, setDate, obs, loc, big }) {
+  const vp = useViewport()
   const [cursor, setCursor] = useState(0)
   const [playing, setPlaying] = useState(false)
   const timer = useRef(0)
@@ -54,7 +56,7 @@ export default function MonthStrip({ date, setDate, obs, loc, big }) {
   }, [playing, days.length])
 
   const cur = days[Math.min(cursor, days.length - 1)] || days[0]
-  const bigR = big ? 128 : 108
+  const bigR = moonSize(vp, big, { min: 96, max: 210 })
 
   return (
     <>

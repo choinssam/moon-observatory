@@ -3,8 +3,8 @@ import { Astronomy, kstMidnight, fmtKST } from '../lib/astro.js'
 
 /* 적경(시), 적위(도), 밝기 */
 const UMA = [
-  { ko: '두베', ra: 11.062, dec: 61.751, m: 1.8 },
-  { ko: '메라크', ra: 11.031, dec: 56.382, m: 2.3 },
+  { ko: '두베', ra: 11.062, dec: 61.751, m: 1.8, pointer: true },
+  { ko: '메라크', ra: 11.031, dec: 56.382, m: 2.3, pointer: 'below' },
   { ko: '페크다', ra: 11.897, dec: 53.695, m: 2.4 },
   { ko: '메그레즈', ra: 12.257, dec: 57.033, m: 3.3 },
   { ko: '알리오트', ra: 12.900, dec: 55.960, m: 1.8 },
@@ -57,9 +57,27 @@ export default function StarMap({ date, setDate, obs, loc }) {
   const merak = placed[0].pts[1]
   const dubhe = placed[0].pts[0]
 
-  const sunAlt = Astronomy.Horizon(date, obs,
-    Astronomy.Equator(Astronomy.Body.Sun, date, obs, true, true).ra,
-    Astronomy.Equator(Astronomy.Body.Sun, date, obs, true, true).dec, 'normal').altitude
+  // 이름이 서로 겹치지 않게, 밝은 별부터 자리를 잡는다
+  const labels = useMemo(() => {
+    const all = []
+    placed.forEach(g => g.pts.forEach(s => {
+      if (s.alt < 0 || Math.abs(s.azn) > SPAN) return
+      if (!(s.polaris || s.pointer || s.m < 2.4)) return
+      all.push({ ...s, color: g.color, x: xOf(s.azn), y: yOf(s.alt) })
+    }))
+    const rank = s => (s.polaris ? 0 : s.pointer ? 1 : 2 + s.m)
+    all.sort((a, b) => rank(a) - rank(b))
+    const keep = []
+    for (const l of all) {
+      const dy = l.pointer === 'below' ? 30 : 0     // 메라크는 아래쪽에 적는다
+      if (keep.some(k => Math.abs(k.x - l.x) < 74 && Math.abs(k.y - (l.y + dy)) < 21)) continue
+      keep.push({ ...l, y: l.y + dy, below: l.pointer === 'below' })
+    }
+    return keep
+  }, [placed])
+
+  const sunEq = Astronomy.Equator(Astronomy.Body.Sun, date, obs, true, true)
+  const sunAlt = Astronomy.Horizon(date, obs, sunEq.ra, sunEq.dec, 'normal').altitude
   const dark = sunAlt < -12
 
   return (
@@ -106,22 +124,25 @@ export default function StarMap({ date, setDate, obs, loc }) {
                 const r = Math.max(2.2, 7.4 - s.m * 1.15)
                 return (
                   <g key={i}>
-                    <circle cx={xOf(s.azn)} cy={yOf(s.alt)} r={r + (s.polaris ? 4 : 0)}
+                    <circle cx={xOf(s.azn)} cy={yOf(s.alt)} r={r + (s.polaris ? 5 : 0)}
                       fill={s.polaris ? 'none' : '#fff'}
                       stroke={s.polaris ? 'var(--moon)' : 'none'} strokeWidth="2" />
                     {s.polaris && <circle cx={xOf(s.azn)} cy={yOf(s.alt)} r={r} fill="var(--moon)" />}
-                    {(s.polaris || s.m < 2.4) && (
-                      <text x={xOf(s.azn)} y={yOf(s.alt) - r - 8} textAnchor="middle"
-                        fill={s.polaris ? 'var(--moon)' : 'var(--text-2)'} fontSize="13"
-                        fontWeight={s.polaris ? 700 : 400}>{s.ko}</text>
-                    )}
                   </g>
                 )
               })}
             </g>
           ))}
 
-          <text x={W - PAD_R} y={PAD_T + 16} textAnchor="end" fill="var(--muted)" fontSize="13">
+          {labels.map((l, i) => (
+            <text key={i} x={l.x}
+              y={l.below ? l.y + 4 : l.y - Math.max(2.2, 7.4 - l.m * 1.15) - (l.polaris ? 15 : 9)}
+              textAnchor="middle" fill={l.polaris ? 'var(--moon)' : 'var(--text-2)'} fontSize="13"
+              fontWeight={l.polaris ? 700 : 400}
+              stroke="#070B16" strokeWidth="3.5" paintOrder="stroke">{l.ko}</text>
+          ))}
+
+          <text x={W - PAD_R - 10} y={PAD_T + 20} textAnchor="end" fill="var(--muted)" fontSize="13">
             {dark ? '하늘이 충분히 어둡습니다' : '아직 밝아 별이 보이지 않는 시각입니다'}
           </text>
         </svg>

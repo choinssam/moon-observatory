@@ -84,7 +84,9 @@ export default function MoonGlobe({ date }) {
 
     function resize() {
       const w = host.clientWidth
-      const h = Math.max(320, Math.round(w * 0.62))
+      if (!w) return
+      const cap = Math.round(window.innerHeight * (window.innerHeight < 860 ? 0.5 : 0.56))
+      const h = Math.max(280, Math.min(Math.round(w * 0.62), cap))
       renderer.setSize(w, h, false)
       renderer.domElement.style.width = w + 'px'
       renderer.domElement.style.height = h + 'px'
@@ -94,6 +96,7 @@ export default function MoonGlobe({ date }) {
     resize()
     const ro = new ResizeObserver(resize)
     ro.observe(host)
+    window.addEventListener('resize', resize)
 
     const tmp = new THREE.Vector3()
     const toCam = new THREE.Vector3()
@@ -122,19 +125,32 @@ export default function MoonGlobe({ date }) {
 
       const w = renderer.domElement.clientWidth
       const h = renderer.domElement.clientHeight
+      const placed = []
+      const cand = []
       for (const m of marks) {
         if (!st.labels) { m.el.style.display = 'none'; continue }
         tmp.copy(m.v).applyMatrix4(moon.matrixWorld)
         toCam.copy(camera.position).sub(tmp).normalize()
         const facing = tmp.clone().normalize().dot(toCam)
         const proj = tmp.clone().project(camera)
-        const visible = facing > 0.12 && proj.z < 1
-        m.el.style.display = visible ? 'flex' : 'none'
-        if (visible) {
-          m.el.style.left = ((proj.x * 0.5 + 0.5) * w) + 'px'
-          m.el.style.top = ((-proj.y * 0.5 + 0.5) * h) + 'px'
-          m.el.style.opacity = String(Math.min(1, facing * 2.2))
-        }
+        if (!(facing > 0.12 && proj.z < 1)) { m.el.style.display = 'none'; continue }
+        cand.push({
+          m, facing,
+          score: facing + (m.f.kind === 'apollo' ? -0.3 : 0),
+          x: (proj.x * 0.5 + 0.5) * w,
+          y: (-proj.y * 0.5 + 0.5) * h
+        })
+      }
+      // 정면에 가까운 것부터 자리를 잡고, 너무 붙는 이름은 숨긴다
+      cand.sort((a, b) => b.score - a.score)
+      for (const c of cand) {
+        const clash = placed.some(p => Math.abs(p.x - c.x) < 96 && Math.abs(p.y - c.y) < 20)
+        if (clash) { c.m.el.style.display = 'none'; continue }
+        placed.push(c)
+        c.m.el.style.display = 'flex'
+        c.m.el.style.left = c.x + 'px'
+        c.m.el.style.top = c.y + 'px'
+        c.m.el.style.opacity = String(Math.min(1, c.facing * 2.2))
       }
       raf = requestAnimationFrame(tick)
     }
@@ -143,6 +159,7 @@ export default function MoonGlobe({ date }) {
     return () => {
       cancelAnimationFrame(raf)
       ro.disconnect()
+      window.removeEventListener('resize', resize)
       controls.dispose()
       marks.forEach(m => m.el.remove())
       geo.dispose()

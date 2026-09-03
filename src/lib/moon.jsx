@@ -1,4 +1,3 @@
-import React from 'react'
 /* 달 모양(위상) 그리기 · 달 표면 지형 자료 */
 
 /**
@@ -15,18 +14,6 @@ export function moonPathD(r, p) {
   }
   const sw = c > 0 ? 1 : 0
   return `M0,${-r} A${r},${r} 0 0 0 0,${r} A${rx},${r} 0 0 ${sw} 0,${-r}`
-}
-
-/** 위상 아이콘 하나 (지구에서 본 달) */
-export function MoonDisc({ size = 64, phase = 0.5, lit = 'var(--moon)', dark = 'var(--shadow-side)', ring = true, id }) {
-  const r = size / 2 - 1
-  return (
-    <svg width={size} height={size} viewBox={`${-size / 2} ${-size / 2} ${size} ${size}`} aria-hidden="true">
-      <circle r={r} fill={dark} />
-      <path d={moonPathD(r, phase)} fill={lit} />
-      {ring && <circle r={r} fill="none" stroke="rgba(255,255,255,.16)" strokeWidth="1" />}
-    </svg>
-  )
 }
 
 /* ---------- 달 표면의 이름난 곳 (셀레노그래픽 위도·경도) ---------- */
