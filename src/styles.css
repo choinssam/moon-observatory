@@ -191,3 +191,12 @@ body[data-big="on"]{ --stage-max:52vh }
 .lbl.sky.group{font-size:.92em;font-weight:700;letter-spacing:.02em;opacity:.9}
 .lbl.sky.compass{font-size:1.05em;font-weight:700;color:var(--muted);letter-spacing:.06em}
 @media (pointer:coarse){ .fsbtn{min-height:40px} }
+
+.globe-sq:fullscreen{width:100vw!important;height:100vh!important;aspect-ratio:auto!important;border-radius:0;background:#05070E}
+.globe-sq:fullscreen canvas{width:100vw!important;height:100vh!important}
+
+/* ---------- 성취기준 표시 ---------- */
+.stdlist{margin:6px 0 0;padding:0;list-style:none;color:var(--text-2);font-size:.88em;display:flex;flex-direction:column;gap:2px}
+.stdlist b{color:var(--moon);font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-weight:600;font-size:.92em;margin-right:4px}
+.tabs button.extra{opacity:.62}
+.tabs button.extra[aria-selected="true"]{opacity:1}

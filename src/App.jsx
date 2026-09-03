@@ -12,22 +12,43 @@ import SeasonLab from './views/SeasonLab.jsx'
 import Tides from './views/Tides.jsx'
 import Eclipses from './views/Eclipses.jsx'
 
-const VIEWS = {
-  phase:   { ko: '위상 만들기',  std: '[4과13-01]', C: PhaseLab },
-  globe:   { ko: '달 표면',      std: '[4과13-01]', C: MoonGlobe },
-  tonight: { ko: '오늘의 달',    std: '[4과13-01]', C: Tonight },
-  month:   { ko: '한 달 보기',   std: '[4과13-01]', C: MonthStrip },
-  solar:   { ko: '태양계',       std: '[4과13-02]', C: SolarSystem },
-  stars:   { ko: '별자리',       std: '[4과13-03]', C: StarMap },
-  earth:   { ko: '지구의 운동',  std: '[6과12]',    C: EarthMotion },
-  season:  { ko: '계절 변화',    std: '[6과13]',    C: SeasonLab },
-  tide:    { ko: '밀물·썰물',    std: '[4과06-03]', C: Tides },
-  eclipse: { ko: '일식·월식',    std: '더 알아보기', extra: true, C: Eclipses }
+/* 2022 개정 과학과 교육과정 (교육부 고시 제2022-33호 [별책 9]) 성취기준 원문 */
+export const STD = {
+  '4과13-01': '달의 모양과 표면, 달의 위상변화를 관찰하여 밤하늘 관찰에 흥미를 가질 수 있다.',
+  '4과13-02': '태양계 구성원을 알고, 태양과 행성을 조사할 수 있다.',
+  '4과13-03': '별의 정의를 알고, 북극성 주변의 별자리를 관찰할 수 있다.',
+  '4과06-03': '밀물과 썰물의 차이를 알고, 갯벌의 가치와 보전의 필요성을 설득·홍보할 수 있다.',
+  '6과12-01': '하루 동안 태양과 별을 관찰하여 위치 변화의 규칙성을 찾을 수 있다.',
+  '6과12-02': '지구의 자전을 알고, 낮과 밤이 생기는 이유를 설명할 수 있다.',
+  '6과12-03': '지구의 공전을 알고, 계절에 따라 달라지는 별자리를 관찰할 수 있다.',
+  '6과13-01': '태양 고도 측정기로 하루 동안 태양 고도, 그림자 길이, 기온을 측정하여 이들의 관계를 찾을 수 있다.',
+  '6과13-02': '계절에 따른 태양의 남중 고도와 낮의 길이 사이의 관계를 자료에 근거하여 추론할 수 있다.',
+  '6과13-03': '계절 변화의 원인을 지구의 자전축이 기울어진 채 공전하는 것으로 설명할 수 있다.'
 }
+
+/* 학년에 따라 이름·성취기준이 달라진다. std 가 빈 학년에서는 '더 알아보기' */
+const VIEWS = {
+  phase:   { ko: '위상 만들기',  std: { 4: ['4과13-01'], 6: [] }, C: PhaseLab },
+  globe:   { ko: '달 표면',      std: { 4: ['4과13-01'] }, C: MoonGlobe },
+  tonight: { ko: { 4: '오늘의 달', 6: '하루의 태양과 달' }, std: { 4: ['4과13-01'], 6: ['6과12-01'] }, C: Tonight },
+  month:   { ko: '한 달 보기',   std: { 4: ['4과13-01'] }, C: MonthStrip },
+  solar:   { ko: '태양계',       std: { 4: ['4과13-02'] }, C: SolarSystem },
+  stars:   { ko: { 4: '별자리', 6: '계절별 별자리' }, std: { 4: ['4과13-03'], 6: ['6과12-01', '6과12-03'] }, C: StarMap },
+  earth:   { ko: '지구의 운동',  std: { 6: ['6과12-02', '6과12-03'] }, C: EarthMotion },
+  season:  { ko: '계절 변화',    std: { 6: ['6과13-01', '6과13-02', '6과13-03'] }, C: SeasonLab },
+  tide:    { ko: '밀물·썰물',    std: { 4: ['4과06-03'] }, C: Tides },
+  eclipse: { ko: '일식·월식',    std: {}, C: Eclipses }
+}
+const koOf = (id, g) => typeof VIEWS[id].ko === 'string' ? VIEWS[id].ko : VIEWS[id].ko[g]
+const stdOf = (id, g) => VIEWS[id].std[g] || []
 
 const ORDER = {
   '4': ['phase', 'globe', 'tonight', 'month', 'solar', 'stars', 'tide', 'eclipse'],
-  '6': ['earth', 'season', 'stars', 'solar', 'phase', 'tonight', 'tide', 'eclipse']
+  '6': ['earth', 'tonight', 'stars', 'season', 'phase', 'eclipse']
+}
+const GROUP = {
+  '4': '4학년 · 밤하늘 관찰 [4과13] · 지구와 바다 [4과06]',
+  '6': '6학년 · 지구의 운동 [6과12] · 계절의 변화 [6과13]'
 }
 
 function load(key, fallback) {
@@ -147,10 +168,12 @@ export default function App() {
       </div>
 
       <div className="tabs" role="tablist">
-        <span className="grp">{grade === '4' ? '4학년 · 밤하늘 관찰' : '6학년 · 지구의 운동'}</span>
+        <span className="grp">{GROUP[grade]}</span>
         {tabs.map(id => (
-          <button key={id} role="tab" aria-selected={tab === id} onClick={() => setTab(id)}>
-            {VIEWS[id].ko}
+          <button key={id} role="tab" aria-selected={tab === id} onClick={() => setTab(id)}
+            className={stdOf(id, grade).length ? '' : 'extra'}
+            title={stdOf(id, grade).length ? stdOf(id, grade).join(' ') : '성취기준 밖 · 더 알아보기'}>
+            {koOf(id, grade)}
           </button>
         ))}
       </div>
@@ -158,10 +181,19 @@ export default function App() {
       <main>
         <div className="view">
           <div className="vhead">
-            <h2>{VIEWS[tab].ko}<span className={VIEWS[tab].extra ? 'std extra' : 'std'}>{VIEWS[tab].std}</span></h2>
+            <h2>{koOf(tab, grade)}
+              {stdOf(tab, grade).length
+                ? stdOf(tab, grade).map(c => <span key={c} className="std">[{c}]</span>)
+                : <span className="std extra">더 알아보기</span>}
+            </h2>
             <p className="mono" style={{ color: 'var(--muted)' }}>
               {fmtDateKST(date)} · {loc.name} (북위 {loc.lat.toFixed(2)}° 동경 {loc.lon.toFixed(2)}°)
             </p>
+            {stdOf(tab, grade).length > 0 && (
+              <ul className="stdlist">
+                {stdOf(tab, grade).map(c => <li key={c}><b>[{c}]</b> {STD[c]}</li>)}
+              </ul>
+            )}
           </div>
           <View {...ctx} />
 

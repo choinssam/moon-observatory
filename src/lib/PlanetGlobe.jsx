@@ -8,7 +8,7 @@ const BASE = import.meta.env.BASE_URL
  * 실제 사진을 입힌 천체를 손으로 돌려보는 화면.
  * texture 는 public/planets/ 안의 파일 이름.
  */
-export default function PlanetGlobe({ texture, ring = false, tilt = 0, sun = false, height = 0.8 }) {
+export default function PlanetGlobe({ texture, ring = false, tilt = 0, sun = false, height = 0.8, fill = false }) {
   const hostRef = useRef(null)
   const cfg = useRef({ texture, ring, tilt, sun })
   cfg.current = { texture, ring, tilt, sun }
@@ -98,7 +98,8 @@ export default function PlanetGlobe({ texture, ring = false, tilt = 0, sun = fal
       const w = host.clientWidth
       if (!w) return
       const cap = Math.round(window.innerHeight * (window.innerHeight < 860 ? 0.42 : 0.48))
-      const h = Math.max(240, Math.min(Math.round(w * height), cap))
+      const h = fill ? host.clientHeight : Math.max(240, Math.min(Math.round(w * height), cap))
+      if (!h) return
       renderer.setSize(w, h, false)
       renderer.domElement.style.width = w + 'px'
       renderer.domElement.style.height = h + 'px'
@@ -134,7 +135,7 @@ export default function PlanetGlobe({ texture, ring = false, tilt = 0, sun = fal
       renderer.dispose()
       if (renderer.domElement.parentNode) renderer.domElement.parentNode.removeChild(renderer.domElement)
     }
-  }, [texture, ring, tilt, sun, height])
+  }, [texture, ring, tilt, sun, height, fill])
 
-  return <div ref={hostRef} style={{ position: 'relative', width: '100%' }} />
+  return <div ref={hostRef} style={{ position: 'relative', width: '100%', height: fill ? '100%' : undefined }} />
 }

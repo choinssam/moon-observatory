@@ -50,6 +50,10 @@ export default function SeasonLab({ date, setDate, obs, loc }) {
 
       <div className="card">
         <h3>하루 동안 태양의 고도 — 계절별로 겹쳐 보기</h3>
+        <p className="hint" style={{ margin: '0 0 8px' }}>
+          태양 고도가 높을수록 막대 그림자는 짧아집니다. 기온은 남중(낮 12시 30분쯤)보다 두세 시간 늦은 오후 2~3시에 가장 높습니다 —
+          땅과 공기가 데워지는 데 시간이 걸리기 때문입니다.
+        </p>
         <div style={{ overflowX: 'auto' }}>
           <svg viewBox={`0 0 ${CW} ${CH}`} style={{ width: '100%', minWidth: 560, height: 'auto' }}
             role="img" aria-label="계절별 태양 고도 곡선">

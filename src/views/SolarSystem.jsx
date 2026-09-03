@@ -40,7 +40,9 @@ export default function SolarSystem({ date }) {
   const [offset, setOffset] = useState(0)
   const [playing, setPlaying] = useState(false)
   const [picked, setPicked] = useState('지구')
+  const [fs, setFs] = useState(false)
   const raf = useRef(0)
+  const globeRef = useRef(null)
 
   useEffect(() => {
     if (!playing) return
@@ -54,6 +56,16 @@ export default function SolarSystem({ date }) {
     return () => cancelAnimationFrame(raf.current)
   }, [playing])
 
+  useEffect(() => {
+    const on = () => setFs(!!document.fullscreenElement)
+    document.addEventListener('fullscreenchange', on)
+    return () => document.removeEventListener('fullscreenchange', on)
+  }, [])
+  const toggleFs = () => {
+    if (document.fullscreenElement) document.exitFullscreen?.()
+    else globeRef.current?.requestFullscreen?.()
+  }
+
   const at = addDays(date, offset)
   const radiusOf = (p, i) => mode === 'real'
     ? 34 + (p.au / 30.07) * (RMAX - 34)
@@ -65,7 +77,7 @@ export default function SolarSystem({ date }) {
 
   return (
     <>
-      {/* 윗줄: 궤도 그림 | 고른 천체. 두 칸의 높이가 같도록 오른쪽 내용을 맞췄다 */}
+      {/* 윗줄: 궤도 그림 | 고른 천체 (정사각 사진 + 설명 + 숫자) */}
       <div className="grid" style={{ gridTemplateColumns: 'minmax(0,1fr) minmax(320px,1fr)', alignItems: 'stretch' }}>
         <div className="stage" style={{ display: 'flex', alignItems: 'center', minHeight: 0 }}>
           <svg viewBox={`0 0 ${W} ${H}`} style={{ width: '100%', height: '100%', maxHeight: 'none' }} role="img" aria-label="태양계">
@@ -116,36 +128,41 @@ export default function SolarSystem({ date }) {
         </div>
 
         <div className="card" style={{ padding: 0, overflow: 'hidden', display: 'flex', flexDirection: 'column', minWidth: 0 }}>
-          <PlanetGlobe texture={f.tex} ring={!!f.ring} tilt={f.tilt} sun={isSun} height={0.44} />
-          <div style={{ padding: '12px 16px 14px', display: 'flex', flexDirection: 'column', gap: 10, flex: 1 }}>
-            <div>
-              <h3 style={{ marginBottom: 6 }}>
-                {picked}
-                <span style={{ color: 'var(--muted)', fontWeight: 400, fontSize: '.8em' }}>끌어서 돌려보세요</span>
-              </h3>
+          <div style={{ display: 'flex', minHeight: 0, flexWrap: 'wrap' }}>
+            {/* 행성은 둥글다 — 보기 칸도 정사각형으로 */}
+            <div ref={globeRef} className="globe-sq"
+              style={{ flex: '1 1 300px', maxWidth: '62%', aspectRatio: '1 / 1', position: 'relative', background: '#05070E' }}>
+              <PlanetGlobe texture={f.tex} ring={!!f.ring} tilt={f.tilt} sun={isSun} fill />
+              <button className="fsbtn" onClick={toggleFs} aria-label={fs ? '전체 화면 닫기' : '전체 화면으로 보기'}>
+                {fs ? '✕ 닫기' : '⛶ 전체 화면'}
+              </button>
+            </div>
+            <div style={{ flex: '1 1 180px', padding: '14px 16px 8px', display: 'flex', flexDirection: 'column', gap: 8, minWidth: 0 }}>
+              <h3 style={{ marginBottom: 0 }}>{picked}</h3>
               <p style={{ color: 'var(--text-2)', fontSize: '.92em', margin: 0 }}>{f.note}</p>
+              <p className="hint" style={{ marginTop: 'auto' }}>끌어서 돌리고, 휠로 확대합니다. 전체 화면으로 크게 볼 수도 있습니다.</p>
             </div>
-            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3,minmax(0,1fr))', gap: 8, marginTop: 'auto' }}>
-              {sel && <>
-                <Fact k="지름" v={sel.dia.toLocaleString() + ' km'} />
-                <Fact k="지구의 몇 배" v={(sel.dia / 12756).toFixed(2) + '배'} />
-                <Fact k="태양까지 거리" v={sel.au.toFixed(2) + ' AU'} />
-              </>}
-              {isSun && <>
-                <Fact k="지름" v="1,392,700 km" />
-                <Fact k="지구의 몇 배" v="109배" />
-                <Fact k="표면 온도" v="약 5,500 ℃" />
-              </>}
-              {f.period && <Fact k="공전 주기" v={f.period < 1 ? (f.period * 365.25).toFixed(0) + '일' : f.period + '년'} />}
-              <Fact k="자전 주기" v={f.day} />
-              <Fact k="자전축 기울기" v={f.tilt + '°'} />
-            </div>
+          </div>
+          <div style={{ padding: '10px 16px 16px', marginTop: 'auto', display: 'grid', gridTemplateColumns: 'repeat(3,minmax(0,1fr))', gap: 8 }}>
+            {sel && <>
+              <Fact k="지름" v={sel.dia.toLocaleString() + ' km'} />
+              <Fact k="지구의 몇 배" v={(sel.dia / 12756).toFixed(2) + '배'} />
+              <Fact k="태양까지 거리" v={sel.au.toFixed(2) + ' AU'} />
+            </>}
+            {isSun && <>
+              <Fact k="지름" v="1,392,700 km" />
+              <Fact k="지구의 몇 배" v="109배" />
+              <Fact k="표면 온도" v="약 5,500 ℃" />
+            </>}
+            {f.period && <Fact k="공전 주기" v={f.period < 1 ? (f.period * 365.25).toFixed(0) + '일' : f.period + '년'} />}
+            <Fact k="자전 주기" v={f.day} />
+            <Fact k="자전축 기울기" v={f.tilt + '°'} />
           </div>
         </div>
       </div>
 
-      {/* 아랫줄: 궤도 그림을 움직이는 도구 | 크기 비교 */}
-      <div className="grid" style={{ gridTemplateColumns: 'minmax(0,1fr) minmax(320px,1fr)', alignItems: 'stretch' }}>
+      {/* 아랫줄: 궤도 그림 도구 | 크기 비교 | 태양계의 다른 식구들 */}
+      <div className="grid" style={{ gridTemplateColumns: 'repeat(auto-fit,minmax(300px,1fr))', alignItems: 'stretch' }}>
         <div className="card">
           <h3>궤도 그림 움직이기</h3>
           <div className="toolrow">
@@ -167,7 +184,7 @@ export default function SolarSystem({ date }) {
         <div className="card">
           <h3>크기 비교 (실제 비율)</h3>
           <div style={{ overflowX: 'auto' }}>
-            <svg viewBox="0 0 440 100" style={{ width: '100%', minWidth: 380, height: 'auto', maxHeight: 150 }}
+            <svg viewBox="0 0 440 100" style={{ width: '100%', minWidth: 300, height: 'auto', maxHeight: 150 }}
               role="img" aria-label="행성 크기 비교">
               {(() => {
                 let x = 6
@@ -191,6 +208,20 @@ export default function SolarSystem({ date }) {
             </svg>
           </div>
           <p className="hint">행성 사진은 실제 탐사선이 찍은 자료로 만든 지도입니다. 여기서 눌러도 골라집니다.</p>
+        </div>
+
+        <div className="card">
+          <h3>태양계의 다른 식구들</h3>
+          <div className="rows">
+            <div className="r"><span>위성</span><b>행성 둘레를 도는 천체 · 달</b></div>
+            <div className="r"><span>왜소행성</span><b>명왕성 · 세레스</b></div>
+            <div className="r"><span>소행성</span><b>화성과 목성 사이에 많음</b></div>
+            <div className="r"><span>혜성</span><b>얼음과 먼지 · 긴 꼬리</b></div>
+          </div>
+          <p className="hint">
+            태양계는 태양과 8개 행성만이 아닙니다. 행성 둘레를 도는 위성, 명왕성 같은 왜소행성,
+            수많은 소행성과 혜성이 모두 태양의 힘에 붙들려 함께 돕니다.
+          </p>
         </div>
       </div>
     </>
