@@ -84,26 +84,49 @@ export function moonAge(date) {
  * 근거: 초등과학교육 44(1), 2025, 교과서 7종 분석 / 교육부 고시 제2022-33호 [별책 9]
  */
 export const PHASE_NAMES = ['초승달', '상현달', '보름달', '하현달', '그믐달']
+
+/*
+ * 초등 교과서에 이름이 없다고 해서 이름이 없는 것은 아니다.
+ * 중등 이상에서 쓰는 정식 용어를 함께 적어 둔다 — 아이가 물으면 답해 줄 수 있게.
+ * 여덟 위상: 삭 · 초승달 · 상현 · 상현망간달 · 망 · 하현망간달 · 하현 · 그믐달
+ */
 const NAMED = [
-  { c: 0.125, ko: '초승달', w: 0.055 },
-  { c: 0.250, ko: '상현달', w: 0.045 },
-  { c: 0.500, ko: '보름달', w: 0.070 },
-  { c: 0.750, ko: '하현달', w: 0.045 },
-  { c: 0.875, ko: '그믐달', w: 0.055 }
+  { c: 0.125, ko: '초승달', w: 0.055, term: '신월(新月)' },
+  { c: 0.250, ko: '상현달', w: 0.045, term: '상현(上弦)' },
+  { c: 0.500, ko: '보름달', w: 0.070, term: '망(望) · 만월' },
+  { c: 0.750, ko: '하현달', w: 0.045, term: '하현(下弦)' },
+  { c: 0.875, ko: '그믐달', w: 0.055, term: '' }
 ]
 
-/** 교과서에 있는 다섯 이름 중 하나, 그 사이면 '무엇과 무엇 사이'로 말한다. */
-export function phaseName(p) {
+/** 초등 교과서 이름과 정식 용어를 함께 돌려준다. */
+export function phaseInfo(p) {
   const x = ((p % 1) + 1) % 1
-  if (x < 0.025 || x > 0.975) return '달이 보이지 않는 때'
-  for (const n of NAMED) if (Math.abs(x - n.c) <= n.w) return n.ko
-  if (x < 0.125) return '초승달이 되기 전'
-  if (x < 0.250) return '초승달과 상현달 사이'
-  if (x < 0.500) return '상현달과 보름달 사이'
-  if (x < 0.750) return '보름달과 하현달 사이'
-  if (x < 0.875) return '하현달과 그믐달 사이'
-  return '그믐달이 지난 뒤'
+  if (x < 0.025 || x > 0.975) return { ko: '달이 보이지 않는 때', term: '삭(朔)' }
+  for (const n of NAMED) if (Math.abs(x - n.c) <= n.w) return { ko: n.ko, term: n.term }
+  if (x < 0.125) return { ko: '초승달이 되기 전', term: '삭 직후' }
+  if (x < 0.250) return { ko: '초승달과 상현달 사이', term: '' }
+  if (x < 0.500) return { ko: '상현달과 보름달 사이', term: '상현망간달' }
+  if (x < 0.750) return { ko: '보름달과 하현달 사이', term: '하현망간달' }
+  if (x < 0.875) return { ko: '하현달과 그믐달 사이', term: '' }
+  return { ko: '그믐달이 지난 뒤', term: '삭 직전' }
 }
+
+/** 교과서에 있는 다섯 이름 중 하나, 그 사이면 '무엇과 무엇 사이'로 말한다. */
+export function phaseName(p) { return phaseInfo(p).ko }
+/** 중등 이상에서 쓰는 정식 용어 (없으면 빈 문자열) */
+export function phaseTerm(p) { return phaseInfo(p).term }
+
+/** 초등 이름 ↔ 정식 용어 대조. 화면에 표로 보여 준다. */
+export const TERM_TABLE = [
+  { ko: '달이 보이지 않는 때', term: '삭(朔)', lunar: '음력 1일쯤', note: '태양과 같은 방향이라 안 보임' },
+  { ko: '초승달', term: '신월(新月)', lunar: '음력 3~6일', note: '초저녁 서쪽 하늘' },
+  { ko: '상현달', term: '상현(上弦)', lunar: '음력 8일쯤', note: '오른쪽 반달' },
+  { ko: '(이름 없음)', term: '상현망간달', lunar: '음력 11~14일', note: '반달보다 크고 보름달보다 작음' },
+  { ko: '보름달', term: '망(望) · 만월', lunar: '음력 15일쯤', note: '밤새 보임' },
+  { ko: '(이름 없음)', term: '하현망간달', lunar: '음력 18~21일', note: '보름달의 오른쪽이 이지러짐' },
+  { ko: '하현달', term: '하현(下弦)', lunar: '음력 22~23일', note: '왼쪽 반달' },
+  { ko: '그믐달', term: '', lunar: '음력 26~28일', note: '새벽 동쪽 하늘 · 삭과 다름' }
+]
 
 /** 교과서가 쓰는 음력 날짜. 음력 1일이 달이 보이지 않는 날이다. */
 const DANGI = new Intl.DateTimeFormat('ko-KR-u-ca-dangi', {

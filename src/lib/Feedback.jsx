@@ -6,7 +6,7 @@ import { fmtKST } from './astro.js'
  * 서버가 없는 정적 사이트라 메일로 보낸다. 어느 기기에서나 되고 가입도 필요 없다.
  * 보내는 사람이 굳이 적지 않아도 되도록, 어느 화면에서 무엇을 보고 있었는지를 자동으로 붙인다.
  */
-const TO = 'ksb6857@gmail.com'
+const TO = 'choinssam@gmail.com'
 const REPO = 'https://github.com/choinssam/moon-observatory/issues/new'
 
 const KINDS = [

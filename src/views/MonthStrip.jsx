@@ -2,7 +2,7 @@ import React, { useEffect, useMemo, useRef, useState } from 'react'
 import MoonImage from '../lib/MoonImage.jsx'
 import { useViewport, moonSize } from '../lib/useViewport.js'
 import {
-  Astronomy, SYNODIC, moonPhase01, phaseName, lunarDate, riseSetTransit,
+  Astronomy, SYNODIC, moonPhase01, phaseName, phaseTerm, TERM_TABLE, lunarDate, riseSetTransit,
   kstMidnight, addDays, fmtKST, fmtMD, searchPhase
 } from '../lib/astro.js'
 
@@ -67,7 +67,9 @@ export default function MonthStrip({ date, setDate, obs, loc, big }) {
       <div className="grid" style={{ gridTemplateColumns: 'minmax(250px,300px) minmax(0,1fr)' }}>
         <div className="card center" style={{ flexDirection: 'column', gap: 10 }}>
           <MoonImage size={bigR} phase={cur.p} elat={cur.lib.elat} elon={cur.lib.elon} />
-          <div className="big" style={{ color: 'var(--moon)' }}>{phaseName(cur.p)}</div>
+          <div className="big" style={{ color: 'var(--moon)' }}>
+            {phaseName(cur.p)}{phaseTerm(cur.p) && <span className="term">{phaseTerm(cur.p)}</span>}
+          </div>
           <div className="rows" style={{ width: '100%' }}>
             <div className="r"><span>날짜</span><b>{fmtMD(cur.date)}</b></div>
             <div className="r"><span>음력</span><b>{lunarDate(cur.date)?.ko || '—'}</b></div>

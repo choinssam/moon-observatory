@@ -2,7 +2,7 @@
 
 **바로 열기 → https://choinssam.github.io/moon-observatory/**
 
-만든 사람 **초인쌤** · 문의 ksb6857@gmail.com
+만든 사람 **초인쌤** · 문의 choinssam@gmail.com
 [![License: CC BY-NC-SA 4.0](https://img.shields.io/badge/License-CC%20BY--NC--SA%204.0-c08a2e.svg)](LICENSE)
 
 초등 과학 **밤하늘 관찰** 단원을 교실에서 그대로 다룰 수 있게 만든 한국어 시뮬레이터입니다.
@@ -137,7 +137,7 @@ npm run build   # dist/ 에 정적 파일 생성
 | 고쳐서 우리 학교용으로 만들기 | 고쳐서 배포할 땐 같은 라이선스 붙이기 |
 | 연수 자료로 쓰기 | |
 
-상업적으로 쓰고 싶으면 ksb6857@gmail.com 으로 따로 문의해 주세요.
+상업적으로 쓰고 싶으면 choinssam@gmail.com 으로 따로 문의해 주세요.
 NASA 달 이미지는 public domain 이라 이 비영리 조건의 적용을 받지 않습니다.
 
 한국어로 풀어 쓴 안내는 [저작권-안내.md](저작권-안내.md) 에 있습니다.
@@ -148,7 +148,7 @@ NASA 달 이미지는 public domain 이라 이 비영리 조건의 적용을 받
 
 수업에 쓰다가 이상한 점을 찾았거나, 이런 화면이 있으면 좋겠다는 생각이 들면 알려주세요.
 
-- 메일: **ksb6857@gmail.com** (초인쌤)
+- 메일: **choinssam@gmail.com** (초인쌤)
 - 또는 이 저장소의 [Issues](https://github.com/choinssam/moon-observatory/issues) 에 남겨주세요
 
 ## 화면 크기 대응

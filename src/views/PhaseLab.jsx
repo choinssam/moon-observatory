@@ -2,16 +2,16 @@ import React, { useEffect, useRef, useState } from 'react'
 import { moonPathD } from '../lib/moon.jsx'
 import MoonImage from '../lib/MoonImage.jsx'
 import { useViewport, moonSize } from '../lib/useViewport.js'
-import { SYNODIC, moonPhase01, phaseName, phaseTip, fmtDateKST, Astronomy } from '../lib/astro.js'
+import { SYNODIC, moonPhase01, phaseName, phaseTerm, phaseTip, TERM_TABLE, fmtDateKST, Astronomy } from '../lib/astro.js'
 
 /* 교과서에 나오는 다섯 이름 + 달이 보이지 않는 때. '삭·망·볼록달'은 초등 용어가 아니다. */
 const SNAPS = [
-  { p: 0,     ko: '안 보임' },
-  { p: 0.125, ko: '초승달' },
-  { p: 0.25,  ko: '상현달' },
-  { p: 0.5,   ko: '보름달' },
-  { p: 0.75,  ko: '하현달' },
-  { p: 0.875, ko: '그믐달' }
+  { p: 0,     ko: '안 보임', term: '삭' },
+  { p: 0.125, ko: '초승달',  term: '신월' },
+  { p: 0.25,  ko: '상현달',  term: '상현' },
+  { p: 0.5,   ko: '보름달',  term: '망' },
+  { p: 0.75,  ko: '하현달',  term: '하현' },
+  { p: 0.875, ko: '그믐달',  term: '' }
 ]
 
 const W = 620, H = 430, cx = 330, cy = 215, R = 150
@@ -140,7 +140,9 @@ export default function PhaseLab({ date, big }) {
           <div style={{ color: 'var(--muted)', fontSize: '.86em' }}>지구에서 올려다본 달</div>
           <MoonImage size={discR} phase={p} elat={lib.elat} elon={lib.elon} />
           <div style={{ textAlign: 'center' }}>
-            <div className="big" style={{ color: 'var(--moon)' }}>{phaseName(p)}</div>
+            <div className="big" style={{ color: 'var(--moon)' }}>
+              {phaseName(p)}{phaseTerm(p) && <span className="term">{phaseTerm(p)}</span>}
+            </div>
             <div className="mono" style={{ color: 'var(--muted)' }}>
               달의 나이 {age.toFixed(1)}일 · 밝은 부분 {(illum * 100).toFixed(0)}%
             </div>
@@ -163,6 +165,7 @@ export default function PhaseLab({ date, big }) {
             {SNAPS.map(s => (
               <button key={s.p} className={'btn' + (Math.abs(p - s.p) < 0.02 ? ' on' : '')}
                 style={{ padding: '6px 10px' }}
+                title={s.term ? `${s.ko} · 정식 용어 ${s.term}` : s.ko}
                 onClick={() => { setPlaying(false); setP(s.p) }}>
                 <span style={{ display: 'inline-flex', alignItems: 'center', gap: 6 }}>
                   <svg width="15" height="15" viewBox="-8 -8 16 16">
@@ -193,6 +196,40 @@ export default function PhaseLab({ date, big }) {
           달이 지구를 돌면서 지구에서 보는 각도가 달라지기 때문에 모양이 달라 보입니다.
           이 되풀이가 <b>약 30일</b>마다 한 바퀴입니다. 정확히는 {SYNODIC.toFixed(1)}일이어서, 음력 한 달은 29일 또는 30일이 됩니다.
           오른쪽 달은 오늘({fmtDateKST(date)})의 실제 기울기를 적용해 그린 것입니다.
+        </p>
+      </div>
+
+      <div className="card">
+        <h3>달 모양의 이름
+          <span style={{ color: 'var(--muted)', fontWeight: 400, fontSize: '.86em' }}>
+            초등 교과서 이름과 정식 용어
+          </span>
+        </h3>
+        <p className="hint" style={{ margin: '0 0 10px' }}>
+          초등 교과서는 <b>초승달·상현달·보름달·하현달·그믐달</b> 다섯 이름만 씁니다.
+          교과서에 이름이 없다고 해서 이름이 없는 것은 아니어서, 중등 이상에서 쓰는 정식 용어를 함께 적었습니다.
+          아이가 물으면 답해 주시라고 둔 것이고, <b>수업에서 가르쳐야 하는 것은 왼쪽 다섯 이름</b>입니다.
+        </p>
+        <div style={{ overflowX: 'auto' }}>
+          <table className="termtable">
+            <thead>
+              <tr><th>초등 교과서</th><th>정식 용어</th><th>음력</th><th>어떻게 보이나</th></tr>
+            </thead>
+            <tbody>
+              {TERM_TABLE.map((t, i) => (
+                <tr key={i}>
+                  <td style={{ color: t.ko.startsWith('(') ? 'var(--muted)' : 'var(--moon)', fontWeight: 600 }}>{t.ko}</td>
+                  <td className="mono">{t.term || '—'}</td>
+                  <td className="mono" style={{ color: 'var(--text-2)' }}>{t.lunar}</td>
+                  <td style={{ color: 'var(--text-2)' }}>{t.note}</td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+        <p className="hint">
+          <b style={{ color: 'var(--warn)' }}>주의</b> — 삭과 그믐달은 다릅니다.
+          삭은 달이 아예 보이지 않는 때(음력 1일쯤)이고, 그믐달은 그보다 며칠 앞서 새벽 동쪽 하늘에 가늘게 보이는 달입니다.
         </p>
       </div>
     </>

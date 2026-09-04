@@ -223,3 +223,12 @@ body[data-big="on"]{ --stage-max:52vh }
 .fb-ctx summary{cursor:pointer}
 .fb-ctx pre{white-space:pre-wrap;word-break:break-all;background:var(--panel-2);border-radius:9px;
   padding:9px 11px;margin:7px 0 0;font-size:.92em;color:var(--text-2)}
+
+/* ---------- 정식 용어 병기 · 용어 대조표 ---------- */
+.big .term{font-size:.46em;font-weight:600;color:var(--muted);margin-left:9px;letter-spacing:0;
+  vertical-align:middle;white-space:nowrap}
+.termtable{border-collapse:collapse;width:100%;min-width:520px;font-size:.9em}
+.termtable th,.termtable td{text-align:left;padding:8px 11px;border-bottom:1px solid var(--line-soft)}
+.termtable th{color:var(--muted);font-weight:600;font-size:.88em;border-bottom-color:var(--line)}
+.termtable tbody tr:last-child td{border-bottom:0}
+.termtable tbody tr:hover{background:var(--panel-2)}
