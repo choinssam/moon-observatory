@@ -1,4 +1,5 @@
 import React, { useMemo, useState } from 'react'
+import More from '../lib/More.jsx'
 import { moonPathD } from '../lib/moon.jsx'
 import MoonImage from '../lib/MoonImage.jsx'
 import { useViewport, moonSize } from '../lib/useViewport.js'
@@ -248,6 +249,7 @@ export default function Tonight({ date, setDate, obs, loc, big, grade }) {
         </div>
       </div>
 
+      <More title="뜨고 지는 시각 자세히" count="3">
       <div className="grid" style={{ gridTemplateColumns: 'repeat(auto-fit,minmax(250px,1fr))' }}>
         {sunMode ? (
           <div className="card">
@@ -303,6 +305,7 @@ export default function Tonight({ date, setDate, obs, loc, big, grade }) {
           </p>
         </div>
       </div>
+      </More>
     </>
   )
 }

@@ -2,6 +2,7 @@ import React, { useEffect, useMemo, useState } from 'react'
 import { REGIONS, makeObserver, fmtDateKST, kstMidnight } from './lib/astro.js'
 
 import Feedback from './lib/Feedback.jsx'
+import { ExpandAll } from './lib/More.jsx'
 import PhaseLab from './views/PhaseLab.jsx'
 import MoonGlobe from './views/MoonGlobe.jsx'
 import Tonight from './views/Tonight.jsx'
@@ -73,6 +74,7 @@ export default function App() {
   const [grade, setGrade] = useState(() => load('grade', '4'))
   const [big, setBig] = useState(() => load('big', false))
   const [feedback, setFeedback] = useState(false)
+  const [expand, setExpand] = useState(() => load('expand', false))
   const [locName, setLocName] = useState(() => load('locName', '서울'))
   const [custom, setCustom] = useState(() => load('custom', { lat: 37.5665, lon: 126.978 }))
   const [date, setDate] = useState(() => new Date())
@@ -80,6 +82,7 @@ export default function App() {
 
   useEffect(() => { save('grade', grade) }, [grade])
   useEffect(() => { save('big', big) }, [big])
+  useEffect(() => { save('expand', expand) }, [expand])
   useEffect(() => { save('locName', locName) }, [locName])
   useEffect(() => { save('custom', custom) }, [custom])
   useEffect(() => { document.body.dataset.big = big ? 'on' : 'off' }, [big])
@@ -165,6 +168,8 @@ export default function App() {
         )}
 
         <div className="spacer" />
+        <button className={'btn' + (expand ? ' on' : '')} onClick={() => setExpand(!expand)}
+          title="접어 둔 설명을 모두 펼칩니다">설명 펼치기</button>
         <button className={'btn' + (big ? ' on' : '')} onClick={() => setBig(!big)}
           title="전자칠판에서 뒷자리까지 보이도록 글씨를 키웁니다">큰 글씨</button>
       </div>
@@ -192,12 +197,15 @@ export default function App() {
               {fmtDateKST(date)} · {loc.name} (북위 {loc.lat.toFixed(2)}° 동경 {loc.lon.toFixed(2)}°)
             </p>
             {stdOf(tab, grade).length > 0 && (
-              <ul className="stdlist">
-                {stdOf(tab, grade).map(c => <li key={c}><b>[{c}]</b> {STD[c]}</li>)}
-              </ul>
+              <details className="stdbox">
+                <summary>성취기준 보기</summary>
+                <ul className="stdlist">
+                  {stdOf(tab, grade).map(c => <li key={c}><b>[{c}]</b> {STD[c]}</li>)}
+                </ul>
+              </details>
             )}
           </div>
-          <View {...ctx} />
+          <ExpandAll.Provider value={expand}><View {...ctx} /></ExpandAll.Provider>
 
           <footer style={{
             marginTop: 22, paddingTop: 14, borderTop: '1px solid var(--line)',

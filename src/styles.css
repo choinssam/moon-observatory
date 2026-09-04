@@ -232,3 +232,30 @@ body[data-big="on"]{ --stage-max:52vh }
 .termtable th{color:var(--muted);font-weight:600;font-size:.88em;border-bottom-color:var(--line)}
 .termtable tbody tr:last-child td{border-bottom:0}
 .termtable tbody tr:hover{background:var(--panel-2)}
+
+/* ---------- 접어 둔 설명 ---------- */
+.more{display:flex;flex-direction:column;gap:14px}
+.more-head{
+  align-self:flex-start;display:inline-flex;align-items:center;gap:8px;
+  background:var(--panel);border:1px solid var(--line);border-radius:999px;
+  padding:9px 17px;cursor:pointer;color:var(--text-2);font-weight:600;font-size:.92em;
+}
+.more-head:hover{color:var(--text);border-color:var(--muted)}
+.more-head:focus-visible{outline:2px solid var(--sky);outline-offset:2px}
+.more-mark{color:var(--muted);transition:transform .16s;display:inline-block}
+.more.open .more-mark{transform:rotate(90deg)}
+.more.open .more-head{color:var(--moon);border-color:var(--moon)}
+.more-count{background:var(--panel-2);border-radius:999px;padding:1px 8px;font-size:.85em;color:var(--muted)}
+
+/* 성취기준은 선생님용 — 접어 둔다 */
+.stdbox{margin-top:6px}
+.stdbox summary{
+  display:inline-flex;align-items:center;gap:6px;cursor:pointer;color:var(--muted);
+  font-size:.86em;padding:3px 0;list-style:none;
+}
+.stdbox summary::-webkit-details-marker{display:none}
+.stdbox summary::before{content:'▸';transition:transform .16s;display:inline-block}
+.stdbox[open] summary::before{transform:rotate(90deg)}
+.stdbox summary:hover{color:var(--text-2)}
+.stdbox .stdlist{margin-top:5px}
+@media (pointer:coarse){ .more-head{min-height:44px} }

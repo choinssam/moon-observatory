@@ -1,4 +1,5 @@
 import React, { useEffect, useMemo, useRef, useState } from 'react'
+import More from '../lib/More.jsx'
 import MoonImage from '../lib/MoonImage.jsx'
 import { useViewport, moonSize } from '../lib/useViewport.js'
 import {
@@ -121,6 +122,7 @@ export default function MonthStrip({ date, setDate, obs, loc, big }) {
         </div>
       </div>
 
+      <More title="무엇이 되풀이될까">
       <div className="card">
         <h3>무엇이 되풀이될까</h3>
         <p style={{ color: 'var(--text-2)', margin: 0, fontSize: '.95em' }}>
@@ -129,6 +131,7 @@ export default function MonthStrip({ date, setDate, obs, loc, big }) {
           모양뿐 아니라 <b>뜨는 시각</b>도 규칙적으로 늦어진다는 점을 함께 보면 좋습니다.
         </p>
       </div>
+      </More>
     </>
   )
 }

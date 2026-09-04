@@ -1,6 +1,7 @@
 import React, { useEffect, useRef, useState } from 'react'
 import { PLANETS, planetXY, addDays, fmtDateKST } from '../lib/astro.js'
 import PlanetGlobe from '../lib/PlanetGlobe.jsx'
+import More from '../lib/More.jsx'
 
 const FACTS = {
   태양: { tex: 'sun.jpg', tilt: 7.2, day: '25일 (적도)', period: null,
@@ -187,12 +188,7 @@ export default function SolarSystem({ date }) {
             </button>
             <button className="btn" onClick={() => { setPlaying(false); setOffset(0) }}>오늘로</button>
           </div>
-          <p className="hint">
-            행성 위치는 오늘의 실제 위치입니다. 실제 비율로 보면 안쪽 네 행성이 태양 가까이 몰려 있습니다 — 태양계는 거의 텅 빈 공간입니다.
-            1 AU = 태양과 지구 사이 거리 약 1억 5천만 km.
-            돌려보기에서 <b>수성이 어떤 곳에서는 빨리, 어떤 곳에서는 천천히</b> 가는 것은 실제 위치를 그대로 그렸기 때문입니다.
-            수성 궤도는 찌그러진 타원이라 태양에 가까운 쪽에서 더 빨리 돕니다(케플러의 법칙).
-          </p>
+          <p className="hint">행성 위치는 오늘의 실제 위치입니다.</p>
         </div>
 
         <div className="card">
@@ -223,21 +219,36 @@ export default function SolarSystem({ date }) {
           </div>
           <p className="hint">행성 사진은 실제 탐사선이 찍은 자료로 만든 지도입니다. 여기서 눌러도 골라집니다.</p>
         </div>
-
-        <div className="card">
-          <h3>태양계의 다른 식구들</h3>
-          <div className="rows">
-            <div className="r"><span>위성</span><b>행성 둘레를 도는 천체 · 달</b></div>
-            <div className="r"><span>왜소행성</span><b>명왕성 · 세레스</b></div>
-            <div className="r"><span>소행성</span><b>화성과 목성 사이에 많음</b></div>
-            <div className="r"><span>혜성</span><b>얼음과 먼지 · 긴 꼬리</b></div>
-          </div>
-          <p className="hint">
-            태양계는 태양과 8개 행성만이 아닙니다. 행성 둘레를 도는 위성, 명왕성 같은 왜소행성,
-            수많은 소행성과 혜성이 모두 태양의 힘에 붙들려 함께 돕니다.
-          </p>
-        </div>
       </div>
+
+      <More title="더 알아보기 — 태양계의 다른 식구들 · 거리와 빠르기" count="2">
+        <div className="grid" style={{ gridTemplateColumns: 'repeat(auto-fit,minmax(300px,1fr))' }}>
+          <div className="card">
+            <h3>태양계의 다른 식구들</h3>
+            <div className="rows">
+              <div className="r"><span>위성</span><b>행성 둘레를 도는 천체 · 달</b></div>
+              <div className="r"><span>왜소행성</span><b>명왕성 · 세레스</b></div>
+              <div className="r"><span>소행성</span><b>화성과 목성 사이에 많음</b></div>
+              <div className="r"><span>혜성</span><b>얼음과 먼지 · 긴 꼬리</b></div>
+            </div>
+            <p className="hint">
+              태양계는 태양과 8개 행성만이 아닙니다. 행성 둘레를 도는 위성, 명왕성 같은 왜소행성,
+              수많은 소행성과 혜성이 모두 태양의 힘에 붙들려 함께 돕니다.
+            </p>
+          </div>
+          <div className="card">
+            <h3>거리와 빠르기</h3>
+            <p style={{ color: 'var(--text-2)', margin: 0, fontSize: '.94em' }}>
+              '실제 비율'로 보면 안쪽 네 행성이 태양 가까이 몰려 있습니다 — 태양계는 거의 텅 빈 공간입니다.
+              1 AU는 태양과 지구 사이 거리로 약 1억 5천만 km입니다.
+            </p>
+            <p className="hint">
+              돌려보기에서 <b>수성이 어떤 곳에서는 빨리, 어떤 곳에서는 천천히</b> 가는 것은 실제 위치를 그대로 그렸기 때문입니다.
+              수성 궤도는 찌그러진 타원이라 태양에 가까운 쪽에서 더 빨리 돕니다(케플러의 법칙).
+            </p>
+          </div>
+        </div>
+      </More>
     </>
   )
 }

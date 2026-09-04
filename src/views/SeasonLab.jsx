@@ -1,4 +1,5 @@
 import React, { useMemo } from 'react'
+import More from '../lib/More.jsx'
 import {
   Astronomy, yearSunProfile, seasonsOf, dayTrack, riseSetTransit,
   horizonOf, kstMidnight, fmtKST
@@ -173,6 +174,7 @@ export default function SeasonLab({ date, setDate, obs, loc }) {
         </div>
       </div>
 
+      <More title="계절이 바뀌는 까닭">
       <div className="card">
         <h3>계절이 바뀌는 까닭</h3>
         <p style={{ color: 'var(--text-2)', margin: 0, fontSize: '.95em' }}>
@@ -183,6 +185,7 @@ export default function SeasonLab({ date, setDate, obs, loc }) {
           <b> 지구의 운동</b> 화면에서 기울기를 0°로 바꿔 확인해 보세요.
         </p>
       </div>
+      </More>
     </>
   )
 }

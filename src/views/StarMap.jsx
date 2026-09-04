@@ -2,6 +2,7 @@ import React, { useEffect, useMemo, useRef, useState } from 'react'
 import * as THREE from 'three'
 import { Astronomy, kstMidnight, fmtKST } from '../lib/astro.js'
 import { useViewport } from '../lib/useViewport.js'
+import More from '../lib/More.jsx'
 
 /* ---------- 별 자료: 적경(시), 적위(도), 밝기. lbl 은 이름을 붙일 별 ---------- */
 const UMA = [
@@ -567,16 +568,15 @@ export default function StarMap({ date, setDate, obs, loc, grade }) {
                   하늘의 노란 점선이 그 길입니다. 북두칠성이 지평선 아래일 때는 반대편 카시오페이아자리로 찾습니다.
                 </p>
               </div>
-              <div className="card">
-                <h3>왜 북극성만 안 움직일까
-                  <span className="std extra">더 알아보기</span>
-                </h3>
-                <p style={{ color: 'var(--text-2)', margin: 0, fontSize: '.94em' }}>
-                  지구의 자전축을 하늘 쪽으로 쭉 늘이면 그 끝 근처에 북극성이 있습니다.
-                  축 위에 있으니 지구가 아무리 돌아도 자리가 거의 바뀌지 않고, 나머지 별들이 그 둘레를 도는 것처럼 보입니다.
-                  점선 원은 북극성에서 20°·40° 떨어진 거리입니다.
-                </p>
-              </div>
+              <More title="왜 북극성만 안 움직일까" tag="더 알아보기">
+                <div className="card">
+                  <p style={{ color: 'var(--text-2)', margin: 0, fontSize: '.94em' }}>
+                    지구의 자전축을 하늘 쪽으로 쭉 늘이면 그 끝 근처에 북극성이 있습니다.
+                    축 위에 있으니 지구가 아무리 돌아도 자리가 거의 바뀌지 않고, 나머지 별들이 그 둘레를 도는 것처럼 보입니다.
+                    점선 원은 북극성에서 20°·40° 떨어진 거리입니다.
+                  </p>
+                </div>
+              </More>
             </>
           )}
           <div className="card" style={{ flex: 1 }}>

@@ -1,4 +1,5 @@
 import React, { useEffect, useRef, useState } from 'react'
+import More from '../lib/More.jsx'
 import { moonPathD } from '../lib/moon.jsx'
 import { Astronomy, moonPhase01, phaseName, riseSetTransit, fmtKST } from '../lib/astro.js'
 
@@ -211,6 +212,7 @@ export default function Tides({ date, obs }) {
         </div>
       </div>
 
+      <More title="갯벌 이야기 더 알아보기" count="3">
       <div className="grid" style={{ gridTemplateColumns: 'repeat(auto-fit,minmax(260px,1fr))' }}>
         <div className="card">
           <h3>갯벌이 생기는 곳</h3>
@@ -238,6 +240,7 @@ export default function Tides({ date, obs }) {
           </p>
         </div>
       </div>
+      </More>
     </>
   )
 }

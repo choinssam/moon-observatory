@@ -1,4 +1,5 @@
 import React, { useEffect, useRef, useState } from 'react'
+import More from '../lib/More.jsx'
 import * as THREE from 'three'
 import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls.js'
 import { earthOrbitAngle, seasonsOf, fmtDateKST } from '../lib/astro.js'
@@ -266,6 +267,7 @@ export default function EarthMotion({ date, setDate }) {
         </div>
       </div>
 
+      <More title="더 알아보기 — 낮과 밤 · 계절 별자리 · 절기" count="3">
       <div className="grid" style={{ gridTemplateColumns: 'repeat(auto-fit,minmax(260px,1fr))' }}>
         <div className="card">
           <h3>낮과 밤이 생기는 까닭</h3>
@@ -301,6 +303,7 @@ export default function EarthMotion({ date, setDate }) {
           </div>
         </div>
       </div>
+      </More>
     </>
   )
 }

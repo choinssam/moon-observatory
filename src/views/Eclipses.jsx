@@ -1,4 +1,5 @@
 import React, { useMemo, useState } from 'react'
+import More from '../lib/More.jsx'
 import { nextEclipses, ECLIPSE_KIND } from '../lib/astro.js'
 
 const BASE = import.meta.env.BASE_URL
@@ -134,6 +135,7 @@ export default function Eclipses({ date }) {
         </div>
       </div>
 
+      <More title="더 알아보기" count="2">
       <div className="grid" style={{ gridTemplateColumns: 'repeat(auto-fit,minmax(300px,1fr))' }}>
         <div className="card">
           <h3>왜 매달 일어나지 않을까</h3>
@@ -159,6 +161,7 @@ export default function Eclipses({ date }) {
           <p className="hint">이런 달을 <b>블러드 문</b>이라고 부르기도 합니다.</p>
         </div>
       </div>
+      </More>
     </>
   )
 }

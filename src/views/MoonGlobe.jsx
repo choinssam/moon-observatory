@@ -1,4 +1,5 @@
 import React, { useEffect, useRef, useState } from 'react'
+import More from '../lib/More.jsx'
 import * as THREE from 'three'
 import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls.js'
 import { FEATURES, FEATURE_KIND, lonLatToVec3 } from '../lib/moon.jsx'
@@ -250,6 +251,7 @@ export default function MoonGlobe({ date }) {
         </div>
       </div>
 
+      <More title="달에 대해 더 알아보기" count="2">
       <div className="grid" style={{ gridTemplateColumns: 'repeat(auto-fit,minmax(300px,1fr))' }}>
         <div className="card">
           <h3>달의 바다는 바다가 아닙니다</h3>
@@ -268,6 +270,7 @@ export default function MoonGlobe({ date }) {
           </p>
         </div>
       </div>
+      </More>
     </>
   )
 }

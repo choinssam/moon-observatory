@@ -1,4 +1,5 @@
 import React, { useEffect, useRef, useState } from 'react'
+import More from '../lib/More.jsx'
 import { moonPathD } from '../lib/moon.jsx'
 import MoonImage from '../lib/MoonImage.jsx'
 import { useViewport, moonSize } from '../lib/useViewport.js'
@@ -182,6 +183,7 @@ export default function PhaseLab({ date, big }) {
         </div>
       </div>
 
+      <More title="더 알아보기 — 왜 모양이 달라 보일까 · 달 이름" count="2">
       <div className="card">
         <h3>왜 모양이 달라 보일까
           <span className="std extra">교육과정 밖</span>
@@ -232,6 +234,7 @@ export default function PhaseLab({ date, big }) {
           삭은 달이 아예 보이지 않는 때(음력 1일쯤)이고, 그믐달은 그보다 며칠 앞서 새벽 동쪽 하늘에 가늘게 보이는 달입니다.
         </p>
       </div>
+      </More>
     </>
   )
 }
