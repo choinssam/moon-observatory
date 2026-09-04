@@ -49,6 +49,7 @@ export default function SeasonLab({ date, setDate, obs, loc }) {
         {loc.name}에서 계절에 따라 남중 고도와 낮의 길이가 어떻게 달라지는지 봅니다.
       </p>
 
+      <div className="grid" style={{ gridTemplateColumns: 'repeat(auto-fit,minmax(520px,1fr))', alignItems: 'start' }}>
       <div className="card">
         <h3>하루 동안 태양의 고도 — 계절별로 겹쳐 보기</h3>
         <p className="hint" style={{ margin: '0 0 8px' }}>
@@ -101,7 +102,6 @@ export default function SeasonLab({ date, setDate, obs, loc }) {
         </div>
       </div>
 
-      <div className="grid" style={{ gridTemplateColumns: 'minmax(0,1.3fr) minmax(270px,1fr)' }}>
         <div className="card">
           <h3>일 년 동안의 남중 고도와 낮의 길이</h3>
           <div style={{ overflowX: 'auto' }}>
@@ -139,10 +139,12 @@ export default function SeasonLab({ date, setDate, obs, loc }) {
           </p>
         </div>
 
-        <div style={{ display: 'flex', flexDirection: 'column', gap: 14 }}>
+      </div>
+
+      <div className="grid" style={{ gridTemplateColumns: 'repeat(auto-fit,minmax(300px,1fr))', alignItems: 'start' }}>
           <div className="card">
             <h3>막대의 그림자</h3>
-            <svg viewBox="0 0 480 150" style={{ width: '100%', height: 'auto' }} role="img" aria-label="막대 그림자">
+            <svg viewBox="0 0 480 150" style={{ width: '100%', maxWidth: 520, height: 'auto' }} role="img" aria-label="막대 그림자">
               <line x1="0" y1="120" x2="480" y2="120" stroke="var(--line)" strokeWidth="2" />
               <line x1="60" y1="120" x2="60" y2="30" stroke="var(--text-2)" strokeWidth="6" strokeLinecap="round" />
               {shadow != null ? (
@@ -171,7 +173,6 @@ export default function SeasonLab({ date, setDate, obs, loc }) {
               <div className="r"><span>지금 태양 고도</span><b>{now.alt.toFixed(1)}°</b></div>
             </div>
           </div>
-        </div>
       </div>
 
       <More title="계절이 바뀌는 까닭">

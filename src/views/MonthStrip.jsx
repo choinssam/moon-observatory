@@ -61,7 +61,7 @@ export default function MonthStrip({ date, setDate, obs, loc, big }) {
   const narrow = vp.w < 1000
   const side = narrow
     ? Math.max(260, Math.min(vp.w - 24, Math.round(vp.h * 0.42)))
-    : Math.max(300, Math.min(Math.round(vp.w * 0.30), Math.round(vp.h * 0.56)))
+    : Math.max(320, Math.min(Math.round(vp.w * 0.34), Math.round(vp.h * 0.72)))
   const bigR = Math.round(side * (big ? 0.78 : 0.72))
 
   return (
@@ -70,9 +70,9 @@ export default function MonthStrip({ date, setDate, obs, loc, big }) {
 달이 보이지 않는 날(음력 1일)부터 30일을 늘어놓았습니다. 날짜를 누르면 그날로 옮겨 가고, 흐려서 못 본 날도 여기서 다시 볼 수 있습니다.
       </p>
 
-      <div className="grid" style={{ gridTemplateColumns: narrow ? '1fr' : `${side}px minmax(0,1fr)`, alignItems: 'start' }}>
+      <div className="grid" style={{ gridTemplateColumns: narrow ? '1fr' : `${side}px minmax(0,1fr)`, alignItems: 'stretch' }}>
         {/* 왼쪽 — 고른 날의 달만 크게 */}
-        <div className="stage" style={{ width: side, maxWidth: '100%', height: side, margin: narrow ? '0 auto' : 0,
+        <div className="stage" style={{ width: side, maxWidth: '100%', minHeight: side, height: narrow ? side : '100%', margin: narrow ? '0 auto' : 0,
           background: '#05070E', display: 'flex', flexDirection: 'column', alignItems: 'center',
           justifyContent: 'center', gap: 10 }}>
           <MoonImage size={bigR} phase={cur.p} elat={cur.lib.elat} elon={cur.lib.elon} />

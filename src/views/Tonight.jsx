@@ -72,7 +72,9 @@ export default function Tonight({ date, setDate, obs, loc, big, grade }) {
   const p = moonPhase01(date)
   const lib = Astronomy.Libration(date)
   const illum = moonIllum(date)
-  const discR = moonSize(vp, big, { min: 96, max: 230 })
+  /* 왼쪽 칸 너비에 맞춰 달을 키운다 — 칸이 비어 보이지 않게 */
+  const colW = Math.max(240, Math.min(vp.w * 0.22, 420))
+  const discR = Math.round(Math.max(96, Math.min(colW - 84, vp.h * 0.34, big ? 380 : 320)))
 
   const minInWin = Math.max(0, Math.min(1439, Math.round((date.getTime() - winKey) / 60000)))
   const clockAt = m => {
@@ -95,7 +97,7 @@ export default function Tonight({ date, setDate, obs, loc, big, grade }) {
 
   return (
     <>
-      <div className="grid" style={{ gridTemplateColumns: 'minmax(240px,22%) minmax(0,1fr)', alignItems: 'stretch' }}>
+      <div className="grid" style={{ gridTemplateColumns: 'minmax(240px,22%) minmax(0,1fr)', alignItems: 'start' }}>
         {/* 왼쪽: 지금 보고 있는 천체 */}
         <div className="card center" style={{ flexDirection: 'column', gap: 12 }}>
           {sunMode ? (

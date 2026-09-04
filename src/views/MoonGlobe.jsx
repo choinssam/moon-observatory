@@ -199,7 +199,7 @@ export default function MoonGlobe({ date }) {
         미국 항공우주국 달 정찰 궤도선(LRO)이 찍은 실제 표면 사진과 높낮이 자료입니다.
       </p>
 
-      <div className="grid" style={{ gridTemplateColumns: narrow ? '1fr' : `${side}px minmax(280px,1fr)`, alignItems: 'stretch' }}>
+      <div className="grid" style={{ gridTemplateColumns: narrow ? '1fr' : `${side}px minmax(280px,1fr)`, alignItems: 'start' }}>
         <div className="stage" ref={hostRef} style={{ width: side, maxWidth: '100%', height: side, margin: narrow ? '0 auto' : 0, background: '#05070E' }}>
           <div ref={layerRef} style={{ position: 'absolute', inset: 0, pointerEvents: 'none' }} />
           <button className="fsbtn" onClick={toggleFs} aria-label={fs ? '전체 화면 닫기' : '전체 화면으로 보기'}>
@@ -240,7 +240,7 @@ export default function MoonGlobe({ date }) {
             </div>
           </div>
 
-          <div className="card" style={{ flex: 1 }}>
+          <div className="card">
             <h3>왜 늘 같은 면만 보일까</h3>
             <p style={{ color: 'var(--text-2)', fontSize: '.94em', margin: 0 }}>
               달이 스스로 한 바퀴 도는 시간과 지구를 한 바퀴 도는 시간이 똑같아서

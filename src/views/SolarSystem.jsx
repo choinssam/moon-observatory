@@ -141,7 +141,7 @@ export default function SolarSystem({ date }) {
         </div>
 
         <div className="card" style={{ padding: 0, overflow: 'hidden', display: 'flex', flexDirection: 'column', minWidth: 0 }}>
-          <div style={{ display: 'flex', minHeight: 0, flexWrap: 'wrap' }}>
+          <div style={{ display: 'flex', minHeight: 0, flexWrap: 'wrap', flex: 1 }}>
             {/* 행성은 둥글다 — 보기 칸도 정사각형으로 */}
             <div ref={globeRef} className="globe-sq"
               style={{ flex: '1 1 300px', maxWidth: 'min(62%, 56vh)', aspectRatio: '1 / 1', position: 'relative', background: '#05070E' }}>
@@ -150,32 +150,34 @@ export default function SolarSystem({ date }) {
                 {fs ? '✕ 닫기' : '⛶ 전체 화면'}
               </button>
             </div>
-            <div style={{ flex: '1 1 180px', padding: '14px 16px 8px', display: 'flex', flexDirection: 'column', gap: 8, minWidth: 0 }}>
+            <div style={{ flex: '1 1 220px', padding: '16px', display: 'flex', flexDirection: 'column',
+              justifyContent: 'center', gap: 12, minWidth: 0 }}>
               <h3 style={{ marginBottom: 0 }}>{picked}</h3>
               <p style={{ color: 'var(--text-2)', fontSize: '.92em', margin: 0 }}>{f.note}</p>
-              <p className="hint" style={{ marginTop: 'auto' }}>끌어서 돌리고, 휠로 확대합니다. 전체 화면으로 크게 볼 수도 있습니다.</p>
+              {/* 숫자 타일을 사진 옆 칸 아래쪽에 붙여, 사진 높이만큼 칸이 채워지게 한다 */}
+              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit,minmax(120px,1fr))', gap: 8 }}>
+                {sel && <>
+                  <Fact k="지름" v={sel.dia.toLocaleString() + ' km'} />
+                  <Fact k="지구의 몇 배" v={(sel.dia / 12756).toFixed(2) + '배'} />
+                  <Fact k="태양까지 거리" v={sel.au.toFixed(2) + ' AU'} />
+                </>}
+                {isSun && <>
+                  <Fact k="지름" v="1,392,700 km" />
+                  <Fact k="지구의 몇 배" v="109배" />
+                  <Fact k="표면 온도" v="약 5,500 ℃" />
+                </>}
+                {f.period && <Fact k="공전 주기" v={f.period < 1 ? (f.period * 365.25).toFixed(0) + '일' : f.period + '년'} />}
+                <Fact k="자전 주기" v={f.day} />
+                <Fact k="자전축 기울기" v={f.tilt + '°'} />
+              </div>
+              <p className="hint" style={{ margin: 0 }}>끌어서 돌리고, 휠로 확대합니다. 전체 화면으로 크게 볼 수도 있습니다.</p>
             </div>
-          </div>
-          <div style={{ padding: '10px 16px 16px', marginTop: 'auto', display: 'grid', gridTemplateColumns: 'repeat(3,minmax(0,1fr))', gap: 8 }}>
-            {sel && <>
-              <Fact k="지름" v={sel.dia.toLocaleString() + ' km'} />
-              <Fact k="지구의 몇 배" v={(sel.dia / 12756).toFixed(2) + '배'} />
-              <Fact k="태양까지 거리" v={sel.au.toFixed(2) + ' AU'} />
-            </>}
-            {isSun && <>
-              <Fact k="지름" v="1,392,700 km" />
-              <Fact k="지구의 몇 배" v="109배" />
-              <Fact k="표면 온도" v="약 5,500 ℃" />
-            </>}
-            {f.period && <Fact k="공전 주기" v={f.period < 1 ? (f.period * 365.25).toFixed(0) + '일' : f.period + '년'} />}
-            <Fact k="자전 주기" v={f.day} />
-            <Fact k="자전축 기울기" v={f.tilt + '°'} />
           </div>
         </div>
       </div>
 
       {/* 아랫줄: 궤도 그림 도구 | 크기 비교 | 태양계의 다른 식구들 */}
-      <div className="grid" style={{ gridTemplateColumns: 'repeat(auto-fit,minmax(300px,1fr))', alignItems: 'stretch' }}>
+      <div className="grid" style={{ gridTemplateColumns: 'repeat(auto-fit,minmax(300px,1fr))', alignItems: 'start' }}>
         <div className="card">
           <h3>궤도 그림 움직이기</h3>
           <div className="toolrow">

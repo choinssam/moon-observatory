@@ -481,7 +481,7 @@ export default function StarMap({ date, setDate, obs, loc, grade }) {
           : ' 시각을 밀면 별들이 북극성을 중심으로 돕니다. 북극성만 자리를 지키는 것을 찾아보세요.'}
       </p>
 
-      <div className="grid" style={{ gridTemplateColumns: narrow ? '1fr' : 'minmax(0,1.9fr) minmax(280px,1fr)', alignItems: 'stretch' }}>
+      <div className="grid" style={{ gridTemplateColumns: narrow ? '1fr' : 'minmax(0,1.9fr) minmax(280px,1fr)', alignItems: 'start' }}>
         <div style={{ display: 'flex', flexDirection: 'column', gap: 10, minWidth: 0 }}>
           <div className="stage" ref={hostRef} style={{ height: stageH, background: '#05070E' }}>
             <div ref={layerRef} style={{ position: 'absolute', inset: 0, pointerEvents: 'none', overflow: 'hidden' }} />
@@ -579,7 +579,7 @@ export default function StarMap({ date, setDate, obs, loc, grade }) {
               </More>
             </>
           )}
-          <div className="card" style={{ flex: 1 }}>
+          <div className="card">
             <h3>지금 하늘</h3>
             <div className="rows">
               <div className="r"><span>보고 있는 시각</span><b>{fmtKST(date, true)}</b></div>
