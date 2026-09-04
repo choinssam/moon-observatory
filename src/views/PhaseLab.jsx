@@ -145,7 +145,7 @@ export default function PhaseLab({ date, big }) {
               {phaseName(p)}{phaseTerm(p) && <span className="term">{phaseTerm(p)}</span>}
             </div>
             <div className="mono" style={{ color: 'var(--muted)' }}>
-              달의 나이 {age.toFixed(1)}일 · 밝은 부분 {(illum * 100).toFixed(0)}%
+              달이 보이지 않는 때부터 {age.toFixed(1)}일째 · 밝은 부분 {(illum * 100).toFixed(0)}%
             </div>
           </div>
 

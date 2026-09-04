@@ -8,16 +8,16 @@ os.makedirs(OUT, exist_ok=True)
 
 SCENES = [
     # (폴더, 결과이름, 자르기(하단), 가로폭, 프레임간격ms, 색수)
-    ('01-phase',   'phase',   600, 880, 110, 200),
-    ('02-globe',   'globe',   760, 880, 90,  200),
-    ('03-month',   'month',   760, 880, 130, 180),
-    ('04-tonight', 'tonight', 760, 880, 110, 180),
-    ('05-earth',   'earth',   600, 880, 100, 180),
-    ('06-season',  'season',  600, 880, 130, 180),
-    ('07-stars',   'stars',   760, 880, 90,  180),
-    ('08-planets', 'planets', 760, 880, 150, 200),
-    ('09-tide',    'tide',    760, 880, 90,  180),
-    ('10-eclipse', 'eclipse', 620, 880, 150, 200),
+    ('01-phase',   'phase',   700, 860, 110, 160),
+    ('02-globe',   'globe',   760, 860, 90,  160),
+    ('03-month',   'month',   740, 860, 130, 160),
+    ('04-tonight', 'tonight', 700, 860, 110, 160),
+    ('05-earth',   'earth',   760, 860, 100, 160),
+    ('06-season',  'season',  700, 860, 130, 160),
+    ('07-stars',   'stars',   740, 860, 95,  160),
+    ('08-planets', 'planets', 740, 860, 150, 180),
+    ('09-tide',    'tide',    700, 860, 95,  160),
+    ('10-eclipse', 'eclipse', 700, 860, 150, 180),
 ]
 
 for folder, name, cut, W, dur, colors in SCENES:

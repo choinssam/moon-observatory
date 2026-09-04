@@ -4,7 +4,7 @@ import { moonPathD } from '../lib/moon.jsx'
 import MoonImage from '../lib/MoonImage.jsx'
 import { useViewport, moonSize } from '../lib/useViewport.js'
 import {
-  Astronomy, moonPhase01, moonIllum, moonAge, phaseName, phaseTerm, phaseTip,
+  Astronomy, moonPhase01, moonIllum, phaseName, phaseTerm, phaseTip,
   riseSetTransit, horizonOf, trackFrom, nightWindowStart, azName, fmtKST, kstMidnight, searchPhase, lunarDate
 } from '../lib/astro.js'
 
