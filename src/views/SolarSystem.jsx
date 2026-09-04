@@ -79,7 +79,7 @@ export default function SolarSystem({ date }) {
     <>
       {/* 윗줄: 궤도 그림 | 고른 천체 (정사각 사진 + 설명 + 숫자) */}
       <div className="grid" style={{ gridTemplateColumns: 'minmax(0,1fr) minmax(320px,1fr)', alignItems: 'stretch' }}>
-        <div className="stage" style={{ display: 'flex', alignItems: 'center', minHeight: 0 }}>
+        <div className="stage" style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', minHeight: 0, maxHeight: '70vh' }}>
           <svg viewBox={`0 0 ${W} ${H}`} style={{ width: '100%', height: '100%', maxHeight: 'none' }} role="img" aria-label="태양계">
             <defs>
               <radialGradient id="sun2">
@@ -97,13 +97,25 @@ export default function SolarSystem({ date }) {
               <text x={CX} y={CY + 52} textAnchor="middle" fill="var(--sun)" fontSize="20" fontWeight="700">태양</text>
             </g>
 
-            {PLANETS.map((p, i) => {
-              const R = radiusOf(p, i)
-              const v = planetXY(p, at)
-              const ang = Math.atan2(v.y, v.x)
-              const x = CX + R * Math.cos(ang)
-              const y = CY - R * Math.sin(ang)
-              const rr = 6 + 10 * Math.sqrt(p.dia / maxDia)
+            {(() => {
+              /* 이름표가 겹치면 아래로, 그래도 겹치면 옆으로 옮긴다 */
+              const items = PLANETS.map((p, i) => {
+                const R = radiusOf(p, i)
+                const v = planetXY(p, at)
+                const ang = Math.atan2(v.y, v.x)
+                const rr = 6 + 10 * Math.sqrt(p.dia / maxDia)
+                return { p, R, x: CX + R * Math.cos(ang), y: CY - R * Math.sin(ang), rr }
+              })
+              const taken = [{ x: CX, y: CY + 52 }]
+              const clash = (x, y) => taken.some(t => Math.abs(t.x - x) < 64 && Math.abs(t.y - y) < 22)
+              items.forEach(q => {
+                let lx = q.x, ly = q.y - q.rr - 10
+                if (clash(lx, ly)) ly = q.y + q.rr + 22
+                if (clash(lx, ly)) { lx = q.x + q.rr + 34; ly = q.y + 6 }
+                q.lx = lx; q.ly = ly; taken.push({ x: lx, y: ly })
+              })
+              return items
+            })().map(({ p, R, x, y, rr, lx, ly }) => {
               const on = p.ko === picked
               return (
                 <g key={p.ko}>
@@ -113,7 +125,7 @@ export default function SolarSystem({ date }) {
                     <circle cx={x} cy={y} r={rr + 12} fill="transparent" />
                     {on && <circle cx={x} cy={y} r={rr + 8} fill="none" stroke="var(--moon)" strokeWidth="2" />}
                     <circle cx={x} cy={y} r={rr} fill={p.color} />
-                    <text x={x} y={y - rr - 10} textAnchor="middle"
+                    <text x={lx} y={ly} textAnchor="middle"
                       fill={on ? 'var(--moon)' : 'var(--text-2)'} fontSize="19" fontWeight={on ? 700 : 500}>
                       {p.ko}
                     </text>
@@ -131,7 +143,7 @@ export default function SolarSystem({ date }) {
           <div style={{ display: 'flex', minHeight: 0, flexWrap: 'wrap' }}>
             {/* 행성은 둥글다 — 보기 칸도 정사각형으로 */}
             <div ref={globeRef} className="globe-sq"
-              style={{ flex: '1 1 300px', maxWidth: '62%', aspectRatio: '1 / 1', position: 'relative', background: '#05070E' }}>
+              style={{ flex: '1 1 300px', maxWidth: 'min(62%, 56vh)', aspectRatio: '1 / 1', position: 'relative', background: '#05070E' }}>
               <PlanetGlobe texture={f.tex} ring={!!f.ring} tilt={f.tilt} sun={isSun} fill />
               <button className="fsbtn" onClick={toggleFs} aria-label={fs ? '전체 화면 닫기' : '전체 화면으로 보기'}>
                 {fs ? '✕ 닫기' : '⛶ 전체 화면'}
@@ -178,6 +190,8 @@ export default function SolarSystem({ date }) {
           <p className="hint">
             행성 위치는 오늘의 실제 위치입니다. 실제 비율로 보면 안쪽 네 행성이 태양 가까이 몰려 있습니다 — 태양계는 거의 텅 빈 공간입니다.
             1 AU = 태양과 지구 사이 거리 약 1억 5천만 km.
+            돌려보기에서 <b>수성이 어떤 곳에서는 빨리, 어떤 곳에서는 천천히</b> 가는 것은 실제 위치를 그대로 그렸기 때문입니다.
+            수성 궤도는 찌그러진 타원이라 태양에 가까운 쪽에서 더 빨리 돕니다(케플러의 법칙).
           </p>
         </div>
 

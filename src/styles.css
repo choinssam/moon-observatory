@@ -16,7 +16,7 @@
   --ok:#5FD1A0;
   --warn:#FF8B6B;
   --r:10px;
-  --maxw:1280px;
+  --maxw:100%;
   --stage-max:58vh;
   color-scheme: dark;
 }
@@ -128,8 +128,8 @@ svg{display:block}
    크롬북은 세로가 좁고, 태블릿은 손가락으로 누른다. */
 
 /* 큰 모니터: 폭을 더 쓴다 */
-@media (min-width:1500px){ :root{ --maxw:1460px } }
-@media (min-width:1800px){ :root{ --maxw:1660px; } body{ font-size:16px } }
+@media (min-width:1800px){ body{ font-size:16px } }
+@media (min-width:2400px){ body{ font-size:17px } }
 
 /* 3D·그림 무대는 화면 높이를 넘지 않게 */
 .stage > svg, .card svg{ max-height:var(--stage-max) }

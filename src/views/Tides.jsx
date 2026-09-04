@@ -38,7 +38,9 @@ export default function Tides({ date, obs }) {
   const bulge = Math.abs(Math.cos(spot))                   // 1 = 만조, 0 = 간조
   const range = spring ? 1 : 0.55                          // 사리면 차이가 크다
   const lvl = 0.5 - range / 2 + bulge * range              // 0~1 사이 실제 물 높이
-  const waterY = LOW_Y - (LOW_Y - HIGH_Y) * lvl
+  const yOf = l => LOW_Y - (LOW_Y - HIGH_Y) * l
+  const waterY = yOf(lvl)
+  const highY = yOf(0.5 + range / 2), lowY = yOf(0.5 - range / 2)   // 오늘의 만조선·간조선
 
   const rising = Math.sin(spot) * Math.cos(spot) > 0
   const level = bulge > 0.75 ? '만조' : bulge < 0.25 ? '간조' : rising ? '밀물' : '썰물'
@@ -59,7 +61,7 @@ export default function Tides({ date, obs }) {
       </p>
 
       {/* 세 가지를 한 줄에: 바닷가 옆모습 · 위에서 본 그림 · 지금 상태 */}
-      <div className="grid" style={{ gridTemplateColumns: 'minmax(0,1.6fr) minmax(0,1fr) 280px', alignItems: 'stretch' }}>
+      <div className="grid" style={{ gridTemplateColumns: 'minmax(0,1.6fr) minmax(0,1fr) minmax(240px,18%)', alignItems: 'stretch' }}>
         <div style={{ display: 'flex', flexDirection: 'column', gap: 10, minWidth: 0 }}>
           <div className="stage" style={{ flex: 1, display: 'flex', alignItems: 'center' }}>
             <svg viewBox={`0 0 ${SW} ${SH}`} style={{ width: '100%', height: 'auto' }}
@@ -99,10 +101,16 @@ export default function Tides({ date, obs }) {
                 fill="none" stroke="#8FC4F0" strokeOpacity=".7" strokeWidth="2" />
 
               {/* 만조선·간조선 */}
-              <line x1="0" y1={HIGH_Y} x2={SW} y2={HIGH_Y} stroke="var(--warn)" strokeOpacity=".55" strokeDasharray="7 7" />
-              <text x="10" y={HIGH_Y - 8} fill="var(--warn)" fontSize="15" fontWeight="600">만조선</text>
-              <line x1="0" y1={LOW_Y} x2={SW} y2={LOW_Y} stroke="var(--sky)" strokeOpacity=".45" strokeDasharray="7 7" />
-              <text x="10" y={LOW_Y + 20} fill="var(--sky)" fontSize="15" fontWeight="600">간조선</text>
+              {!spring && <>
+                <line x1="0" y1={HIGH_Y} x2={SW} y2={HIGH_Y} stroke="var(--warn)" strokeOpacity=".22" strokeDasharray="3 9" />
+                <text x="10" y={HIGH_Y - 6} fill="var(--warn)" fillOpacity=".55" fontSize="12">사리 때 만조선</text>
+                <line x1="0" y1={LOW_Y} x2={SW} y2={LOW_Y} stroke="var(--sky)" strokeOpacity=".22" strokeDasharray="3 9" />
+                <text x="10" y={LOW_Y + 16} fill="var(--sky)" fillOpacity=".55" fontSize="12">사리 때 간조선</text>
+              </>}
+              <line x1="0" y1={highY} x2={SW} y2={highY} stroke="var(--warn)" strokeOpacity=".6" strokeDasharray="7 7" />
+              <text x="10" y={highY - 8} fill="var(--warn)" fontSize="15" fontWeight="600">오늘 만조선</text>
+              <line x1="0" y1={lowY} x2={SW} y2={lowY} stroke="var(--sky)" strokeOpacity=".5" strokeDasharray="7 7" />
+              <text x="10" y={lowY + 20} fill="var(--sky)" fontSize="15" fontWeight="600">오늘 간조선</text>
 
               {/* 배 — 물이 깊으면 뜨고, 빠지면 갯벌에 앉는다 */}
               {(() => {

@@ -32,10 +32,36 @@ export default function Tonight({ date, setDate, obs, loc, big, grade }) {
   const winKey = win.getTime()
   const base = sunMode ? 0 : 12 * 60
 
-  const data = useMemo(() => ({
-    moon: trackFrom(Astronomy.Body.Moon, obs, win, 24 * 60, 10),
-    sun: trackFrom(Astronomy.Body.Sun, obs, win, 24 * 60, 10)
-  }), [winKey, loc.lat, loc.lon])
+  /* 지금 떠 있으면 그 호(뜸→짐), 아니면 다음에 뜨는 호 하나만 그린다.
+     하루 창을 통째로 그리면 이틀치 호가 겹쳐 끊어져 보인다. */
+  const arcOf = body => {
+    const up = horizonOf(body, obs, date).alt > 0
+    let rise = null, set = null
+    try {
+      if (up) {
+        rise = Astronomy.SearchRiseSet(body, obs, +1, date, -2)
+        set = Astronomy.SearchRiseSet(body, obs, -1, date, 2)
+      } else {
+        rise = Astronomy.SearchRiseSet(body, obs, +1, date, 2)
+        set = rise ? Astronomy.SearchRiseSet(body, obs, -1, rise.date, 2) : null
+      }
+    } catch (e) { rise = null; set = null }
+    if (!rise || !set) return { pts: trackFrom(body, obs, win, 24 * 60, 10).filter(q => q.alt > -0.5), marks: [], rise: null, set: null }
+    const r = rise.date, s = set.date
+    const minutes = (s - r) / 60000
+    const pts = trackFrom(body, obs, r, minutes, Math.max(5, Math.min(15, minutes / 90)))
+    const hs = horizonOf(body, obs, s)
+    pts.push({ t: s, min: minutes, az: hs.az, alt: hs.alt })
+    const marks = []
+    const step = 7200000, off = 9 * 3600000                     // 한국 시각 짝수 시마다 표시
+    for (let t = Math.ceil((r.getTime() + off) / step) * step - off; t < s.getTime(); t += step) {
+      const h = horizonOf(body, obs, new Date(t))
+      if (h.alt > 3) marks.push({ t, az: h.az, alt: h.alt, label: fmtKST(new Date(t)).slice(0, 2) })
+    }
+    return { pts, marks, rise: r, set: s }
+  }
+  const arcs = useMemo(() => ({ moon: arcOf(Astronomy.Body.Moon), sun: arcOf(Astronomy.Body.Sun) }),
+    [Math.floor(date.getTime() / 300000), loc.lat, loc.lon])
 
   const rs = useMemo(() => riseSetTransit(Astronomy.Body.Moon, obs, date), [dayKey, loc.lat, loc.lon])
   const sunRs = useMemo(() => riseSetTransit(Astronomy.Body.Sun, obs, date), [dayKey, loc.lat, loc.lon])
@@ -55,27 +81,20 @@ export default function Tonight({ date, setDate, obs, loc, big, grade }) {
   }
   function setMinutes(m) { setDate(new Date(winKey + m * 60000)) }
 
-  const segsOf = track => {
-    const segs = []; let cur = []
-    for (const q of track) {
-      if (q.alt > -0.5) cur.push(q)
-      else if (cur.length) { segs.push(cur); cur = [] }
-    }
-    if (cur.length) segs.push(cur)
-    return segs
-  }
-  const moonSegs = segsOf(data.moon), sunSegs = segsOf(data.sun)
   const meridian = az => Array.from({ length: 19 }, (_, i) => P({ alt: i * 5, az })).join(' ')
 
   const nextFull = searchPhase(180, date)
   const nextNew = searchPhase(0, date)
   const main = sunMode ? sunNow : now
   const mainPt = pt(main.alt, main.az)
-  const mainTrack = sunMode ? data.sun : data.moon
+  const mainArc = sunMode ? arcs.sun : arcs.moon
+  const otherArc = sunMode ? arcs.moon : arcs.sun
+  const endPt = arr => arr.length ? pt(0, arr[arr.length - 1].az) : null
+  const startPt = arr => arr.length ? pt(0, arr[0].az) : null
 
   return (
     <>
-      <div className="grid" style={{ gridTemplateColumns: 'minmax(250px,300px) minmax(0,1fr)', alignItems: 'stretch' }}>
+      <div className="grid" style={{ gridTemplateColumns: 'minmax(240px,22%) minmax(0,1fr)', alignItems: 'stretch' }}>
         {/* 왼쪽: 지금 보고 있는 천체 */}
         <div className="card center" style={{ flexDirection: 'column', gap: 12 }}>
           {sunMode ? (
@@ -150,7 +169,7 @@ export default function Tonight({ date, setDate, obs, loc, big, grade }) {
                 return (
                   <g key={a}>
                     <line x1={CX - hw} y1={y} x2={CX + hw} y2={y} stroke="var(--line)" strokeDasharray="3 7" />
-                    <text x={CX - hw + 6} y={y - 6} fill="var(--muted)" fontSize="12">고도 {a}°</text>
+                    <text x={CX + 8} y={y - 5} fill="var(--muted)" fontSize="12">고도 {a}°</text>
                   </g>
                 )
               })}
@@ -170,28 +189,33 @@ export default function Tonight({ date, setDate, obs, loc, big, grade }) {
               </g>
 
               {/* 뒤에 놓이는 천체는 점선으로 */}
-              {(sunMode ? moonSegs : sunSegs).map((s, i) => (
-                <polyline key={i} points={s.map(P).join(' ')} fill="none"
-                  stroke={sunMode ? 'var(--moon)' : 'var(--sun)'} strokeOpacity=".4" strokeWidth="2.5" strokeDasharray="5 6" />
-              ))}
-              {/* 앞에 놓이는 천체의 길 */}
-              {(sunMode ? sunSegs : moonSegs).map((s, i) => (
-                <polyline key={i} points={s.map(P).join(' ')} fill="none"
-                  stroke={sunMode ? 'var(--sun)' : 'var(--moon)'} strokeWidth="3.4" strokeLinecap="round" strokeLinejoin="round" />
-              ))}
+              <polyline points={otherArc.pts.map(P).join(' ')} fill="none"
+                stroke={sunMode ? 'var(--moon)' : 'var(--sun)'} strokeOpacity=".4" strokeWidth="2.5" strokeDasharray="5 6" />
+              {/* 앞에 놓이는 천체의 길: 뜰 때부터 질 때까지 하나의 호 */}
+              <polyline points={mainArc.pts.map(P).join(' ')} fill="none"
+                stroke={sunMode ? 'var(--sun)' : 'var(--moon)'} strokeWidth="3.4" strokeLinecap="round" strokeLinejoin="round" />
 
               {/* 시각 표시 */}
-              {mainTrack.filter(q => q.min % 120 === 0 && q.alt > 3).map(q => {
+              {mainArc.marks.map(q => {
                 const c = pt(q.alt, q.az)
                 return (
-                  <g key={q.min}>
+                  <g key={q.t}>
                     <circle cx={c.x} cy={c.y} r="3.2" fill={sunMode ? 'var(--sun)' : 'var(--moon)'} opacity=".85" />
-                    <text x={c.x} y={c.y - 10} textAnchor="middle" fill="var(--text-2)" fontSize="12">
-                      {clockAt(q.min).slice(0, 2)}시
-                    </text>
+                    <text x={c.x} y={c.y - 10} textAnchor="middle" fill="var(--text-2)" fontSize="12">{q.label}시</text>
                   </g>
                 )
               })}
+              {/* 뜨는 곳 · 지는 곳 */}
+              {mainArc.rise && startPt(mainArc.pts) && (
+                <text x={startPt(mainArc.pts).x} y={HY + 44} textAnchor="middle" fill={sunMode ? 'var(--sun)' : 'var(--moon)'} fontSize="12">
+                  {fmtKST(mainArc.rise)} {sunMode ? '해돋이' : '달돋이'}
+                </text>
+              )}
+              {mainArc.set && endPt(mainArc.pts) && (
+                <text x={endPt(mainArc.pts).x} y={HY + 44} textAnchor="middle" fill={sunMode ? 'var(--sun)' : 'var(--moon)'} fontSize="12">
+                  {fmtKST(mainArc.set)} {sunMode ? '해넘이' : '달넘이'}
+                </text>
+              )}
 
               {/* 지금 위치 */}
               {main.alt > -1 && (
@@ -207,7 +231,7 @@ export default function Tonight({ date, setDate, obs, loc, big, grade }) {
                 지평선 0° · 점선은 고도 30°·60° · 반구 꼭대기가 머리 위 90°
               </text>
               <text x={W - 14} y={H - 14} textAnchor="end" fill="var(--muted)" fontSize="12">
-                {sunMode ? '실선은 태양, 점선 호는 달 · 0시부터 24시까지' : '실선은 달, 점선 호는 태양 · 낮 12시부터 다음날 낮 12시까지'}
+                {sunMode ? '실선은 태양이 뜰 때부터 질 때까지 · 점선 호는 달' : '실선은 달이 뜰 때부터 질 때까지 · 점선 호는 태양'}
               </text>
             </svg>
           </div>

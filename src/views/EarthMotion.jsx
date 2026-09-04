@@ -116,7 +116,7 @@ export default function EarthMotion({ date, setDate }) {
 
     // 위도선 (적도)
     const eq = new THREE.Mesh(
-      new THREE.TorusGeometry(1.16, 0.014, 8, 96),
+      new THREE.TorusGeometry(1.025, 0.011, 8, 96),
       new THREE.MeshBasicMaterial({ color: 0xe9edf8 })
     )
     eq.rotation.x = Math.PI / 2
@@ -234,7 +234,7 @@ export default function EarthMotion({ date, setDate }) {
     <>
       <p className="hint" style={{ color: 'var(--muted)', margin: 0, maxWidth: '74ch' }}>
         지구는 하루에 한 번 스스로 돌고(자전), 일 년에 한 번 태양 둘레를 돕니다(공전).
-        햇빛을 받는 쪽이 낮, 반대쪽이 밤입니다. 빨간 점이 우리나라입니다.
+        햇빛을 받는 쪽이 낮, 반대쪽이 밤입니다. 빨간 점이 우리나라입니다. 지구를 두른 가는 고리는 적도, 기울어진 막대는 자전축입니다(달의 궤도가 아닙니다).
       </p>
 
       <div className="stage" ref={hostRef} style={{ position: 'relative' }}>
