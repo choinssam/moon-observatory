@@ -75,28 +75,60 @@ export function moonAge(date) {
   return moonPhase01(date) * SYNODIC
 }
 
+/*
+ * 2022 개정 초등 과학 교과서가 쓰는 달 이름은 다섯 가지뿐이다.
+ *   초승달 - 상현달 - 보름달 - 하현달 - 그믐달 - 다시 초승달
+ * '삭'과 '망'은 초등 교과서에 나오지 않고, 볼록달(gibbous)에도 이름을 붙이지 않는다.
+ * 특히 삭(달이 보이지 않는 때)과 그믐달(삭 직전 새벽에 보이는 가는 달)은 서로 다르다 —
+ * 둘을 같은 것으로 가르치면 안 된다.
+ * 근거: 초등과학교육 44(1), 2025, 교과서 7종 분석 / 교육부 고시 제2022-33호 [별책 9]
+ */
+export const PHASE_NAMES = ['초승달', '상현달', '보름달', '하현달', '그믐달']
+const NAMED = [
+  { c: 0.125, ko: '초승달', w: 0.055 },
+  { c: 0.250, ko: '상현달', w: 0.045 },
+  { c: 0.500, ko: '보름달', w: 0.070 },
+  { c: 0.750, ko: '하현달', w: 0.045 },
+  { c: 0.875, ko: '그믐달', w: 0.055 }
+]
+
+/** 교과서에 있는 다섯 이름 중 하나, 그 사이면 '무엇과 무엇 사이'로 말한다. */
 export function phaseName(p) {
   const x = ((p % 1) + 1) % 1
-  if (x < 0.021 || x > 0.979) return '삭 (그믐)'
-  if (x < 0.229) return '초승달'
-  if (x < 0.271) return '상현달'
-  if (x < 0.479) return '차오르는 볼록달'
-  if (x < 0.521) return '보름달'
-  if (x < 0.729) return '기우는 볼록달'
-  if (x < 0.771) return '하현달'
-  return '그믐달'
+  if (x < 0.025 || x > 0.975) return '달이 보이지 않는 때'
+  for (const n of NAMED) if (Math.abs(x - n.c) <= n.w) return n.ko
+  if (x < 0.125) return '초승달이 되기 전'
+  if (x < 0.250) return '초승달과 상현달 사이'
+  if (x < 0.500) return '상현달과 보름달 사이'
+  if (x < 0.750) return '보름달과 하현달 사이'
+  if (x < 0.875) return '하현달과 그믐달 사이'
+  return '그믐달이 지난 뒤'
+}
+
+/** 교과서가 쓰는 음력 날짜. 음력 1일이 달이 보이지 않는 날이다. */
+const DANGI = new Intl.DateTimeFormat('ko-KR-u-ca-dangi', {
+  timeZone: 'Asia/Seoul', month: 'numeric', day: 'numeric'
+})
+export function lunarDate(date) {
+  try {
+    const pt = DANGI.formatToParts(date)
+    const m = pt.find(q => q.type === 'month')?.value
+    const d = pt.find(q => q.type === 'day')?.value
+    return m && d ? { month: Number(m), day: Number(d), ko: `음력 ${m}월 ${d}일` } : null
+  } catch (e) { return null }
 }
 
 /** 관측 안내 문구 */
 export function phaseTip(p) {
   const x = ((p % 1) + 1) % 1
-  if (x < 0.021 || x > 0.979) return '태양과 같은 방향에 있어 달을 볼 수 없습니다.'
-  if (x < 0.271) return '해가 진 직후 서쪽 하늘 낮은 곳에서 잠깐 보입니다.'
+  if (x < 0.025 || x > 0.975) return '이 무렵에는 달을 볼 수 없습니다. 며칠 뒤 초저녁 서쪽 하늘에서 초승달로 다시 나타납니다.'
+  if (x < 0.200) return '해가 진 직후 서쪽 하늘 낮은 곳에서 잠깐 보입니다.'
+  if (x < 0.320) return '해질 무렵 남쪽 하늘에 있고, 자정 무렵 서쪽으로 집니다.'
   if (x < 0.479) return '해질 무렵 남쪽 하늘에 떠 있어 초저녁 관찰이 가장 좋습니다.'
   if (x < 0.521) return '해가 지면 동쪽에서 떠올라 밤새도록 보입니다.'
   if (x < 0.729) return '늦은 밤에 동쪽에서 떠오릅니다.'
-  if (x < 0.771) return '한밤중에 떠서 새벽에 남쪽 하늘 높이 보입니다.'
-  return '새벽 동쪽 하늘에서만 잠깐 보입니다.'
+  if (x < 0.800) return '한밤중에 떠서 새벽에 남쪽 하늘 높이 보입니다.'
+  return '해 뜨기 직전 새벽 동쪽 하늘에서만 잠깐 보입니다. 그믐달은 달이 아주 안 보이는 때(삭)와 다릅니다.'
 }
 
 /** 특정 위상(도)이 되는 다음 시각 */

@@ -2,7 +2,7 @@ import React, { useEffect, useMemo, useRef, useState } from 'react'
 import MoonImage from '../lib/MoonImage.jsx'
 import { useViewport, moonSize } from '../lib/useViewport.js'
 import {
-  Astronomy, SYNODIC, moonPhase01, phaseName, riseSetTransit,
+  Astronomy, SYNODIC, moonPhase01, phaseName, lunarDate, riseSetTransit,
   kstMidnight, addDays, fmtKST, fmtMD, searchPhase
 } from '../lib/astro.js'
 
@@ -61,7 +61,7 @@ export default function MonthStrip({ date, setDate, obs, loc, big }) {
   return (
     <>
       <p className="hint" style={{ color: 'var(--muted)', margin: 0, maxWidth: 'none' }}>
-        삭(달이 안 보이는 날)부터 30일을 늘어놓았습니다. 날짜를 누르면 그날로 옮겨 가고, 흐려서 못 본 날도 여기서 다시 볼 수 있습니다.
+달이 보이지 않는 날(음력 1일)부터 30일을 늘어놓았습니다. 날짜를 누르면 그날로 옮겨 가고, 흐려서 못 본 날도 여기서 다시 볼 수 있습니다.
       </p>
 
       <div className="grid" style={{ gridTemplateColumns: 'minmax(250px,300px) minmax(0,1fr)' }}>
@@ -70,7 +70,7 @@ export default function MonthStrip({ date, setDate, obs, loc, big }) {
           <div className="big" style={{ color: 'var(--moon)' }}>{phaseName(cur.p)}</div>
           <div className="rows" style={{ width: '100%' }}>
             <div className="r"><span>날짜</span><b>{fmtMD(cur.date)}</b></div>
-            <div className="r"><span>삭 이후</span><b>{cur.i}일째</b></div>
+            <div className="r"><span>음력</span><b>{lunarDate(cur.date)?.ko || '—'}</b></div>
             <div className="r"><span>월출</span><b>{fmtKST(cur.rise)}</b></div>
             <div className="r"><span>월몰</span><b>{fmtKST(cur.set)}</b></div>
           </div>
@@ -85,7 +85,7 @@ export default function MonthStrip({ date, setDate, obs, loc, big }) {
         </div>
 
         <div className="card">
-          <h3>삭부터 30일</h3>
+          <h3>한 달 동안 달의 모양</h3>
           <div style={{
             display: 'grid', gap: 8,
             gridTemplateColumns: 'repeat(auto-fill,minmax(' + (big ? 108 : 92) + 'px,1fr))'
@@ -122,8 +122,8 @@ export default function MonthStrip({ date, setDate, obs, loc, big }) {
       <div className="card">
         <h3>무엇이 되풀이될까</h3>
         <p style={{ color: 'var(--text-2)', margin: 0, fontSize: '.95em' }}>
-          삭 → 초승달 → 상현달 → 보름달 → 하현달 → 그믐달 → 다시 삭.
-          이 한 바퀴가 약 {SYNODIC.toFixed(1)}일이고, 그래서 음력 한 달은 29일 또는 30일입니다.
+          초승달 → 상현달 → 보름달 → 하현달 → 그믐달 → 다시 초승달.
+          이 되풀이가 <b>약 30일</b>마다 한 바퀴입니다. 정확히는 {SYNODIC.toFixed(1)}일이어서, 음력 한 달은 29일 또는 30일이 됩니다.
           모양뿐 아니라 <b>뜨는 시각</b>도 규칙적으로 늦어진다는 점을 함께 보면 좋습니다.
         </p>
       </div>

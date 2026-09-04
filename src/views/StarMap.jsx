@@ -477,7 +477,7 @@ export default function StarMap({ date, setDate, obs, loc, grade }) {
         밤하늘 한가운데 서 있는 모습입니다. <b style={{ color: 'var(--moon)' }}>끌어서 고개를 돌리고, 휠로 가까이 당겨 보세요.</b>
         {six
           ? ' 시각을 밀면 별이 동에서 서로 움직이고(자전), 계절 단추를 누르면 남쪽 하늘의 별자리가 바뀝니다(공전).'
-          : ' 시각을 밀면 별들이 북극성을 중심으로 돕니다. 실제로 도는 것은 별이 아니라 지구입니다.'}
+          : ' 시각을 밀면 별들이 북극성을 중심으로 돕니다. 북극성만 자리를 지키는 것을 찾아보세요.'}
       </p>
 
       <div className="grid" style={{ gridTemplateColumns: narrow ? '1fr' : 'minmax(0,1.9fr) minmax(280px,1fr)', alignItems: 'stretch' }}>
@@ -517,7 +517,9 @@ export default function StarMap({ date, setDate, obs, loc, grade }) {
           ) : (
             <div className="toolrow">
               <button className={'btn' + (all ? ' on' : '')} onClick={() => setAll(!all)}>계절 별자리도 보기</button>
-              <span className="hint" style={{ margin: 0 }}>북극성 주변 별자리가 기본입니다. 남쪽 하늘의 별자리까지 보려면 켜세요</span>
+              <span className="hint" style={{ margin: 0 }}>
+                4학년은 <b>북극성 주변 별자리</b>만 다룹니다. 계절별 별자리는 교육과정에서 관련짓지 않도록 한 내용이라 기본으로 꺼 두었습니다(6학년 [6과12-03]).
+              </span>
             </div>
           )}
         </div>
@@ -566,7 +568,9 @@ export default function StarMap({ date, setDate, obs, loc, grade }) {
                 </p>
               </div>
               <div className="card">
-                <h3>왜 북극성만 안 움직일까</h3>
+                <h3>왜 북극성만 안 움직일까
+                  <span className="std extra">더 알아보기</span>
+                </h3>
                 <p style={{ color: 'var(--text-2)', margin: 0, fontSize: '.94em' }}>
                   지구의 자전축을 하늘 쪽으로 쭉 늘이면 그 끝 근처에 북극성이 있습니다.
                   축 위에 있으니 지구가 아무리 돌아도 자리가 거의 바뀌지 않고, 나머지 별들이 그 둘레를 도는 것처럼 보입니다.

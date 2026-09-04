@@ -4,7 +4,7 @@ import MoonImage from '../lib/MoonImage.jsx'
 import { useViewport, moonSize } from '../lib/useViewport.js'
 import {
   Astronomy, moonPhase01, moonIllum, moonAge, phaseName, phaseTip,
-  riseSetTransit, horizonOf, trackFrom, nightWindowStart, azName, fmtKST, kstMidnight, searchPhase
+  riseSetTransit, horizonOf, trackFrom, nightWindowStart, azName, fmtKST, kstMidnight, searchPhase, lunarDate
 } from '../lib/astro.js'
 
 /*
@@ -128,7 +128,7 @@ export default function Tonight({ date, setDate, obs, loc, big, grade }) {
               <MoonImage size={discR} phase={p} elat={lib.elat} elon={lib.elon} />
               <div className="big" style={{ color: 'var(--moon)' }}>{phaseName(p)}</div>
               <div className="rows" style={{ width: '100%' }}>
-                <div className="r"><span>달의 나이</span><b>{moonAge(date).toFixed(1)}일</b></div>
+                <div className="r"><span>음력</span><b>{lunarDate(date)?.ko || '—'}</b></div>
                 <div className="r"><span>밝은 부분</span><b>{(illum * 100).toFixed(0)}%</b></div>
                 <div className="r"><span>지금 고도</span><b>{now.alt.toFixed(1)}°</b></div>
                 <div className="r"><span>지금 방위</span><b>{azName(now.az)}쪽 {now.az.toFixed(0)}°</b></div>

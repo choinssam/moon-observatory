@@ -200,3 +200,26 @@ body[data-big="on"]{ --stage-max:52vh }
 .stdlist b{color:var(--moon);font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-weight:600;font-size:.92em;margin-right:4px}
 .tabs button.extra{opacity:.62}
 .tabs button.extra[aria-selected="true"]{opacity:1}
+
+/* ---------- 의견 보내기 ---------- */
+.linklike{background:none;border:0;padding:0;color:var(--sky);cursor:pointer;font:inherit;text-decoration:underline}
+.linklike:hover{color:var(--moon)}
+.modal-back{position:fixed;inset:0;background:rgba(4,6,14,.72);backdrop-filter:blur(3px);
+  display:flex;align-items:center;justify-content:center;padding:18px;z-index:50}
+.modal{background:var(--panel);border:1px solid var(--line);border-radius:16px;padding:18px;
+  width:min(620px,100%);max-height:90vh;overflow:auto;box-shadow:0 18px 60px rgba(0,0,0,.5)}
+.modal-head{display:flex;align-items:center;justify-content:space-between;gap:12px;margin-bottom:8px}
+.fb-kinds{display:grid;grid-template-columns:repeat(auto-fit,minmax(160px,1fr));gap:8px;margin-bottom:12px}
+.fb-kind{text-align:left;background:var(--panel-2);border:1px solid var(--line);border-radius:11px;
+  padding:9px 11px;cursor:pointer;display:flex;flex-direction:column;gap:3px;color:var(--text-2)}
+.fb-kind b{color:var(--text);font-size:.94em}
+.fb-kind span{color:var(--muted);font-size:.8em;line-height:1.4}
+.fb-kind.on{border-color:var(--moon);background:var(--moon-dim)}
+.fb-kind.on b{color:var(--moon)}
+.fb-text{width:100%;background:var(--panel-2);border:1px solid var(--line);border-radius:11px;
+  padding:11px 13px;color:var(--text);font:inherit;line-height:1.6;resize:vertical}
+.fb-text:focus{outline:2px solid var(--sky);outline-offset:1px}
+.fb-ctx{margin-top:10px;color:var(--muted);font-size:.84em}
+.fb-ctx summary{cursor:pointer}
+.fb-ctx pre{white-space:pre-wrap;word-break:break-all;background:var(--panel-2);border-radius:9px;
+  padding:9px 11px;margin:7px 0 0;font-size:.92em;color:var(--text-2)}

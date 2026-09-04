@@ -1,6 +1,7 @@
 import React, { useEffect, useMemo, useState } from 'react'
 import { REGIONS, makeObserver, fmtDateKST, kstMidnight } from './lib/astro.js'
 
+import Feedback from './lib/Feedback.jsx'
 import PhaseLab from './views/PhaseLab.jsx'
 import MoonGlobe from './views/MoonGlobe.jsx'
 import Tonight from './views/Tonight.jsx'
@@ -71,6 +72,7 @@ function toKstInput(date) {
 export default function App() {
   const [grade, setGrade] = useState(() => load('grade', '4'))
   const [big, setBig] = useState(() => load('big', false))
+  const [feedback, setFeedback] = useState(false)
   const [locName, setLocName] = useState(() => load('locName', '서울'))
   const [custom, setCustom] = useState(() => load('custom', { lat: 37.5665, lon: 126.978 }))
   const [date, setDate] = useState(() => new Date())
@@ -208,8 +210,7 @@ export default function App() {
               </span>
               <span>
                 문의 ·{' '}
-                <a href="mailto:ksb6857@gmail.com?subject=%5B%EB%8B%AC%20%EA%B4%80%EC%B0%B0%EC%86%8C%5D%20%EB%AC%B8%EC%9D%98"
-                  style={{ color: 'var(--sky)' }}>ksb6857@gmail.com</a>
+                <button className="linklike" onClick={() => setFeedback(true)}>초인쌤에게 의견 보내기</button>
               </span>
               <span className="kbdhint" style={{ marginLeft: 'auto' }}>
                 <kbd>←</kbd><kbd>→</kbd> 하루씩 <kbd>Shift</kbd>+<kbd>←</kbd><kbd>→</kbd> 한 시간씩
@@ -227,6 +228,11 @@ export default function App() {
               </span>
             </div>
           </footer>
+
+          {feedback && (
+            <Feedback onClose={() => setFeedback(false)}
+              screen={koOf(tab, grade)} grade={grade} date={date} loc={loc} />
+          )}
         </div>
       </main>
     </div>

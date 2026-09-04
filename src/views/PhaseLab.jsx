@@ -4,13 +4,12 @@ import MoonImage from '../lib/MoonImage.jsx'
 import { useViewport, moonSize } from '../lib/useViewport.js'
 import { SYNODIC, moonPhase01, phaseName, phaseTip, fmtDateKST, Astronomy } from '../lib/astro.js'
 
+/* 교과서에 나오는 다섯 이름 + 달이 보이지 않는 때. '삭·망·볼록달'은 초등 용어가 아니다. */
 const SNAPS = [
-  { p: 0,     ko: '삭' },
+  { p: 0,     ko: '안 보임' },
   { p: 0.125, ko: '초승달' },
   { p: 0.25,  ko: '상현달' },
-  { p: 0.375, ko: '볼록달' },
   { p: 0.5,   ko: '보름달' },
-  { p: 0.625, ko: '볼록달' },
   { p: 0.75,  ko: '하현달' },
   { p: 0.875, ko: '그믐달' }
 ]
@@ -181,11 +180,18 @@ export default function PhaseLab({ date, big }) {
       </div>
 
       <div className="card">
-        <h3>왜 모양이 달라 보일까</h3>
+        <h3>왜 모양이 달라 보일까
+          <span className="std extra">교육과정 밖</span>
+        </h3>
+        <p className="hint" style={{ margin: '0 0 8px' }}>
+          2022 개정 교육과정 [4과13-01]의 성취기준 해설은 <b>달의 위상변화 원인을 다루지 않고</b>,
+          모양이 주기적으로 바뀌는 현상을 관찰해 확인하는 데 초점을 둡니다.
+          아래 설명은 더 알고 싶어 하는 학생과 선생님을 위한 것입니다.
+        </p>
         <p style={{ color: 'var(--text-2)', margin: 0, fontSize: '.95em' }}>
           달은 스스로 빛나지 않고 태양 빛을 반사합니다. 그래서 <b>언제나 절반은 밝고 절반은 어둡습니다</b>. 다만,
           달이 지구를 돌면서 지구에서 보는 각도가 달라지기 때문에 모양이 달라 보입니다.
-          이 되풀이가 약 {SYNODIC.toFixed(1)}일마다 한 바퀴이고, 그래서 음력 한 달은 29일 또는 30일입니다.
+          이 되풀이가 <b>약 30일</b>마다 한 바퀴입니다. 정확히는 {SYNODIC.toFixed(1)}일이어서, 음력 한 달은 29일 또는 30일이 됩니다.
           오른쪽 달은 오늘({fmtDateKST(date)})의 실제 기울기를 적용해 그린 것입니다.
         </p>
       </div>
