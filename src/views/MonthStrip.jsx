@@ -57,7 +57,12 @@ export default function MonthStrip({ date, setDate, obs, loc, big }) {
   }, [playing, days.length])
 
   const cur = days[Math.min(cursor, days.length - 1)] || days[0]
-  const bigR = moonSize(vp, big, { min: 96, max: 210 })
+  /* 고른 날의 달을 크게 — 무대는 정사각형으로 화면 높이에 맞춘다 */
+  const narrow = vp.w < 1000
+  const side = narrow
+    ? Math.max(260, Math.min(vp.w - 24, Math.round(vp.h * 0.42)))
+    : Math.max(300, Math.min(Math.round(vp.w * 0.30), Math.round(vp.h * 0.56)))
+  const bigR = Math.round(side * (big ? 0.78 : 0.72))
 
   return (
     <>
@@ -65,60 +70,72 @@ export default function MonthStrip({ date, setDate, obs, loc, big }) {
 달이 보이지 않는 날(음력 1일)부터 30일을 늘어놓았습니다. 날짜를 누르면 그날로 옮겨 가고, 흐려서 못 본 날도 여기서 다시 볼 수 있습니다.
       </p>
 
-      <div className="grid" style={{ gridTemplateColumns: 'minmax(250px,300px) minmax(0,1fr)' }}>
-        <div className="card center" style={{ flexDirection: 'column', gap: 10 }}>
+      <div className="grid" style={{ gridTemplateColumns: narrow ? '1fr' : `${side}px minmax(0,1fr)`, alignItems: 'start' }}>
+        {/* 왼쪽 — 고른 날의 달만 크게 */}
+        <div className="stage" style={{ width: side, maxWidth: '100%', height: side, margin: narrow ? '0 auto' : 0,
+          background: '#05070E', display: 'flex', flexDirection: 'column', alignItems: 'center',
+          justifyContent: 'center', gap: 10 }}>
           <MoonImage size={bigR} phase={cur.p} elat={cur.lib.elat} elon={cur.lib.elon} />
-          <div className="big" style={{ color: 'var(--moon)' }}>
+          <div className="big" style={{ color: 'var(--moon)', textAlign: 'center' }}>
             {phaseName(cur.p)}{phaseTerm(cur.p) && <span className="term">{phaseTerm(cur.p)}</span>}
-          </div>
-          <div className="rows" style={{ width: '100%' }}>
-            <div className="r"><span>날짜</span><b>{fmtMD(cur.date)}</b></div>
-            <div className="r"><span>음력</span><b>{lunarDate(cur.date)?.ko || '—'}</b></div>
-            <div className="r"><span>월출</span><b>{fmtKST(cur.rise)}</b></div>
-            <div className="r"><span>월몰</span><b>{fmtKST(cur.set)}</b></div>
-          </div>
-          <div className="toolrow" style={{ width: '100%' }}>
-            <button className={'btn' + (playing ? ' on' : '')} onClick={() => setPlaying(!playing)}>
-              {playing ? '멈춤' : '한 달 재생'}
-            </button>
-            <button className="btn" onClick={() => { setPlaying(false); setDate(cur.date) }}>
-              이 날로 이동
-            </button>
           </div>
         </div>
 
-        <div className="card">
-          <h3>한 달 동안 달의 모양</h3>
-          <div style={{
-            display: 'grid', gap: 8,
-            gridTemplateColumns: 'repeat(auto-fill,minmax(' + (big ? 108 : 92) + 'px,1fr))'
-          }}>
-            {days.map(d => {
-              const active = d.i === cursor
-              const r = big ? 40 : 34
-              return (
-                <button key={d.i}
-                  onClick={() => { setPlaying(false); setCursor(d.i) }}
-                  style={{
-                    background: active ? 'var(--panel-2)' : 'transparent',
-                    border: '1px solid ' + (active ? 'var(--moon)' : d.isToday ? 'var(--sky)' : 'var(--line-soft)'),
-                    borderRadius: 11, padding: '9px 4px 7px', cursor: 'pointer',
-                    display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 4
-                  }}>
-                  <MoonImage size={r} phase={d.p} elat={d.lib.elat} elon={d.lib.elon} ring={false} />
-                  <span className="mono" style={{ fontSize: '.78em', color: 'var(--text-2)' }}>
-                    {fmtMD(d.date)}
-                  </span>
-                  <span className="mono" style={{ fontSize: '.72em', color: 'var(--muted)' }}>
-                    {d.rise ? fmtKST(d.rise) + ' 뜸' : '—'}
-                  </span>
-                </button>
-              )
-            })}
+        {/* 오른쪽 — 그날의 자료와 한 달 목록 */}
+        <div style={{ display: 'flex', flexDirection: 'column', gap: 14, minWidth: 0 }}>
+          <div className="card">
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit,minmax(130px,180px))', gap: 8 }}>
+              {[['날짜', fmtMD(cur.date)], ['음력', lunarDate(cur.date)?.ko || '—'],
+                ['월출', fmtKST(cur.rise)], ['월몰', fmtKST(cur.set)]].map(([k, v]) => (
+                <div key={k} style={{ background: 'var(--panel-2)', borderRadius: 9, padding: '7px 11px' }}>
+                  <div style={{ color: 'var(--muted)', fontSize: '.78em' }}>{k}</div>
+                  <div style={{ fontWeight: 600, fontVariantNumeric: 'tabular-nums' }}>{v}</div>
+                </div>
+              ))}
+            </div>
+            <div className="toolrow" style={{ marginTop: 12 }}>
+              <button className={'btn' + (playing ? ' on' : '')} onClick={() => setPlaying(!playing)}>
+                {playing ? '멈춤' : '한 달 재생'}
+              </button>
+              <button className="btn" onClick={() => { setPlaying(false); setDate(cur.date) }}>
+                이 날로 이동
+              </button>
+            </div>
           </div>
-          <p className="hint">
-            파란 테두리가 오늘입니다. 달은 하루에 약 50분씩 늦게 뜹니다 — 목록의 월출 시각을 따라가 보세요.
-          </p>
+
+          <div className="card">
+            <h3>한 달 동안 달의 모양</h3>
+            <div style={{
+              display: 'grid', gap: 8,
+              gridTemplateColumns: 'repeat(auto-fill,minmax(' + (big ? 104 : 88) + 'px,1fr))'
+            }}>
+              {days.map(d => {
+                const active = d.i === cursor
+                const r = big ? 40 : 34
+                return (
+                  <button key={d.i}
+                    onClick={() => { setPlaying(false); setCursor(d.i) }}
+                    style={{
+                      background: active ? 'var(--panel-2)' : 'transparent',
+                      border: '1px solid ' + (active ? 'var(--moon)' : d.isToday ? 'var(--sky)' : 'var(--line-soft)'),
+                      borderRadius: 11, padding: '9px 4px 7px', cursor: 'pointer',
+                      display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 4
+                    }}>
+                    <MoonImage size={r} phase={d.p} elat={d.lib.elat} elon={d.lib.elon} ring={false} />
+                    <span className="mono" style={{ fontSize: '.78em', color: 'var(--text-2)' }}>
+                      {fmtMD(d.date)}
+                    </span>
+                    <span className="mono" style={{ fontSize: '.72em', color: 'var(--muted)' }}>
+                      {d.rise ? fmtKST(d.rise) + ' 뜸' : '—'}
+                    </span>
+                  </button>
+                )
+              })}
+            </div>
+            <p className="hint">
+              파란 테두리가 오늘입니다. 달은 하루에 약 50분씩 늦게 뜹니다 — 목록의 월출 시각을 따라가 보세요.
+            </p>
+          </div>
         </div>
       </div>
 
