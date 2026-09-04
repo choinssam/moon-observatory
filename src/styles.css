@@ -259,3 +259,6 @@ body[data-big="on"]{ --stage-max:52vh }
 .stdbox summary:hover{color:var(--text-2)}
 .stdbox .stdlist{margin-top:5px}
 @media (pointer:coarse){ .more-head{min-height:44px} }
+.btn:disabled{opacity:.45;cursor:not-allowed}
+.btn:disabled:hover{color:var(--text-2);border-color:var(--line)}
+.modal .spacer{flex:1 1 auto}
