@@ -79,10 +79,13 @@ h1,h2,h3,h4{margin:0;font-weight:700;letter-spacing:-.01em}
 .tabs .grp{align-self:center;color:var(--muted);font-size:.72em;letter-spacing:.1em;padding:0 8px 8px;white-space:nowrap}
 
 /* ---------- content ---------- */
-main{flex:1 1 auto;min-height:0;overflow:auto;padding:18px 16px 40px}
-.view{max-width:var(--maxw);margin:0 auto;display:flex;flex-direction:column;gap:16px}
-.vhead h2{font-size:1.32em}
-.vhead p{margin:5px 0 0;color:var(--muted);max-width:70ch;font-size:.94em}
+main{flex:1 1 auto;min-height:0;overflow:auto;padding:12px 16px 40px}
+.view{max-width:var(--maxw);margin:0 auto;display:flex;flex-direction:column;gap:12px}
+.vhead{display:flex;align-items:center;gap:6px 14px;flex-wrap:wrap;min-height:34px}
+.vhead h2{font-size:1.22em;display:flex;align-items:center;gap:6px;flex-wrap:wrap}
+.vhead .vdate{margin-left:auto;color:var(--muted);font-size:.86em;white-space:nowrap}
+.vhead .stdbox{margin:0}
+.vhead .stdbox[open]{flex-basis:100%}
 .std{
   font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-size:.74em;color:var(--moon);
   background:var(--moon-dim);padding:2px 7px;border-radius:5px;white-space:nowrap;margin-left:6px;
@@ -133,6 +136,7 @@ svg{display:block}
 
 /* 3D·그림 무대는 화면 높이를 넘지 않게 */
 .stage > svg, .card svg{ max-height:var(--stage-max) }
+.fit svg,.solar svg,.season svg{ max-height:none }
 
 /* 크롬북처럼 세로가 좁은 화면: 여백과 글자를 줄여 한 화면에 담는다 */
 @media (max-height:860px){
@@ -268,21 +272,29 @@ body[data-big="on"]{ --stage-max:52vh }
 .solar{display:grid;gap:14px;align-items:stretch}
 .solar-orbit{grid-column:1;grid-row:1}
 .solar-globe{grid-column:2;grid-row:1;background:#05070E}
-.solar-info{grid-column:3;grid-row:1 / span 2;min-height:0;overflow:auto;display:flex;flex-direction:column;gap:12px;padding:18px}
+.side{min-height:0;overflow:auto;display:flex;flex-direction:column;gap:12px;padding:16px 18px}
+.side h3{margin-bottom:0}
+.solar-info{grid-column:3;grid-row:1 / span 2}
 .solar-sizes{grid-column:1 / span 2;grid-row:2;min-height:0}
 .solar-orbit > svg{width:100%;height:100%;max-height:none}
-.solar-cap{
-  position:absolute;left:12px;top:10px;z-index:2;pointer-events:none;
+.cap{
+  position:absolute;left:12px;top:10px;z-index:2;pointer-events:none;max-width:calc(100% - 24px);
   color:var(--muted);font-size:.84em;text-shadow:0 0 6px var(--panel),0 0 12px var(--panel);
 }
-.solar-cap-name{display:flex;align-items:center;gap:7px;color:var(--text);font-weight:700;font-size:1.02em}
-.solar-cap-name i{width:10px;height:10px;border-radius:50%;display:inline-block;box-shadow:0 0 8px currentColor}
-.solar-cap-hint{top:auto;bottom:10px;font-size:.8em}
-.solar-tools{
+.cap.right{left:auto;right:12px;text-align:right}
+.cap.bottom.right{max-width:60%}
+.cap b{color:var(--text-2)}
+.cap.name{display:flex;align-items:center;gap:7px;color:var(--text);font-weight:700;font-size:1.02em}
+.cap.name i{width:10px;height:10px;border-radius:50%;display:inline-block;box-shadow:0 0 8px currentColor}
+.cap.bottom{top:auto;bottom:10px;font-size:.8em}
+.stage-tools{
   position:absolute;left:10px;right:10px;bottom:10px;z-index:2;
   display:flex;gap:8px;align-items:center;flex-wrap:wrap;
 }
-.solar-tools .seg,.solar-tools .btn{background:rgba(26,33,52,.85);backdrop-filter:blur(4px)}
+.stage-tools .seg,.stage-tools .btn{background:rgba(26,33,52,.85);backdrop-filter:blur(4px)}
+.stage-tools .slider{flex:1 1 120px;min-width:100px;height:22px}
+.stage-tools .mono{color:var(--muted);font-size:.84em;white-space:nowrap}
+.stage-tools .mono.strong{color:var(--text);font-weight:700}
 .solar-date{margin-left:auto;color:var(--muted);font-size:.84em;white-space:nowrap}
 .solar-name{font-size:1.5em;letter-spacing:-.02em;margin:0;display:flex;align-items:baseline;gap:10px;flex-wrap:wrap}
 .solar-sub{font-size:.58em;font-weight:600;color:var(--muted);letter-spacing:0}
@@ -292,42 +304,42 @@ body[data-big="on"]{ --stage-max:52vh }
 .fact-k{color:var(--muted);font-size:.78em}
 .fact-v{font-weight:700;font-variant-numeric:tabular-nums;white-space:nowrap;font-size:1.05em}
 .solar-info .more{gap:12px;margin-top:2px}
-.solar-extra{border-top:1px solid var(--line);padding-top:14px;margin-top:2px}
-.solar-more{display:flex;flex-direction:column;gap:16px}
-.solar.compact .sizes{height:76px}
+.extra{border-top:1px solid var(--line);padding-top:14px;margin-top:2px}
+.extra-list{display:flex;flex-direction:column;gap:16px}
+.solar.compact .picks{height:76px}
 .solar.compact .solar-sizes{padding:8px 16px}
-.solar.compact .size-name{font-size:.82em}
-.solar-more h4{font-size:.95em;margin-bottom:8px;color:var(--text)}
+.solar.compact .pick-name{font-size:.82em}
+.extra h4{font-size:.95em;margin-bottom:8px;color:var(--text)}
 .solar-sizes{display:flex;gap:16px;align-items:center;padding:12px 16px}
 .solar-sizes-head{flex:0 0 auto;width:150px}
 .solar-sizes-head h3{margin-bottom:2px;flex-direction:column;align-items:flex-start;gap:0}
 .solar-sizes-head h3 small{color:var(--muted);font-size:.8em;font-weight:600}
 .solar-sizes-head .hint{margin:4px 0 0;font-size:.8em;line-height:1.45}
-.sizes{flex:1 1 auto;display:flex;align-items:stretch;min-width:0;height:108px}
-.size-cell{
+.picks{flex:1 1 auto;display:flex;align-items:stretch;min-width:0;height:108px}
+.pick{
   flex:1 1 0;min-width:0;border:0;background:transparent;cursor:pointer;border-radius:10px;
   display:flex;flex-direction:column;align-items:center;justify-content:flex-end;gap:4px;padding:4px 2px;
   color:var(--muted);position:relative;
 }
-.size-cell:hover{background:var(--panel-2);color:var(--text-2)}
-.size-cell.on{color:var(--moon)}
-.size-cell:focus-visible{outline:2px solid var(--sky);outline-offset:1px}
-.size-disc{flex:1 1 auto;display:flex;align-items:center;justify-content:center;width:100%}
-.size-disc i{display:block;border-radius:50%;transition:box-shadow .12s}
-.size-cell.on .size-disc i{box-shadow:0 0 0 3px var(--panel),0 0 0 5px var(--moon)}
-.size-name{font-size:.9em;font-weight:600;white-space:nowrap;line-height:1.15;display:flex;flex-direction:column;align-items:center}
-.size-name small{font-size:.76em;font-weight:500;color:var(--muted);font-variant-numeric:tabular-nums}
-.size-cell.on .size-name small{color:var(--moon);opacity:.8}
+.pick:hover{background:var(--panel-2);color:var(--text-2)}
+.pick.on{color:var(--moon)}
+.pick:focus-visible{outline:2px solid var(--sky);outline-offset:1px}
+.pick-disc{flex:1 1 auto;display:flex;align-items:center;justify-content:center;width:100%}
+.pick-disc i{display:block;border-radius:50%;transition:box-shadow .12s}
+.pick.on .pick-disc i{box-shadow:0 0 0 3px var(--panel),0 0 0 5px var(--moon)}
+.pick-name{font-size:.9em;font-weight:600;white-space:nowrap;line-height:1.15;display:flex;flex-direction:column;align-items:center}
+.pick-name small{font-size:.76em;font-weight:500;color:var(--muted);font-variant-numeric:tabular-nums}
+.pick.on .pick-name small{color:var(--moon);opacity:.8}
 /* 태양은 같은 비율로 그리면 칸을 한참 넘친다. 가장자리만 보이게 잘라 그 크기를 느끼게 한다 */
-.size-cell.sun{flex:0 0 84px;overflow:hidden;justify-content:flex-end;border-radius:10px}
-.size-sun{
+.pick.sun{flex:0 0 84px;overflow:hidden;justify-content:flex-end;border-radius:10px}
+.pick-sun{
   position:absolute;left:-176px;top:50%;width:250px;height:250px;border-radius:50%;
   transform:translateY(-50%);background:radial-gradient(circle at 70% 50%,#FFF3C4,#FFAE33 45%,#C25A00);
   opacity:.9;
 }
-.size-cell.sun .size-name{position:relative;z-index:1;color:#181205;text-shadow:0 0 4px #FFD98A}
-.size-cell.sun .size-name small{color:#3a2a08}
-.size-cell.sun.on{outline:2px solid var(--moon);outline-offset:-2px}
+.pick.sun .pick-name{position:relative;z-index:1;color:#181205;text-shadow:0 0 4px #FFD98A}
+.pick.sun .pick-name small{color:#3a2a08}
+.pick.sun.on{outline:2px solid var(--moon);outline-offset:-2px}
 
 /* 폭이 모자라면 한 줄로 쌓는다 */
 .solar.narrow{grid-template-columns:1fr;grid-template-rows:none}
@@ -336,6 +348,109 @@ body[data-big="on"]{ --stage-max:52vh }
 .solar.narrow .solar-info{overflow:visible}
 .solar.narrow .solar-sizes{flex-direction:column;align-items:stretch}
 .solar.narrow .solar-sizes-head{width:auto}
-.solar.narrow .sizes{height:96px}
-.solar.narrow .size-name{font-size:.8em}
-@media (pointer:coarse){ .size-cell{min-height:44px} }
+.solar.narrow .picks{height:96px}
+.solar.narrow .pick-name{font-size:.8em}
+@media (pointer:coarse){ .pick{min-height:44px} }
+
+/* ---------- 태블릿 가로: 정사각형 둘을 위에, 나머지를 아래에 ---------- */
+.solar.medium{grid-template-columns:1fr 1fr}
+.solar.medium .solar-orbit{grid-column:1;grid-row:1}
+.solar.medium .solar-globe{grid-column:2;grid-row:1}
+.solar.medium .solar-sizes{grid-column:1 / span 2;grid-row:2}
+.solar.medium .solar-info{grid-column:1 / span 2;grid-row:3;overflow:visible}
+.solar.medium .facts{grid-template-columns:repeat(3,minmax(0,1fr))}
+.solar.medium .extra-list,.solar.narrow .extra-list{flex-direction:row;flex-wrap:wrap}
+.solar.medium .extra-list > *,.solar.narrow .extra-list > *{flex:1 1 280px}
+
+/* ---------- 공통: 정사각형 하나 + 옆 칸 ---------- */
+.fit{display:grid;gap:14px;align-items:stretch}
+.fit > .stage{min-height:0}
+.side-cards{display:grid;gap:14px;grid-template-columns:repeat(auto-fit,minmax(340px,1fr));align-content:start;align-items:start;min-height:0;overflow:auto}
+.side-cards .card{margin:0}
+.side .rows .r{padding:8px 12px}
+.extra{border-top:1px solid var(--line);padding-top:14px;margin-top:2px}
+.extra .card{padding:0;border:0;background:transparent}
+.extra .card h3{font-size:.95em}
+.termtable.tight{min-width:0;font-size:.84em}
+.termtable.tight th,.termtable.tight td{padding:6px 7px}
+.picks.snaps{height:auto}
+.picks.snaps .pick{padding:6px 4px;gap:6px}
+.picks.snaps .pick svg{display:block}
+
+/* ---------- 오늘의 달 · 하루의 태양과 달 ---------- */
+.tonight .stage.sky{display:flex;flex-direction:column;padding:38px 10px 8px;min-height:0}
+.tonight .sky-svg{flex:1 1 auto;min-height:0;width:100%;height:100%}
+.tonight .sky-tools{flex:0 0 auto;padding:4px 4px 0}
+.tonight .side .big{font-size:1.5em}
+
+/* ---------- 한 달 보기 ---------- */
+.month-head{display:flex;gap:12px;align-items:center;flex-wrap:wrap;padding:12px 14px}
+.month-grid{flex:1 1 auto;min-height:0;display:grid;gap:8px;grid-auto-rows:minmax(0,1fr)}
+.month-grid .day{
+  background:transparent;border:1px solid var(--line-soft);border-radius:11px;padding:6px 4px 5px;cursor:pointer;
+  display:flex;flex-direction:column;align-items:center;justify-content:center;gap:3px;min-width:0;min-height:0;color:var(--text-2);
+}
+.month-grid .day:hover{background:var(--panel-2)}
+.month-grid .day.today{border-color:var(--sky)}
+.month-grid .day.on{background:var(--panel-2);border-color:var(--moon)}
+.month-grid .day-md{font-size:.8em}
+.month-grid .day-rise{font-size:.72em;color:var(--muted)}
+.month.narrow .month-grid .day{padding:8px 4px}
+
+/* ---------- 밀물·썰물 ---------- */
+.tides.wide .tides-extra{grid-column:1 / span 2;grid-row:2;min-height:0;overflow:auto}
+.tides.wide.sidecol .tides-extra{grid-column:1 / span 3}
+.tides.wide.sidecol .status{grid-column:3;grid-row:1;overflow:auto}
+.tides.wide .extra-row{height:100%}
+.tides.wide .extra-row.four{grid-template-columns:repeat(4,minmax(0,1fr))}
+.tides.wide .extra-row.three{grid-template-columns:repeat(3,minmax(0,1fr))}
+.tides.wide .extra-row .card{min-height:0;overflow:auto}
+.tides .status h3{display:flex;align-items:baseline;gap:10px;margin-bottom:8px}
+.tides .status .facts{grid-template-columns:repeat(2,minmax(0,1fr))}
+.tides .status.line{display:flex;gap:16px;align-items:center;flex-wrap:wrap;padding:12px 16px}
+.tides .status.line h3{margin:0;flex:0 0 auto}
+.tides .status.line .facts{grid-template-columns:repeat(4,minmax(0,1fr));flex:1 1 420px}
+.tides .status.line .hint{flex:1 1 300px;margin:0}
+.tides .status.line .more{flex:0 0 auto}
+.tides .status.line .more .extra-row{grid-template-columns:repeat(3,minmax(0,1fr))}
+.tides .status.line .more.open{flex-basis:100%}
+.tides.narrow .stage{max-width:100%}
+.extra-row{display:grid;gap:14px;grid-template-columns:repeat(auto-fit,minmax(260px,1fr))}
+.extra-row .card{padding:14px;background:var(--panel);border:1px solid var(--line)}
+.extra-row .card h3{font-size:.95em}
+
+/* ---------- 일식·월식 ---------- */
+.eclipse .stage.photo{overflow:hidden}
+.photo-cap{
+  position:absolute;left:0;right:0;bottom:0;padding:40px 18px 16px;
+  background:linear-gradient(to top,rgba(5,7,14,.92),rgba(5,7,14,.6) 60%,transparent);
+}
+.photo-cap b{display:block;margin-bottom:4px}
+.photo-cap p{margin:0;color:var(--text-2);font-size:.92em}
+.photo-cap small{color:var(--muted);font-size:.8em}
+.eclipse.wide .side{overflow:auto}
+.eclipse .extra .extra-row .card{padding:0;border:0;background:transparent}
+
+/* ---------- 계절 변화 ---------- */
+.season{display:grid;gap:14px;grid-template-columns:repeat(2,minmax(0,1fr));align-items:stretch}
+.season .card{min-height:0;display:flex;flex-direction:column}
+.season .card h3 small{color:var(--muted);font-weight:600;font-size:.86em}
+.season .chart{grid-row:1}
+.season .chart-svg{flex:1 1 auto;min-height:0;width:100%;height:100%}
+.season .card:nth-child(3),.season .card:nth-child(4),.season .card:nth-child(5){grid-row:2}
+.season.wide{grid-template-columns:repeat(6,minmax(0,1fr))}
+.season.wide .chart{grid-column:span 3}
+.season.wide .card:nth-child(3),.season.wide .card:nth-child(4),.season.wide .card:nth-child(5){grid-column:span 2}
+.season .shadow-svg{width:100%;max-width:520px;height:auto;max-height:118px;flex:0 0 auto}
+.season.compact .shadow-svg{max-height:96px}
+.season.narrow{grid-template-columns:1fr}
+.season.narrow .card{grid-row:auto}
+.season.narrow .chart-svg{height:auto}
+.season .legend{gap:10px}
+
+/* ---------- 별자리 · 지구의 운동 ---------- */
+.stars .side,.earth .side{min-height:0}
+.stars .side h3 small{color:var(--muted);font-weight:600;font-size:.8em;margin-left:6px}
+.stage-tools .seg button{padding:5px 10px}
+
+.tides .fact-v{white-space:normal}

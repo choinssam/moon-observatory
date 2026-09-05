@@ -1,8 +1,8 @@
-import React, { useMemo, useState } from 'react'
-import More from '../lib/More.jsx'
+import React, { useMemo, useRef, useState } from 'react'
+import { Extra } from '../lib/More.jsx'
 import { moonPathD } from '../lib/moon.jsx'
 import MoonImage from '../lib/MoonImage.jsx'
-import { useViewport, moonSize } from '../lib/useViewport.js'
+import { useFit } from '../lib/useFit.js'
 import {
   Astronomy, moonPhase01, moonIllum, phaseName, phaseTerm, phaseTip,
   riseSetTransit, horizonOf, trackFrom, nightWindowStart, azName, fmtKST, kstMidnight, searchPhase, lunarDate
@@ -22,8 +22,9 @@ function pt(alt, az) {
 const P = q => { const p = pt(q.alt, q.az); return `${p.x.toFixed(1)},${p.y.toFixed(1)}` }
 const DOME = `M${CX - R},${HY} A${R},${R} 0 0 1 ${CX + R},${HY} Z`
 
-export default function Tonight({ date, setDate, obs, loc, big, grade }) {
-  const vp = useViewport()
+export default function Tonight({ date, setDate, obs, loc, grade }) {
+  const rootRef = useRef(null)
+  const box = useFit(rootRef)
   const [focus, setFocus] = useState(grade === '6' ? 'sun' : 'moon')
   const sunMode = focus === 'sun'
   const dayKey = kstMidnight(date).getTime()
@@ -72,9 +73,16 @@ export default function Tonight({ date, setDate, obs, loc, big, grade }) {
   const p = moonPhase01(date)
   const lib = Astronomy.Libration(date)
   const illum = moonIllum(date)
-  /* 왼쪽 칸 너비에 맞춰 달을 키운다 — 칸이 비어 보이지 않게 */
-  const colW = Math.max(240, Math.min(vp.w * 0.22, 420))
-  const discR = Math.round(Math.max(96, Math.min(colW - 84, vp.h * 0.34, big ? 380 : 320)))
+
+  /* 배치: [지금 보는 천체 칸] [하늘 반구]. 반구 칸은 화면 높이를 다 쓴다 */
+  const wide = box.w >= 900
+  const colW = wide ? Math.round(Math.max(300, Math.min(box.w * 0.24, 430))) : box.w
+  const discR = wide
+    ? Math.max(120, Math.min(colW - 70, Math.round(box.h * 0.42)))
+    : Math.max(120, Math.min(300, Math.round(box.w * 0.5)))
+  const roomy = wide && box.h > discR + 560
+  const skyH = wide ? box.h : Math.round(Math.min(box.w * 0.6, box.h * 0.62))
+  const svgH = Math.max(200, skyH - 38 - 8 - 48)             // 제목 줄·여백·시각 줄을 뺀 높이
 
   const minInWin = Math.max(0, Math.min(1439, Math.round((date.getTime() - winKey) / 60000)))
   const clockAt = m => {
@@ -95,219 +103,215 @@ export default function Tonight({ date, setDate, obs, loc, big, grade }) {
   const endPt = arr => arr.length ? pt(0, arr[arr.length - 1].az) : null
   const startPt = arr => arr.length ? pt(0, arr[0].az) : null
 
-  return (
-    <>
-      <div className="grid" style={{ gridTemplateColumns: 'minmax(240px,22%) minmax(0,1fr)', alignItems: 'start' }}>
-        {/* 왼쪽: 지금 보고 있는 천체 */}
-        <div className="card center" style={{ flexDirection: 'column', gap: 12 }}>
+  const extras = (
+    <div className="extra-list">
+      {sunMode ? (
+        <div>
+          <h4>규칙을 찾아봅시다</h4>
+          <div className="rows">
+            <div className="r"><span>뜨는 곳 → 지는 곳</span><b>동쪽 → 서쪽</b></div>
+            <div className="r"><span>가장 높이 뜨는 때</span><b>낮 12시 30분쯤 · 남쪽</b></div>
+            <div className="r"><span>한 시간에 움직이는 각</span><b>약 15°</b></div>
+          </div>
+          <p className="hint">달과 별도 같은 방향으로 움직입니다. 셋 다 지구의 자전 때문입니다. '별자리' 화면에서 시각을 밀어 확인해 보세요.</p>
+        </div>
+      ) : (
+        <div>
+          <h4>달이 뜨고 지는 시각</h4>
+          <div className="rows">
+            <div className="r"><span>월출</span><b>{fmtKST(rs.rise)}</b></div>
+            <div className="r"><span>남중 (가장 높이)</span><b>{fmtKST(rs.transit)} · {rs.transitAlt != null ? rs.transitAlt.toFixed(0) + '°' : '—'}</b></div>
+            <div className="r"><span>월몰</span><b>{fmtKST(rs.set)}</b></div>
+          </div>
+        </div>
+      )}
+      <div>
+        <h4>해가 뜨고 지는 시각</h4>
+        <div className="rows">
+          <div className="r"><span>일출</span><b>{fmtKST(sunRs.rise)}</b></div>
+          <div className="r"><span>일몰</span><b>{fmtKST(sunRs.set)}</b></div>
+          <div className="r"><span>낮의 길이</span><b>{sunRs.rise && sunRs.set ? ((sunRs.set - sunRs.rise) / 3600000).toFixed(1) + '시간' : '—'}</b></div>
+        </div>
+        <p className="hint">해가 지고 나서 하늘이 충분히 어두워지는 데 30분쯤 더 걸립니다.</p>
+      </div>
+      <div>
+        <h4>{sunMode ? '달은 어디에' : '다음 보름과 삭'}</h4>
+        <div className="rows">
           {sunMode ? (
             <>
-              <svg width={discR} height={discR} viewBox="-50 -50 100 100" role="img" aria-label="태양">
-                <defs>
-                  <radialGradient id="sunDisc">
-                    <stop offset="0%" stopColor="#FFF6D6" />
-                    <stop offset="55%" stopColor="#FFB03A" />
-                    <stop offset="100%" stopColor="#C85A00" />
-                  </radialGradient>
-                </defs>
-                <circle r="46" fill="url(#sunDisc)" />
-                <circle r="46" fill="none" stroke="#FFD27A" strokeOpacity=".5" />
-              </svg>
-              <div className="big" style={{ color: 'var(--sun)' }}>{sunNow.alt > 0 ? '태양이 떠 있음' : '태양이 진 뒤'}</div>
-              <div className="rows" style={{ width: '100%' }}>
-                <div className="r"><span>일출</span><b>{fmtKST(sunRs.rise)}</b></div>
-                <div className="r"><span>남중 (가장 높이)</span><b>{fmtKST(sunRs.transit)} · {sunRs.transitAlt != null ? sunRs.transitAlt.toFixed(0) + '°' : '—'}</b></div>
-                <div className="r"><span>일몰</span><b>{fmtKST(sunRs.set)}</b></div>
-                <div className="r"><span>지금 고도</span><b>{sunNow.alt.toFixed(1)}°</b></div>
-                <div className="r"><span>지금 방위</span><b>{azName(sunNow.az)}쪽 {sunNow.az.toFixed(0)}°</b></div>
-              </div>
-              <div className="note" style={{ width: '100%' }}>
-                태양은 동쪽에서 떠서 남쪽 하늘을 지나 서쪽으로 집니다. 한 시간에 약 15°씩 움직입니다.
-                태양이 움직이는 게 아니라, <b>지구가 서에서 동으로 자전</b>하기 때문에 그렇게 보입니다.
-              </div>
+              <div className="r"><span>오늘의 달</span><b>{phaseName(p)}</b></div>
+              <div className="r"><span>월출</span><b>{fmtKST(rs.rise)}</b></div>
+              <div className="r"><span>월몰</span><b>{fmtKST(rs.set)}</b></div>
             </>
           ) : (
             <>
-              <MoonImage size={discR} phase={p} elat={lib.elat} elon={lib.elon} />
-              <div className="big" style={{ color: 'var(--moon)' }}>
-                {phaseName(p)}{phaseTerm(p) && <span className="term">{phaseTerm(p)}</span>}
-              </div>
-              <div className="rows" style={{ width: '100%' }}>
-                <div className="r"><span>음력</span><b>{lunarDate(date)?.ko || '—'}</b></div>
-                <div className="r"><span>밝은 부분</span><b>{(illum * 100).toFixed(0)}%</b></div>
-                <div className="r"><span>지금 고도</span><b>{now.alt.toFixed(1)}°</b></div>
-                <div className="r"><span>지금 방위</span><b>{azName(now.az)}쪽 {now.az.toFixed(0)}°</b></div>
-              </div>
-              <div className="note" style={{ width: '100%' }}>{phaseTip(p)}</div>
+              <div className="r"><span>다음 보름달</span><b>{fmtKST(nextFull, true)}</b></div>
+              <div className="r"><span>다음 삭</span><b>{fmtKST(nextNew, true)}</b></div>
             </>
           )}
         </div>
+        <p className="hint">
+          {sunMode
+            ? '달도 하루 동안 동에서 서로 움직이지만, 뜨는 시각은 날마다 50분쯤 늦어집니다.'
+            : (rs.rise && rs.set && now.alt < 0
+              ? '지금은 지평선 아래에 있습니다. 시각을 옮겨 보세요.'
+              : '지금 하늘에 떠 있습니다.')}
+        </p>
+      </div>
+    </div>
+  )
 
-        {/* 오른쪽: 하늘 반구 */}
-        <div className="card" style={{ display: 'flex', flexDirection: 'column' }}>
-          <div className="toolrow" style={{ marginBottom: 6 }}>
-            <h3 style={{ marginBottom: 0 }}>
-              {sunMode ? '하루 동안 태양이 지나가는 길' : '오늘 밤 달이 지나가는 길'}
-              <span style={{ color: 'var(--muted)', fontWeight: 400, fontSize: '.86em' }}>남쪽을 바라보고 선 사람 머리 위의 하늘</span>
-            </h3>
-            <div className="spacer" />
-            <div className="seg">
-              <button aria-pressed={sunMode} onClick={() => setFocus('sun')}>태양</button>
-              <button aria-pressed={!sunMode} onClick={() => setFocus('moon')}>달</button>
-            </div>
-          </div>
-          <div style={{ flex: 1, display: 'flex', alignItems: 'center' }}>
-            <svg viewBox={`0 0 ${W} ${H}`} style={{ width: '100%', height: 'auto' }}
-              role="img" aria-label={sunMode ? '하루 동안 태양이 지나가는 길' : '오늘 밤 달이 지나가는 길'}>
+  return (
+    <div ref={rootRef} className={'fit tonight ' + (wide ? 'wide' : 'narrow')}
+      style={wide ? { gridTemplateColumns: `${colW}px minmax(0,1fr)`, height: box.h } : undefined}>
+      {/* 왼쪽: 지금 보고 있는 천체 */}
+      <div className="card side" style={{ alignItems: 'center', textAlign: 'center' }}>
+        {sunMode ? (
+          <>
+            <svg width={discR} height={discR} viewBox="-50 -50 100 100" role="img" aria-label="태양">
               <defs>
-                <radialGradient id="domeG" cx="50%" cy="100%" r="78%">
-                  <stop offset="0%" stopColor={sunMode ? '#2C4A86' : '#1C2C56'} />
-                  <stop offset="65%" stopColor={sunMode ? '#17264C' : '#0F1734'} />
-                  <stop offset="100%" stopColor="#090D20" />
+                <radialGradient id="sunDisc">
+                  <stop offset="0%" stopColor="#FFF6D6" />
+                  <stop offset="55%" stopColor="#FFB03A" />
+                  <stop offset="100%" stopColor="#C85A00" />
                 </radialGradient>
               </defs>
-
-              <path d={DOME} fill="url(#domeG)" stroke="var(--line)" strokeWidth="1.5" />
-
-              {[30, 60].map(a => {
-                const hw = R * Math.cos(a * RAD), y = HY - R * Math.sin(a * RAD)
-                return (
-                  <g key={a}>
-                    <line x1={CX - hw} y1={y} x2={CX + hw} y2={y} stroke="var(--line)" strokeDasharray="3 7" />
-                    <text x={CX + 8} y={y - 5} fill="var(--muted)" fontSize="12">고도 {a}°</text>
-                  </g>
-                )
-              })}
-              {[135, 180, 225].map(az => (
-                <polyline key={az} points={meridian(az)} fill="none" stroke="var(--line)" strokeDasharray="3 7" />
-              ))}
-
-              <rect x="0" y={HY} width={W} height={H - HY} fill="#0E1712" />
-              <line x1="0" y1={HY} x2={W} y2={HY} stroke="var(--muted)" strokeOpacity=".7" strokeWidth="1.5" />
-              {[[90, '동'], [135, '남동'], [180, '남'], [225, '남서'], [270, '서']].map(([az, ko]) => (
-                <text key={az} x={CX - R * Math.sin(az * RAD)} y={HY + 24} textAnchor="middle"
-                  fill="var(--text-2)" fontSize="15" fontWeight="600">{ko}</text>
-              ))}
-              <g transform={`translate(${CX},${HY})`} stroke="var(--text-2)" strokeWidth="2.2" strokeLinecap="round">
-                <circle cy="-24" r="5" fill="var(--text-2)" stroke="none" />
-                <path d="M0,-18 V-5 M-7,-13 H7 M0,-5 L-5,4 M0,-5 L5,4" fill="none" />
-              </g>
-
-              {/* 뒤에 놓이는 천체는 점선으로 */}
-              <polyline points={otherArc.pts.map(P).join(' ')} fill="none"
-                stroke={sunMode ? 'var(--moon)' : 'var(--sun)'} strokeOpacity=".4" strokeWidth="2.5" strokeDasharray="5 6" />
-              {/* 앞에 놓이는 천체의 길: 뜰 때부터 질 때까지 하나의 호 */}
-              <polyline points={mainArc.pts.map(P).join(' ')} fill="none"
-                stroke={sunMode ? 'var(--sun)' : 'var(--moon)'} strokeWidth="3.4" strokeLinecap="round" strokeLinejoin="round" />
-
-              {/* 시각 표시 */}
-              {mainArc.marks.map(q => {
-                const c = pt(q.alt, q.az)
-                return (
-                  <g key={q.t}>
-                    <circle cx={c.x} cy={c.y} r="3.2" fill={sunMode ? 'var(--sun)' : 'var(--moon)'} opacity=".85" />
-                    <text x={c.x} y={c.y - 10} textAnchor="middle" fill="var(--text-2)" fontSize="12">{q.label}시</text>
-                  </g>
-                )
-              })}
-              {/* 뜨는 곳 · 지는 곳 */}
-              {mainArc.rise && startPt(mainArc.pts) && (
-                <text x={startPt(mainArc.pts).x} y={HY + 44} textAnchor="middle" fill={sunMode ? 'var(--sun)' : 'var(--moon)'} fontSize="12">
-                  {fmtKST(mainArc.rise)} {sunMode ? '해돋이' : '달돋이'}
-                </text>
-              )}
-              {mainArc.set && endPt(mainArc.pts) && (
-                <text x={endPt(mainArc.pts).x} y={HY + 44} textAnchor="middle" fill={sunMode ? 'var(--sun)' : 'var(--moon)'} fontSize="12">
-                  {fmtKST(mainArc.set)} {sunMode ? '해넘이' : '달넘이'}
-                </text>
-              )}
-
-              {/* 지금 위치 */}
-              {main.alt > -1 && (
-                <g transform={`translate(${mainPt.x},${mainPt.y})`}>
-                  <circle r="14" fill="none" stroke="var(--sky)" strokeWidth="2" />
-                  {sunMode
-                    ? <circle r="9" fill="url(#sunDisc)" />
-                    : <><circle r="9" fill="var(--shadow-side)" /><path d={moonPathD(9, p)} fill="var(--moon)" /></>}
-                </g>
-              )}
-
-              <text x={14} y={H - 14} fill="var(--muted)" fontSize="12">
-                지평선 0° · 점선은 고도 30°·60° · 반구 꼭대기가 머리 위 90°
-              </text>
-              <text x={W - 14} y={H - 14} textAnchor="end" fill="var(--muted)" fontSize="12">
-                {sunMode ? '실선은 태양이 뜰 때부터 질 때까지 · 점선 호는 달' : '실선은 달이 뜰 때부터 질 때까지 · 점선 호는 태양'}
-              </text>
+              <circle r="46" fill="url(#sunDisc)" />
+              <circle r="46" fill="none" stroke="#FFD27A" strokeOpacity=".5" />
             </svg>
-          </div>
-
-          <div className="toolrow" style={{ marginTop: 8 }}>
-            <span className="mono" style={{ color: 'var(--muted)' }}>시각</span>
-            <input className="slider" style={{ flex: 1 }} type="range" min="0" max="1439" step="10"
-              value={minInWin} onChange={e => setMinutes(Number(e.target.value))}
-              aria-label="하루 중 시각" />
-            <b className="mono" style={{ minWidth: '4.5em', textAlign: 'right' }}>{clockAt(minInWin)}</b>
-          </div>
-        </div>
-      </div>
-
-      <More title="뜨고 지는 시각 자세히" count="3">
-      <div className="grid" style={{ gridTemplateColumns: 'repeat(auto-fit,minmax(250px,1fr))' }}>
-        {sunMode ? (
-          <div className="card">
-            <h3>규칙을 찾아봅시다</h3>
-            <div className="rows">
-              <div className="r"><span>뜨는 곳 → 지는 곳</span><b>동쪽 → 서쪽</b></div>
-              <div className="r"><span>가장 높이 뜨는 때</span><b>낮 12시 30분쯤 · 남쪽</b></div>
-              <div className="r"><span>한 시간에 움직이는 각</span><b>약 15°</b></div>
+            <div className="big" style={{ color: 'var(--sun)' }}>{sunNow.alt > 0 ? '태양이 떠 있음' : '태양이 진 뒤'}</div>
+            <div className="rows" style={{ width: '100%', textAlign: 'left' }}>
+              <div className="r"><span>일출</span><b>{fmtKST(sunRs.rise)}</b></div>
+              <div className="r"><span>남중 (가장 높이)</span><b>{fmtKST(sunRs.transit)} · {sunRs.transitAlt != null ? sunRs.transitAlt.toFixed(0) + '°' : '—'}</b></div>
+              <div className="r"><span>일몰</span><b>{fmtKST(sunRs.set)}</b></div>
+              <div className="r"><span>지금 고도</span><b>{sunNow.alt.toFixed(1)}°</b></div>
+              <div className="r"><span>지금 방위</span><b>{azName(sunNow.az)}쪽 {sunNow.az.toFixed(0)}°</b></div>
             </div>
-            <p className="hint">달과 별도 같은 방향으로 움직입니다. 셋 다 지구의 자전 때문입니다. '별자리' 화면에서 시각을 밀어 확인해 보세요.</p>
-          </div>
+            <div className="note" style={{ width: '100%', textAlign: 'left' }}>
+              태양은 동쪽에서 떠서 남쪽 하늘을 지나 서쪽으로 집니다. 한 시간에 약 15°씩 움직입니다.
+              태양이 움직이는 게 아니라, <b>지구가 서에서 동으로 자전</b>하기 때문에 그렇게 보입니다.
+            </div>
+          </>
         ) : (
-          <div className="card">
-            <h3>달이 뜨고 지는 시각</h3>
-            <div className="rows">
-              <div className="r"><span>월출</span><b>{fmtKST(rs.rise)}</b></div>
-              <div className="r"><span>남중 (가장 높이)</span><b>{fmtKST(rs.transit)} · {rs.transitAlt != null ? rs.transitAlt.toFixed(0) + '°' : '—'}</b></div>
-              <div className="r"><span>월몰</span><b>{fmtKST(rs.set)}</b></div>
+          <>
+            <MoonImage size={discR} phase={p} elat={lib.elat} elon={lib.elon} />
+            <div className="big" style={{ color: 'var(--moon)' }}>
+              {phaseName(p)}{phaseTerm(p) && <span className="term">{phaseTerm(p)}</span>}
             </div>
-          </div>
+            <div className="rows" style={{ width: '100%', textAlign: 'left' }}>
+              <div className="r"><span>음력</span><b>{lunarDate(date)?.ko || '—'}</b></div>
+              <div className="r"><span>밝은 부분</span><b>{(illum * 100).toFixed(0)}%</b></div>
+              <div className="r"><span>지금 고도</span><b>{now.alt.toFixed(1)}°</b></div>
+              <div className="r"><span>지금 방위</span><b>{azName(now.az)}쪽 {now.az.toFixed(0)}°</b></div>
+            </div>
+            <div className="note" style={{ width: '100%', textAlign: 'left' }}>{phaseTip(p)}</div>
+          </>
         )}
-        <div className="card">
-          <h3>해가 뜨고 지는 시각</h3>
-          <div className="rows">
-            <div className="r"><span>일출</span><b>{fmtKST(sunRs.rise)}</b></div>
-            <div className="r"><span>일몰</span><b>{fmtKST(sunRs.set)}</b></div>
-            <div className="r"><span>낮의 길이</span><b>{sunRs.rise && sunRs.set ? ((sunRs.set - sunRs.rise) / 3600000).toFixed(1) + '시간' : '—'}</b></div>
-          </div>
-          <p className="hint">해가 지고 나서 하늘이 충분히 어두워지는 데 30분쯤 더 걸립니다.</p>
-        </div>
-        <div className="card">
-          <h3>{sunMode ? '달은 어디에' : '다음 보름과 삭'}</h3>
-          <div className="rows">
-            {sunMode ? (
-              <>
-                <div className="r"><span>오늘의 달</span><b>{phaseName(p)}</b></div>
-                <div className="r"><span>월출</span><b>{fmtKST(rs.rise)}</b></div>
-                <div className="r"><span>월몰</span><b>{fmtKST(rs.set)}</b></div>
-              </>
-            ) : (
-              <>
-                <div className="r"><span>다음 보름달</span><b>{fmtKST(nextFull, true)}</b></div>
-                <div className="r"><span>다음 삭</span><b>{fmtKST(nextNew, true)}</b></div>
-              </>
-            )}
-          </div>
-          <p className="hint">
-            {sunMode
-              ? '달도 하루 동안 동에서 서로 움직이지만, 뜨는 시각은 날마다 50분쯤 늦어집니다.'
-              : (rs.rise && rs.set && now.alt < 0
-                ? '지금은 지평선 아래에 있습니다. 위 슬라이더로 시각을 옮겨 보세요.'
-                : '지금 하늘에 떠 있습니다.')}
-          </p>
+        <div style={{ width: '100%', textAlign: 'left' }}>
+          <Extra fold={!roomy} title="뜨고 지는 시각 자세히" count="3">{extras}</Extra>
         </div>
       </div>
-      </More>
-    </>
+
+      {/* 오른쪽: 하늘 반구 — 칸 높이를 다 쓴다 */}
+      <div className="stage sky" style={{ height: skyH }}>
+        <div className="cap">
+          <b>{sunMode ? '하루 동안 태양이 지나가는 길' : '오늘 밤 달이 지나가는 길'}</b> · 남쪽을 바라보고 선 사람 머리 위의 하늘
+        </div>
+        <div className="seg" style={{ position: 'absolute', right: 10, top: 8, zIndex: 2 }}>
+          <button aria-pressed={sunMode} onClick={() => setFocus('sun')}>태양</button>
+          <button aria-pressed={!sunMode} onClick={() => setFocus('moon')}>달</button>
+        </div>
+        <svg viewBox={`0 0 ${W} ${H}`} className="sky-svg" style={{ height: svgH }}
+          role="img" aria-label={sunMode ? '하루 동안 태양이 지나가는 길' : '오늘 밤 달이 지나가는 길'}>
+          <defs>
+            <radialGradient id="domeG" cx="50%" cy="100%" r="78%">
+              <stop offset="0%" stopColor={sunMode ? '#2C4A86' : '#1C2C56'} />
+              <stop offset="65%" stopColor={sunMode ? '#17264C' : '#0F1734'} />
+              <stop offset="100%" stopColor="#090D20" />
+            </radialGradient>
+          </defs>
+
+          <path d={DOME} fill="url(#domeG)" stroke="var(--line)" strokeWidth="1.5" />
+
+          {[30, 60].map(a => {
+            const hw = R * Math.cos(a * RAD), y = HY - R * Math.sin(a * RAD)
+            return (
+              <g key={a}>
+                <line x1={CX - hw} y1={y} x2={CX + hw} y2={y} stroke="var(--line)" strokeDasharray="3 7" />
+                <text x={CX + 8} y={y - 5} fill="var(--muted)" fontSize="12">고도 {a}°</text>
+              </g>
+            )
+          })}
+          {[135, 180, 225].map(az => (
+            <polyline key={az} points={meridian(az)} fill="none" stroke="var(--line)" strokeDasharray="3 7" />
+          ))}
+
+          <rect x="0" y={HY} width={W} height={H - HY} fill="#0E1712" />
+          <line x1="0" y1={HY} x2={W} y2={HY} stroke="var(--muted)" strokeOpacity=".7" strokeWidth="1.5" />
+          {[[90, '동'], [135, '남동'], [180, '남'], [225, '남서'], [270, '서']].map(([az, ko]) => (
+            <text key={az} x={CX - R * Math.sin(az * RAD)} y={HY + 24} textAnchor="middle"
+              fill="var(--text-2)" fontSize="15" fontWeight="600">{ko}</text>
+          ))}
+          <g transform={`translate(${CX},${HY})`} stroke="var(--text-2)" strokeWidth="2.2" strokeLinecap="round">
+            <circle cy="-24" r="5" fill="var(--text-2)" stroke="none" />
+            <path d="M0,-18 V-5 M-7,-13 H7 M0,-5 L-5,4 M0,-5 L5,4" fill="none" />
+          </g>
+
+          {/* 뒤에 놓이는 천체는 점선으로 */}
+          <polyline points={otherArc.pts.map(P).join(' ')} fill="none"
+            stroke={sunMode ? 'var(--moon)' : 'var(--sun)'} strokeOpacity=".4" strokeWidth="2.5" strokeDasharray="5 6" />
+          {/* 앞에 놓이는 천체의 길: 뜰 때부터 질 때까지 하나의 호 */}
+          <polyline points={mainArc.pts.map(P).join(' ')} fill="none"
+            stroke={sunMode ? 'var(--sun)' : 'var(--moon)'} strokeWidth="3.4" strokeLinecap="round" strokeLinejoin="round" />
+
+          {/* 시각 표시 */}
+          {mainArc.marks.map(q => {
+            const c = pt(q.alt, q.az)
+            return (
+              <g key={q.t}>
+                <circle cx={c.x} cy={c.y} r="3.2" fill={sunMode ? 'var(--sun)' : 'var(--moon)'} opacity=".85" />
+                <text x={c.x} y={c.y - 10} textAnchor="middle" fill="var(--text-2)" fontSize="12">{q.label}시</text>
+              </g>
+            )
+          })}
+          {/* 뜨는 곳 · 지는 곳 */}
+          {mainArc.rise && startPt(mainArc.pts) && (
+            <text x={startPt(mainArc.pts).x} y={HY + 44} textAnchor="middle" fill={sunMode ? 'var(--sun)' : 'var(--moon)'} fontSize="12">
+              {fmtKST(mainArc.rise)} {sunMode ? '해돋이' : '달돋이'}
+            </text>
+          )}
+          {mainArc.set && endPt(mainArc.pts) && (
+            <text x={endPt(mainArc.pts).x} y={HY + 44} textAnchor="middle" fill={sunMode ? 'var(--sun)' : 'var(--moon)'} fontSize="12">
+              {fmtKST(mainArc.set)} {sunMode ? '해넘이' : '달넘이'}
+            </text>
+          )}
+
+          {/* 지금 위치 */}
+          {main.alt > -1 && (
+            <g transform={`translate(${mainPt.x},${mainPt.y})`}>
+              <circle r="14" fill="none" stroke="var(--sky)" strokeWidth="2" />
+              {sunMode
+                ? <circle r="9" fill="url(#sunDisc)" />
+                : <><circle r="9" fill="var(--shadow-side)" /><path d={moonPathD(9, p)} fill="var(--moon)" /></>}
+            </g>
+          )}
+
+          <text x={14} y={H - 14} fill="var(--muted)" fontSize="12">
+            지평선 0° · 점선은 고도 30°·60° · 반구 꼭대기가 머리 위 90°
+          </text>
+          <text x={W - 14} y={H - 14} textAnchor="end" fill="var(--muted)" fontSize="12">
+            {sunMode ? '실선은 태양이 뜰 때부터 질 때까지 · 점선 호는 달' : '실선은 달이 뜰 때부터 질 때까지 · 점선 호는 태양'}
+          </text>
+        </svg>
+
+        <div className="toolrow sky-tools">
+          <span className="mono" style={{ color: 'var(--muted)' }}>시각</span>
+          <input className="slider" style={{ flex: 1 }} type="range" min="0" max="1439" step="10"
+            value={minInWin} onChange={e => setMinutes(Number(e.target.value))}
+            aria-label="하루 중 시각" />
+          <b className="mono" style={{ minWidth: '4.5em', textAlign: 'right' }}>{clockAt(minInWin)}</b>
+        </div>
+      </div>
+    </div>
   )
 }

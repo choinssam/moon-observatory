@@ -25,3 +25,13 @@ export default function More({ title = '더 알아보기', tag, count, children 
     </div>
   )
 }
+
+/**
+ * 옆 칸에 자리가 있으면(fold=false) 접지 않고 바로 보여 준다.
+ * 폭이 모자라 한 줄로 쌓일 때만 More 로 접는다.
+ */
+export function Extra({ fold, title = '더 알아보기', count, children }) {
+  return fold
+    ? <More title={title} count={count}>{children}</More>
+    : <div className="extra">{children}</div>
+}

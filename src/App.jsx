@@ -193,17 +193,17 @@ export default function App() {
                 ? stdOf(tab, grade).map(c => <span key={c} className="std">[{c}]</span>)
                 : <span className="std extra">더 알아보기</span>}
             </h2>
-            <p className="mono" style={{ color: 'var(--muted)' }}>
-              {fmtDateKST(date)} · {loc.name} (북위 {loc.lat.toFixed(2)}° 동경 {loc.lon.toFixed(2)}°)
-            </p>
             {stdOf(tab, grade).length > 0 && (
               <details className="stdbox">
-                <summary>성취기준 보기</summary>
+                <summary>성취기준</summary>
                 <ul className="stdlist">
                   {stdOf(tab, grade).map(c => <li key={c}><b>[{c}]</b> {STD[c]}</li>)}
                 </ul>
               </details>
             )}
+            <span className="vdate mono">
+              {fmtDateKST(date)} · {loc.name} (북위 {loc.lat.toFixed(2)}° 동경 {loc.lon.toFixed(2)}°)
+            </span>
           </div>
           <ExpandAll.Provider value={expand}><View {...ctx} /></ExpandAll.Provider>
 

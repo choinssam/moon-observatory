@@ -1,8 +1,8 @@
 import React, { useEffect, useMemo, useRef, useState } from 'react'
 import * as THREE from 'three'
 import { Astronomy, kstMidnight, fmtKST } from '../lib/astro.js'
-import { useViewport } from '../lib/useViewport.js'
-import More from '../lib/More.jsx'
+import { useFit } from '../lib/useFit.js'
+import { Extra } from '../lib/More.jsx'
 
 /* ---------- 별 자료: 적경(시), 적위(도), 밝기. lbl 은 이름을 붙일 별 ---------- */
 const UMA = [
@@ -163,7 +163,8 @@ function skyTexture(dark) {
 export default function StarMap({ date, setDate, obs, loc, grade }) {
   const hostRef = useRef(null)
   const layerRef = useRef(null)
-  const vp = useViewport()
+  const rootRef = useRef(null)
+  const box = useFit(rootRef)
   const dayKey = kstMidnight(date).getTime()
   const minutesOfDay = Math.round((date.getTime() - dayKey) / 60000)
   const [fs, setFs] = useState(false)
@@ -184,10 +185,11 @@ export default function StarMap({ date, setDate, obs, loc, grade }) {
   if (st.current.dark !== dark) { st.current.dark = dark; st.current.skyDirty = true }
   st.current.dirty = true
 
-  const narrow = vp.w < 1000
-  const stageH = narrow
-    ? Math.round(Math.min(vp.w * 0.72, vp.h * 0.5))
-    : Math.max(320, Math.round(Math.min(vp.w * 0.62 * 0.58, vp.h * 0.66)))
+  /* 배치: [하늘 무대 — 칸 높이에서 도구 줄만 뺀다] [설명 칸] */
+  const wide = box.w >= 960
+  const stageH = wide
+    ? Math.max(300, box.h - 54)
+    : Math.round(Math.min(box.w * 0.72, box.h * 0.55))
 
   useEffect(() => {
     const on = () => setFs(!!document.fullscreenElement)
@@ -473,123 +475,108 @@ export default function StarMap({ date, setDate, obs, loc, grade }) {
   }, [])
 
   return (
-    <>
-      <p className="hint" style={{ color: 'var(--muted)', margin: 0, maxWidth: 'none' }}>
-        밤하늘 한가운데 서 있는 모습입니다. <b style={{ color: 'var(--moon)' }}>끌어서 고개를 돌리고, 휠로 가까이 당겨 보세요.</b>
-        {six
-          ? ' 시각을 밀면 별이 동에서 서로 움직이고(자전), 계절 단추를 누르면 남쪽 하늘의 별자리가 바뀝니다(공전).'
-          : ' 시각을 밀면 별들이 북극성을 중심으로 돕니다. 북극성만 자리를 지키는 것을 찾아보세요.'}
-      </p>
-
-      <div className="grid" style={{ gridTemplateColumns: narrow ? '1fr' : 'minmax(0,1.9fr) minmax(280px,1fr)', alignItems: 'start' }}>
-        <div style={{ display: 'flex', flexDirection: 'column', gap: 10, minWidth: 0 }}>
-          <div className="stage" ref={hostRef} style={{ height: stageH, background: '#05070E' }}>
-            <div ref={layerRef} style={{ position: 'absolute', inset: 0, pointerEvents: 'none', overflow: 'hidden' }} />
-            <div style={{ position: 'absolute', left: 12, top: 10, color: 'var(--muted)', fontSize: '.82em', pointerEvents: 'none', textShadow: '0 0 6px #000' }}>
-              {dark ? '하늘이 충분히 어둡습니다' : '아직 밝아 별이 잘 보이지 않는 시각입니다'} · {fmtKST(date, true)} · {seasonNow}
-            </div>
-            <div style={{ position: 'absolute', right: 12, top: 10, display: 'flex', gap: 6 }}>
-              <button className="fsbtn" style={{ position: 'static' }} onClick={lookNorth}>북쪽</button>
-              <button className="fsbtn" style={{ position: 'static' }} onClick={lookSouth}>남쪽</button>
-              <button className="fsbtn" style={{ position: 'static' }} onClick={toggleFs}>{fs ? '✕ 닫기' : '⛶ 전체 화면'}</button>
-            </div>
+    <div ref={rootRef} className={'fit stars ' + (wide ? 'wide' : 'narrow')}
+      style={wide ? { gridTemplateColumns: 'minmax(0,1fr) minmax(300px,24%)', height: box.h } : undefined}>
+      <div style={{ display: 'flex', flexDirection: 'column', gap: 10, minWidth: 0, minHeight: 0 }}>
+        <div className="stage" ref={hostRef} style={{ height: stageH, background: '#05070E', flex: '0 0 auto' }}>
+          <div ref={layerRef} style={{ position: 'absolute', inset: 0, pointerEvents: 'none', overflow: 'hidden' }} />
+          <div className="cap" style={{ textShadow: '0 0 6px #000, 0 0 12px #000' }}>
+            <b>끌어서 고개를 돌리고, 휠로 가까이 당겨 보세요</b>
+            <br />{dark ? '하늘이 충분히 어둡습니다' : '아직 밝아 별이 잘 보이지 않는 시각입니다'} · {fmtKST(date, true)} · {seasonNow}
           </div>
-          <div className="toolrow">
-            <span className="mono" style={{ color: 'var(--muted)' }}>시각</span>
-            <input className="slider" style={{ flex: 1, minWidth: 140 }} type="range" min="0" max="1439" step="5"
-              value={minutesOfDay} onChange={e => setDate(new Date(dayKey + Number(e.target.value) * 60000))}
-              aria-label="시각" />
-            <b className="mono" style={{ minWidth: '4.5em', textAlign: 'right' }}>
-              {String(Math.floor(minutesOfDay / 60)).padStart(2, '0')}:{String(minutesOfDay % 60).padStart(2, '0')}
-            </b>
-            <button className="btn" onClick={() => setDate(new Date(dayKey + 21 * 3600000))}>밤 9시</button>
-            <button className="btn" onClick={() => setDate(new Date(dayKey + 3 * 3600000))}>새벽 3시</button>
+          <div style={{ position: 'absolute', right: 12, top: 10, display: 'flex', gap: 6, zIndex: 2 }}>
+            <button className="fsbtn" style={{ position: 'static' }} onClick={lookNorth}>북쪽</button>
+            <button className="fsbtn" style={{ position: 'static' }} onClick={lookSouth}>남쪽</button>
+            <button className="fsbtn" style={{ position: 'static' }} onClick={toggleFs}>{fs ? '✕ 닫기' : '⛶ 전체 화면'}</button>
           </div>
+        </div>
+        <div className="toolrow">
+          <span className="mono" style={{ color: 'var(--muted)' }}>시각</span>
+          <input className="slider" style={{ flex: '1 1 140px', minWidth: 120 }} type="range" min="0" max="1439" step="5"
+            value={minutesOfDay} onChange={e => setDate(new Date(dayKey + Number(e.target.value) * 60000))}
+            aria-label="시각" />
+          <b className="mono" style={{ minWidth: '4.5em', textAlign: 'right' }}>
+            {String(Math.floor(minutesOfDay / 60)).padStart(2, '0')}:{String(minutesOfDay % 60).padStart(2, '0')}
+          </b>
+          <button className="btn" onClick={() => setDate(new Date(dayKey + 21 * 3600000))}>밤 9시</button>
+          <button className="btn" onClick={() => setDate(new Date(dayKey + 3 * 3600000))}>새벽 3시</button>
           {six ? (
-            <div className="toolrow">
-              <span className="mono" style={{ color: 'var(--muted)' }}>계절</span>
+            <>
+              <span className="mono" style={{ color: 'var(--muted)', marginLeft: 6 }}>계절</span>
               <div className="seg">
                 {SEASONS.map(([ko, md]) => (
                   <button key={ko} aria-pressed={seasonNow === ko} onClick={() => goSeason(md)}>{ko}</button>
                 ))}
               </div>
-              <span className="hint" style={{ margin: 0 }}>같은 밤 9시, 남쪽 하늘을 보면 계절마다 다른 별자리가 있습니다</span>
-            </div>
-          ) : (
-            <div className="toolrow">
-              <button className={'btn' + (all ? ' on' : '')} onClick={() => setAll(!all)}>계절 별자리도 보기</button>
-              <span className="hint" style={{ margin: 0 }}>
-                4학년은 <b>북극성 주변 별자리</b>만 다룹니다. 계절별 별자리는 교육과정에서 관련짓지 않도록 한 내용이라 기본으로 꺼 두었습니다(6학년 [6과12-03]).
-              </span>
-            </div>
-          )}
-        </div>
-
-        <div style={{ display: 'flex', flexDirection: 'column', gap: 14, minWidth: 0 }}>
-          {six ? (
-            <>
-              <div className="card">
-                <h3>하루 동안 별이 움직이는 까닭 — 자전</h3>
-                <p style={{ color: 'var(--text-2)', margin: 0, fontSize: '.94em' }}>
-                  태양처럼 별도 <b>동쪽에서 떠서 서쪽으로</b> 집니다. 한 시간에 약 15°씩, 하루에 한 바퀴.
-                  북쪽 하늘에서는 북극성을 중심으로 시계 반대 방향으로 도는 것처럼 보입니다.
-                  별이 도는 것이 아니라 <b>지구가 서에서 동으로 자전</b>하기 때문입니다.
-                </p>
-              </div>
-              <div className="card">
-                <h3>계절마다 별자리가 다른 까닭 — 공전</h3>
-                <p style={{ color: 'var(--text-2)', margin: 0, fontSize: '.94em' }}>
-                  지구가 태양 둘레를 돌면서 한밤중에 바라보는 하늘의 방향이 조금씩 바뀝니다.
-                  그래서 같은 밤 9시에도 남쪽 하늘의 별자리가 계절마다 다릅니다.
-                </p>
-                <div className="rows" style={{ marginTop: 10 }}>
-                  <div className="r"><span>봄</span><b>사자자리 · 봄철 대곡선</b></div>
-                  <div className="r"><span>여름</span><b>백조자리 · 여름철 대삼각형</b></div>
-                  <div className="r"><span>가을</span><b>페가수스자리</b></div>
-                  <div className="r"><span>겨울</span><b>오리온자리 · 겨울철 대삼각형</b></div>
-                </div>
-                <p className="hint">북두칠성·카시오페이아·북극성은 일 년 내내 북쪽 하늘에 있습니다. '지구의 운동' 화면에서 공전과 함께 보세요.</p>
-              </div>
             </>
           ) : (
-            <>
-              <div className="card">
-                <h3>별이란?</h3>
-                <p style={{ color: 'var(--text-2)', margin: 0, fontSize: '.94em' }}>
-                  <b>태양처럼 스스로 빛을 내는 천체</b>입니다. 너무 멀리 있어서 점으로 보입니다.
-                  달과 행성은 별이 아닙니다 — 스스로 빛을 내지 못하고 햇빛을 되비쳐 보이는 것입니다.
-                  별들을 이어 동물이나 물건 모양으로 이름 붙인 것이 별자리입니다.
-                </p>
-              </div>
-              <div className="card">
-                <h3>북극성 찾는 법</h3>
-                <p style={{ color: 'var(--text-2)', margin: 0, fontSize: '.94em' }}>
-                  북두칠성 국자의 끝 두 별(메라크 → 두베)을 이어 그 간격의 <b>5배</b>만큼 늘이면 북극성입니다.
-                  하늘의 노란 점선이 그 길입니다. 북두칠성이 지평선 아래일 때는 반대편 카시오페이아자리로 찾습니다.
-                </p>
-              </div>
-              <More title="왜 북극성만 안 움직일까" tag="더 알아보기">
-                <div className="card">
-                  <p style={{ color: 'var(--text-2)', margin: 0, fontSize: '.94em' }}>
-                    지구의 자전축을 하늘 쪽으로 쭉 늘이면 그 끝 근처에 북극성이 있습니다.
-                    축 위에 있으니 지구가 아무리 돌아도 자리가 거의 바뀌지 않고, 나머지 별들이 그 둘레를 도는 것처럼 보입니다.
-                    점선 원은 북극성에서 20°·40° 떨어진 거리입니다.
-                  </p>
-                </div>
-              </More>
-            </>
+            <button className={'btn' + (all ? ' on' : '')} onClick={() => setAll(!all)}
+              title="4학년은 북극성 주변 별자리만 다룹니다. 계절별 별자리는 6학년 [6과12-03] 내용이라 기본으로 꺼 두었습니다">
+              계절 별자리도 보기
+            </button>
           )}
-          <div className="card">
-            <h3>지금 하늘</h3>
-            <div className="rows">
-              <div className="r"><span>보고 있는 시각</span><b>{fmtKST(date, true)}</b></div>
-              <div className="r"><span>북극성의 고도</span><b>{loc.lat.toFixed(1)}°</b></div>
-              <div className="r"><span>이 지역의 위도</span><b>{loc.lat.toFixed(2)}°</b></div>
-            </div>
-            <p className="hint">북극성의 고도는 그 지역의 위도와 같습니다. 제주에서는 낮게, 강원도에서는 높게 보입니다.</p>
-          </div>
         </div>
       </div>
-    </>
+
+      <div className="card side">
+        {six ? (
+          <>
+            <h3>하루 동안 별이 움직이는 까닭 <small>자전</small></h3>
+            <p style={{ color: 'var(--text-2)', margin: 0, fontSize: '.94em' }}>
+              태양처럼 별도 <b>동쪽에서 떠서 서쪽으로</b> 집니다. 한 시간에 약 15°씩, 하루에 한 바퀴.
+              북쪽 하늘에서는 북극성을 중심으로 시계 반대 방향으로 도는 것처럼 보입니다.
+              별이 도는 것이 아니라 <b>지구가 서에서 동으로 자전</b>하기 때문입니다.
+            </p>
+            <h3 style={{ marginTop: 6 }}>계절마다 별자리가 다른 까닭 <small>공전</small></h3>
+            <p style={{ color: 'var(--text-2)', margin: 0, fontSize: '.94em' }}>
+              지구가 태양 둘레를 돌면서 한밤중에 바라보는 하늘의 방향이 조금씩 바뀝니다.
+              그래서 같은 밤 9시에도 남쪽 하늘의 별자리가 계절마다 다릅니다.
+            </p>
+            <div className="rows">
+              <div className="r"><span>봄</span><b>사자자리 · 봄철 대곡선</b></div>
+              <div className="r"><span>여름</span><b>백조자리 · 여름철 대삼각형</b></div>
+              <div className="r"><span>가을</span><b>페가수스자리</b></div>
+              <div className="r"><span>겨울</span><b>오리온자리 · 겨울철 대삼각형</b></div>
+            </div>
+            <p className="hint" style={{ margin: 0 }}>북두칠성·카시오페이아·북극성은 일 년 내내 북쪽 하늘에 있습니다. '지구의 운동' 화면에서 공전과 함께 보세요.</p>
+          </>
+        ) : (
+          <>
+            <h3>별이란?</h3>
+            <p style={{ color: 'var(--text-2)', margin: 0, fontSize: '.94em' }}>
+              <b>태양처럼 스스로 빛을 내는 천체</b>입니다. 너무 멀리 있어서 점으로 보입니다.
+              달과 행성은 별이 아닙니다. 스스로 빛을 내지 못하고 햇빛을 되비쳐 보이는 것입니다.
+              별들을 이어 동물이나 물건 모양으로 이름 붙인 것이 별자리입니다.
+            </p>
+            <h3 style={{ marginTop: 6 }}>북극성 찾는 법</h3>
+            <p style={{ color: 'var(--text-2)', margin: 0, fontSize: '.94em' }}>
+              북두칠성 국자의 끝 두 별(메라크, 두베)을 이어 그 간격의 <b>5배</b>만큼 늘이면 북극성입니다.
+              하늘의 노란 점선이 그 길입니다. 북두칠성이 지평선 아래일 때는 반대편 카시오페이아자리로 찾습니다.
+            </p>
+            <p className="hint" style={{ margin: 0 }}>
+              시각을 밀면 별들이 북극성을 중심으로 돕니다. 북극성만 자리를 지키는 것을 찾아보세요.
+              4학년은 <b>북극성 주변 별자리</b>만 다룹니다. 계절별 별자리는 6학년 내용이라 기본으로 꺼 두었습니다.
+            </p>
+            <Extra fold={!wide} title="왜 북극성만 안 움직일까">
+              <h4>왜 북극성만 안 움직일까 <span className="std extra">더 알아보기</span></h4>
+              <p style={{ color: 'var(--text-2)', margin: 0, fontSize: '.94em' }}>
+                지구의 자전축을 하늘 쪽으로 쭉 늘이면 그 끝 근처에 북극성이 있습니다.
+                축 위에 있으니 지구가 아무리 돌아도 자리가 거의 바뀌지 않고, 나머지 별들이 그 둘레를 도는 것처럼 보입니다.
+                점선 원은 북극성에서 20°·40° 떨어진 거리입니다.
+              </p>
+            </Extra>
+          </>
+        )}
+        <div className="extra">
+          <h4>지금 하늘</h4>
+          <div className="rows">
+            <div className="r"><span>보고 있는 시각</span><b>{fmtKST(date, true)}</b></div>
+            <div className="r"><span>북극성의 고도</span><b>{loc.lat.toFixed(1)}°</b></div>
+            <div className="r"><span>이 지역의 위도</span><b>{loc.lat.toFixed(2)}°</b></div>
+          </div>
+          <p className="hint">북극성의 고도는 그 지역의 위도와 같습니다. 제주에서는 낮게, 강원도에서는 높게 보입니다.</p>
+        </div>
+      </div>
+    </div>
   )
 }

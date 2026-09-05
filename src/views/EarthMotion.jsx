@@ -1,5 +1,6 @@
 import React, { useEffect, useRef, useState } from 'react'
-import More from '../lib/More.jsx'
+import { Extra } from '../lib/More.jsx'
+import { useFit } from '../lib/useFit.js'
 import * as THREE from 'three'
 import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls.js'
 import { earthOrbitAngle, seasonsOf, fmtDateKST } from '../lib/astro.js'
@@ -22,6 +23,8 @@ const ZODIAC = [
 export default function EarthMotion({ date, setDate }) {
   const hostRef = useRef(null)
   const layerRef = useRef(null)
+  const rootRef = useRef(null)
+  const box = useFit(rootRef)
   const [spin, setSpin] = useState(true)
   const [tilted, setTilted] = useState(true)
   const [orbiting, setOrbiting] = useState(false)
@@ -164,10 +167,8 @@ export default function EarthMotion({ date, setDate }) {
     })
 
     function resize() {
-      const w = host.clientWidth
-      if (!w) return
-      const cap = Math.round(window.innerHeight * (window.innerHeight < 860 ? 0.48 : 0.54))
-      const h = Math.max(280, Math.min(Math.round(w * 0.58), cap))
+      const w = host.clientWidth, h = host.clientHeight
+      if (!w || !h) return
       renderer.setSize(w, h, false)
       renderer.domElement.style.width = w + 'px'
       renderer.domElement.style.height = h + 'px'
@@ -231,79 +232,91 @@ export default function EarthMotion({ date, setDate }) {
     return !best || d < best.d ? { s, d } : best
   }, null)
 
+  /* 배치: [3D 무대 — 칸 높이를 다 쓴다] [설명 칸]. 도구는 무대 안 아래쪽 */
+  const wide = box.w >= 1000
+  const sideW = Math.round(Math.max(300, Math.min(box.w * 0.24, 420)))
+  const stageH = wide ? box.h : Math.round(Math.min(box.w * 0.62, box.h * 0.6))
+  const nightSky = ZODIAC.reduce((b, z) => {
+    const d = angDist(angleDeg, z.elon)
+    return !b || d < b.d ? { z, d } : b
+  }, null).z.ko
+
   return (
-    <>
-      <p className="hint" style={{ color: 'var(--muted)', margin: 0, maxWidth: '74ch' }}>
-        지구는 하루에 한 번 스스로 돌고(자전), 일 년에 한 번 태양 둘레를 돕니다(공전).
-        햇빛을 받는 쪽이 낮, 반대쪽이 밤입니다. 빨간 점이 우리나라입니다. 지구를 두른 가는 고리는 적도, 기울어진 막대는 자전축입니다(달의 궤도가 아닙니다).
-      </p>
-
-      <div className="stage" ref={hostRef} style={{ position: 'relative' }}>
+    <div ref={rootRef} className={'fit earth ' + (wide ? 'wide' : 'narrow')}
+      style={wide ? { gridTemplateColumns: `minmax(0,1fr) ${sideW}px`, height: box.h } : undefined}>
+      <div className="stage" ref={hostRef} style={{ position: 'relative', height: stageH }}>
         <div ref={layerRef} style={{ position: 'absolute', inset: 0, pointerEvents: 'none' }} />
-      </div>
-
-      <div className="card">
-        <div className="toolrow" style={{ marginBottom: 10 }}>
+        <div className="cap">
+          <b>끌어서 돌리고, 휠로 확대</b> · 빨간 점이 우리나라 · 가는 고리는 적도 · 기울어진 막대는 자전축
+        </div>
+        <div className="stage-tools">
           <button className={'btn' + (spin ? ' on' : '')} onClick={() => setSpin(!spin)}>자전</button>
-          <button className={'btn' + (orbiting ? ' on' : '')} onClick={() => setOrbiting(!orbiting)}>공전 재생</button>
+          <button className={'btn' + (orbiting ? ' on' : '')} onClick={() => setOrbiting(!orbiting)}>{orbiting ? '■ 공전 멈춤' : '▶ 공전 재생'}</button>
           <button className={'btn' + (tilted ? ' on' : '')} onClick={() => setTilted(!tilted)}>
             자전축 기울기 {tilted ? '23.4°' : '0°'}
           </button>
           <button className="btn" onClick={() => { setOrbiting(false); setDayOfYear(dayIndex(new Date())) }}>오늘로</button>
-          <span className="mono" style={{ marginLeft: 'auto', color: 'var(--muted)' }}>
-            {fmtDateKST(shown)} · 공전 위치 {angleDeg.toFixed(0)}°
-          </span>
-        </div>
-        <input className="slider" type="range" min="0" max={daysInYear(year) - 1} step="1" value={dayOfYear}
-          onChange={e => { setOrbiting(false); setDayOfYear(Number(e.target.value)) }}
-          aria-label="일 년 중 날짜" />
-        <div className="toolrow" style={{ marginTop: 8 }}>
-          {seasons.map(s => (
-            <button key={s.key} className="btn"
-              onClick={() => { setOrbiting(false); setDayOfYear(dayIndex(s.date)) }}>
-              {s.name}
-            </button>
-          ))}
+          <input className="slider" type="range" min="0" max={daysInYear(year) - 1} step="1" value={dayOfYear}
+            onChange={e => { setOrbiting(false); setDayOfYear(Number(e.target.value)) }}
+            aria-label="일 년 중 날짜" />
+          <div className="seg">
+            {seasons.map(s => (
+              <button key={s.key} aria-pressed={nearest && nearest.s.key === s.key && Math.abs(s.date - shown) < 86400000 * 3}
+                onClick={() => { setOrbiting(false); setDayOfYear(dayIndex(s.date)) }}>
+                {s.name}
+              </button>
+            ))}
+          </div>
+          <span className="mono strong">{fmtDateKST(shown)} · 공전 위치 {angleDeg.toFixed(0)}°</span>
         </div>
       </div>
 
-      <More title="더 알아보기 — 낮과 밤 · 계절 별자리 · 절기" count="3">
-      <div className="grid" style={{ gridTemplateColumns: 'repeat(auto-fit,minmax(260px,1fr))' }}>
-        <div className="card">
-          <h3>낮과 밤이 생기는 까닭</h3>
-          <p style={{ color: 'var(--text-2)', margin: 0, fontSize: '.94em' }}>
-            지구가 하루에 한 바퀴 자전하기 때문에, 햇빛을 받는 쪽에 있을 때가 낮이고 반대쪽으로 돌아가면 밤입니다.
-            자전을 켜고 빨간 점을 따라가 보세요. 태양이 동쪽에서 떠서 서쪽으로 지는 것처럼 보이는 것도
-            지구가 서쪽에서 동쪽으로 자전하기 때문입니다.
-          </p>
+      <aside className="card side">
+        <h3>지구의 두 가지 운동</h3>
+        <div className="rows">
+          <div className="r"><span>자전</span><b>하루에 한 바퀴 · 서에서 동으로</b></div>
+          <div className="r"><span>공전</span><b>일 년에 한 바퀴 · 태양 둘레</b></div>
+          <div className="r"><span>자전축 기울기</span><b>23.4°</b></div>
+          <div className="r"><span>지금 한밤중 남쪽 하늘</span><b style={{ color: 'var(--moon)' }}>{nightSky}</b></div>
         </div>
-        <div className="card">
-          <h3>계절에 따라 별자리가 달라지는 까닭</h3>
-          <p style={{ color: 'var(--text-2)', margin: 0, fontSize: '.94em' }}>
-            지구가 공전하면서 한밤중에 태양 반대쪽에 오는 별자리가 달라집니다.
-            지금은 <b style={{ color: 'var(--moon)' }}>
-              {ZODIAC.reduce((b, z) => {
-                const d = angDist(angleDeg, z.elon)
-                return !b || d < b.d ? { z, d } : b
-              }, null).z.ko}
-            </b> 쪽이 한밤중 하늘에 옵니다. 태양과 같은 쪽에 있는 별자리는 낮에 떠 있어 볼 수 없습니다.
-          </p>
-        </div>
-        <div className="card">
-          <h3>{year}년 절기</h3>
-          <div className="rows">
-            {seasons.map(s => (
-              <div className="r" key={s.key}>
-                <span>{s.name}</span>
-                <b style={{ color: nearest && nearest.s.key === s.key ? 'var(--moon)' : undefined }}>
-                  {new Intl.DateTimeFormat('ko-KR', { timeZone: 'Asia/Seoul', month: 'numeric', day: 'numeric' }).format(s.date)}
-                </b>
+        <p className="hint" style={{ margin: 0 }}>
+          지구는 하루에 한 번 스스로 돌고(자전), 일 년에 한 번 태양 둘레를 돕니다(공전).
+          햇빛을 받는 쪽이 낮, 반대쪽이 밤입니다. 지구를 두른 가는 고리는 적도이고, 기울어진 막대는 자전축입니다(달의 궤도가 아닙니다).
+        </p>
+        <Extra fold={!wide} count="3">
+          <div className="extra-list">
+            <div>
+              <h4>낮과 밤이 생기는 까닭</h4>
+              <p style={{ color: 'var(--text-2)', margin: 0, fontSize: '.94em' }}>
+                지구가 하루에 한 바퀴 자전하기 때문에, 햇빛을 받는 쪽에 있을 때가 낮이고 반대쪽으로 돌아가면 밤입니다.
+                자전을 켜고 빨간 점을 따라가 보세요. 태양이 동쪽에서 떠서 서쪽으로 지는 것처럼 보이는 것도
+                지구가 서쪽에서 동쪽으로 자전하기 때문입니다.
+              </p>
+            </div>
+            <div>
+              <h4>계절에 따라 별자리가 달라지는 까닭</h4>
+              <p style={{ color: 'var(--text-2)', margin: 0, fontSize: '.94em' }}>
+                지구가 공전하면서 한밤중에 태양 반대쪽에 오는 별자리가 달라집니다.
+                지금은 <b style={{ color: 'var(--moon)' }}>{nightSky}</b> 쪽이 한밤중 하늘에 옵니다.
+                태양과 같은 쪽에 있는 별자리는 낮에 떠 있어 볼 수 없습니다.
+              </p>
+            </div>
+            <div>
+              <h4>{year}년 절기</h4>
+              <div className="rows">
+                {seasons.map(s => (
+                  <div className="r" key={s.key}>
+                    <span>{s.name}</span>
+                    <b style={{ color: nearest && nearest.s.key === s.key ? 'var(--moon)' : undefined }}>
+                      {new Intl.DateTimeFormat('ko-KR', { timeZone: 'Asia/Seoul', month: 'numeric', day: 'numeric' }).format(s.date)}
+                    </b>
+                  </div>
+                ))}
               </div>
-            ))}
+            </div>
           </div>
-        </div>
-      </div>
-      </More>
-    </>
+        </Extra>
+      </aside>
+    </div>
   )
 }

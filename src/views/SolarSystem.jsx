@@ -1,7 +1,8 @@
-import React, { useEffect, useLayoutEffect, useRef, useState } from 'react'
+import React, { useEffect, useRef, useState } from 'react'
 import { PLANETS, planetXY, addDays, fmtDateKST } from '../lib/astro.js'
 import PlanetGlobe from '../lib/PlanetGlobe.jsx'
-import More from '../lib/More.jsx'
+import { Extra } from '../lib/More.jsx'
+import { useFit, twoSquares } from '../lib/useFit.js'
 
 const FACTS = {
   태양: { tex: 'sun.jpg', tilt: 7.2, day: '25일 (적도)', period: null,
@@ -28,11 +29,6 @@ const FACTS = {
 const W = 720, CX = W / 2, CY = 348, RMAX = 296
 const maxDia = 142984
 const EARTH = 12756
-const GAP = 14, STRIP = 138, STRIP_COMPACT = 106   /* 칸 사이 간격 · 크기 비교 띠 높이 */
-
-function MaybeMore({ fold, children }) {
-  return fold ? <More title="더 알아보기" count="2">{children}</More> : <div className="solar-extra">{children}</div>
-}
 
 function Fact({ k, v }) {
   return (
@@ -44,40 +40,9 @@ function Fact({ k, v }) {
 }
 
 /*
- * 세 칸 배치: [궤도 정사각형] [행성 정사각형] [설명]  +  아래에 크기 비교 띠.
- * 정사각형 한 변은 남은 높이와 폭 중 작은 쪽으로 JS 에서 잰다.
- * 폭이 모자라면(태블릿·폰) 한 줄로 쌓는다.
+ * 배치: [궤도 정사각형] [행성 정사각형] [설명]  +  두 정사각형 아래 [크기 비교 띠]
+ * 정사각형 한 변은 남은 높이와 폭 중 작은 쪽. 폭이 모자라면 아래로 내려 쌓는다.
  */
-function useSquare(rootRef) {
-  const [sq, setSq] = useState(0)
-  const [compact, setCompact] = useState(false)
-  useLayoutEffect(() => {
-    const root = rootRef.current
-    if (!root) return
-    const measure = () => {
-      const r = root.getBoundingClientRect()
-      const gap = GAP
-      const availW = root.clientWidth
-      const availH = window.innerHeight - r.top - 18
-      const sideW = Math.max(300, Math.min(400, availW * 0.23))
-      const compact = availH < 640
-      const stripH = compact ? STRIP_COMPACT : STRIP
-      const byW = (availW - sideW - gap * 2) / 2
-      const byH = availH - stripH - gap
-      setSq(Math.floor(Math.min(byW, byH)))
-      setCompact(compact)
-    }
-    measure()
-    const ro = new ResizeObserver(measure)
-    ro.observe(root)
-    /* 큰 글씨 모드·제목 줄 높이가 바뀌면 위쪽 여백이 달라진다. 부모 높이 변화로 알아챈다 */
-    if (root.parentElement) ro.observe(root.parentElement)
-    window.addEventListener('resize', measure)
-    return () => { ro.disconnect(); window.removeEventListener('resize', measure) }
-  }, [rootRef])
-  return { sq, compact }
-}
-
 export default function SolarSystem({ date }) {
   const [mode, setMode] = useState('even')      // even | real
   const [offset, setOffset] = useState(0)
@@ -87,8 +52,10 @@ export default function SolarSystem({ date }) {
   const raf = useRef(0)
   const globeRef = useRef(null)
   const rootRef = useRef(null)
-  const { sq, compact } = useSquare(rootRef)
-  const narrow = sq < 380
+  const box = useFit(rootRef)
+  const L = twoSquares(box)
+  const { sq, compact, gap, strip } = L
+  const wide = L.mode === 'wide'
 
   useEffect(() => {
     if (!playing) return
@@ -120,7 +87,7 @@ export default function SolarSystem({ date }) {
   const sel = PLANETS.find(p => p.ko === picked)
   const f = FACTS[picked]
   const isSun = picked === '태양'
-  const sqStyle = narrow ? undefined : { width: sq, height: sq }
+  const sqStyle = sq ? { width: sq, height: sq } : undefined
 
   /* 이름표가 겹치면 아래로, 그래도 겹치면 옆으로 옮긴다 */
   const items = PLANETS.map((p, i) => {
@@ -139,13 +106,12 @@ export default function SolarSystem({ date }) {
     q.lx = lx; q.ly = ly; taken.push({ x: lx, y: ly })
   })
 
+  const gridStyle = wide
+    ? { gridTemplateColumns: `${sq}px ${sq}px minmax(0,1fr)`, gridTemplateRows: `${sq}px minmax(0,1fr)`, height: sq + gap + strip }
+    : undefined
+
   return (
-    <div ref={rootRef} className={'solar' + (narrow ? ' narrow' : '') + (compact ? ' compact' : '')}
-      style={narrow ? undefined : {
-        gridTemplateColumns: `${sq}px ${sq}px minmax(0,1fr)`,
-        gridTemplateRows: `${sq}px minmax(0,1fr)`,
-        height: sq + GAP + (compact ? STRIP_COMPACT : STRIP)
-      }}>
+    <div ref={rootRef} className={'solar ' + L.mode + (compact ? ' compact' : '')} style={gridStyle}>
 
       {/* 1. 궤도 그림 — 정사각형, 도구는 그림 안 아래쪽 */}
       <div className="stage solar-orbit" style={sqStyle}>
@@ -184,9 +150,9 @@ export default function SolarSystem({ date }) {
           })}
         </svg>
 
-        <div className="solar-cap">북쪽 위에서 내려다본 태양계 · 행성을 누르면 옆에 실제 모습</div>
+        <div className="cap">북쪽 위에서 내려다본 태양계 · 행성을 누르면 옆에 실제 모습</div>
 
-        <div className="solar-tools">
+        <div className="stage-tools">
           <div className="seg">
             <button aria-pressed={mode === 'even'} onClick={() => setMode('even')}>고르게</button>
             <button aria-pressed={mode === 'real'} onClick={() => setMode('real')}>실제 비율</button>
@@ -195,7 +161,7 @@ export default function SolarSystem({ date }) {
             {playing ? '■ 멈춤' : '▶ 돌려보기'}
           </button>
           <button className="btn" onClick={() => { setPlaying(false); setOffset(0) }} disabled={offset === 0 && !playing}>오늘로</button>
-          <span className="solar-date mono">{fmtDateKST(at)}</span>
+          <span className="mono" style={{ marginLeft: 'auto' }}>{fmtDateKST(at)}</span>
         </div>
       </div>
 
@@ -205,14 +171,14 @@ export default function SolarSystem({ date }) {
         <button className="fsbtn" onClick={toggleFs} aria-label={fs ? '전체 화면 닫기' : '전체 화면으로 보기'}>
           {fs ? '✕ 닫기' : '⛶ 전체 화면'}
         </button>
-        <div className="solar-cap solar-cap-name">
+        <div className="cap name">
           <i style={{ background: isSun ? 'var(--sun)' : sel.color }} />{picked}
         </div>
-        <div className="solar-cap solar-cap-hint">끌어서 돌리기 · 휠로 확대</div>
+        <div className="cap bottom">끌어서 돌리기 · 휠로 확대</div>
       </div>
 
       {/* 3. 설명과 숫자 */}
-      <aside className="card solar-info">
+      <aside className="card side solar-info">
         <h3 className="solar-name">{picked}
           <span className="solar-sub">{isSun ? '태양계의 중심 별' : `태양에서 ${PLANETS.indexOf(sel) + 1}번째 행성`}</span>
         </h3>
@@ -234,8 +200,8 @@ export default function SolarSystem({ date }) {
         </div>
 
         {/* 넓은 화면에서는 설명 칸에 자리가 남으니 바로 보여 준다. 좁은 화면에서만 접는다 */}
-        <MaybeMore fold={narrow}>
-          <div className="solar-more">
+        <Extra fold={L.mode === 'narrow'} count="2">
+          <div className="extra-list">
             <div>
               <h4>태양계의 다른 식구들</h4>
               <div className="rows">
@@ -261,7 +227,7 @@ export default function SolarSystem({ date }) {
               </p>
             </div>
           </div>
-        </MaybeMore>
+        </Extra>
       </aside>
 
       {/* 4. 크기 비교 띠 — 두 정사각형 아래 폭을 그대로 쓴다. 눌러서 고를 수 있다 */}
@@ -270,21 +236,21 @@ export default function SolarSystem({ date }) {
           <h3>크기 비교 <small>실제 비율</small></h3>
           <p className="hint">눌러서 고르기 · 사진은 탐사선 자료로 만든 지도</p>
         </div>
-        <div className="sizes">
-          <button className={'size-cell sun' + (isSun ? ' on' : '')} onClick={() => setPicked('태양')} aria-pressed={isSun}>
-            <span className="size-sun" aria-hidden="true" />
-            <span className="size-name">태양<small>109배</small></span>
+        <div className="picks">
+          <button className={'pick sun' + (isSun ? ' on' : '')} onClick={() => setPicked('태양')} aria-pressed={isSun}>
+            <span className="pick-sun" aria-hidden="true" />
+            <span className="pick-name">태양<small>109배</small></span>
           </button>
           {PLANETS.map(p => {
             const d = Math.max(7, Math.round((compact ? 52 : 72) * p.dia / maxDia))
             const on = p.ko === picked
             const ratio = p.dia / EARTH
             return (
-              <button key={p.ko} className={'size-cell' + (on ? ' on' : '')} onClick={() => setPicked(p.ko)} aria-pressed={on}>
-                <span className="size-disc" aria-hidden="true">
+              <button key={p.ko} className={'pick' + (on ? ' on' : '')} onClick={() => setPicked(p.ko)} aria-pressed={on}>
+                <span className="pick-disc" aria-hidden="true">
                   <i style={{ width: d, height: d, background: p.color }} />
                 </span>
-                <span className="size-name">{p.ko}<small>{ratio.toFixed(ratio < 1 ? 2 : 1)}배</small></span>
+                <span className="pick-name">{p.ko}<small>{ratio.toFixed(ratio < 1 ? 2 : 1)}배</small></span>
               </button>
             )
           })}

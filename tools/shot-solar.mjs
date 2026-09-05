@@ -10,7 +10,7 @@ fs.mkdirSync('C:/projects/moon-observatory/capture/solar', { recursive: true })
 for (const [VW, VH] of sizes) {
   const page = await browser.newPage()
   await page.setViewport({ width: VW, height: VH })
-  await page.goto('http://localhost:5183/', { waitUntil: 'networkidle0' })
+  await page.goto((process.env.URL || 'http://localhost:5183/'), { waitUntil: 'networkidle0' })
   await page.evaluate(() => localStorage.clear())
   await page.evaluate(() => { [...document.querySelectorAll('.seg button')].find(b => b.textContent.includes('4학년'))?.click() })
   await sleep(300)

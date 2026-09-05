@@ -1,14 +1,14 @@
 import React, { useEffect, useMemo, useRef, useState } from 'react'
-import More from '../lib/More.jsx'
 import MoonImage from '../lib/MoonImage.jsx'
-import { useViewport, moonSize } from '../lib/useViewport.js'
+import { useFit } from '../lib/useFit.js'
 import {
-  Astronomy, SYNODIC, moonPhase01, phaseName, phaseTerm, TERM_TABLE, lunarDate, riseSetTransit,
+  Astronomy, SYNODIC, moonPhase01, phaseName, phaseTerm, lunarDate, riseSetTransit,
   kstMidnight, addDays, fmtKST, fmtMD, searchPhase
 } from '../lib/astro.js'
 
 export default function MonthStrip({ date, setDate, obs, loc, big }) {
-  const vp = useViewport()
+  const rootRef = useRef(null)
+  const box = useFit(rootRef)
   const [cursor, setCursor] = useState(0)
   const [playing, setPlaying] = useState(false)
   const timer = useRef(0)
@@ -57,98 +57,80 @@ export default function MonthStrip({ date, setDate, obs, loc, big }) {
   }, [playing, days.length])
 
   const cur = days[Math.min(cursor, days.length - 1)] || days[0]
-  /* 고른 날의 달을 크게 — 무대는 정사각형으로 화면 높이에 맞춘다 */
-  const narrow = vp.w < 1000
-  const side = narrow
-    ? Math.max(260, Math.min(vp.w - 24, Math.round(vp.h * 0.42)))
-    : Math.max(320, Math.min(Math.round(vp.w * 0.34), Math.round(vp.h * 0.72)))
-  const bigR = Math.round(side * (big ? 0.78 : 0.72))
+
+  /* 배치: [고른 날의 달 — 정사각형] [그날의 자료 + 30일 목록]. 목록 칸은 정사각형 높이를 꽉 채운다 */
+  const gap = 14
+  const wide = box.w >= 900
+  const sq = wide ? Math.min(box.h, Math.round(box.w * 0.42)) : Math.min(box.w, Math.round(box.h * 0.5))
+  const rightW = wide ? box.w - sq - gap : box.w
+  const cols = rightW >= 980 ? 10 : rightW >= 620 ? 6 : 5
+  const rows = Math.ceil(days.length / cols)
+  const cellW = (rightW - 34 - (cols - 1) * 8) / cols
+  const gridH = wide ? sq - 96 - gap - 74 : 0                 // 자료 칸·제목·안내문을 뺀 높이
+  const cellH = wide ? (gridH - (rows - 1) * 8) / rows : cellW + 44
+  const icon = Math.round(Math.max(30, Math.min(cellW * 0.74, cellH - 50, 140)))
+  const bigR = Math.round(sq * (big ? 0.78 : 0.74))
 
   return (
-    <>
-      <p className="hint" style={{ color: 'var(--muted)', margin: 0, maxWidth: 'none' }}>
-달이 보이지 않는 날(음력 1일)부터 30일을 늘어놓았습니다. 날짜를 누르면 그날로 옮겨 가고, 흐려서 못 본 날도 여기서 다시 볼 수 있습니다.
-      </p>
+    <div ref={rootRef} className={'fit month ' + (wide ? 'wide' : 'narrow')}
+      style={wide ? { gridTemplateColumns: `${sq}px minmax(0,1fr)`, height: sq } : undefined}>
+      {/* 왼쪽 — 고른 날의 달만 크게 */}
+      <div className="stage center" style={{ width: sq, height: sq, margin: wide ? 0 : '0 auto', background: '#05070E' }}>
+        <MoonImage size={bigR} phase={cur.p} elat={cur.lib.elat} elon={cur.lib.elon} />
+        <div className="cap">{fmtMD(cur.date)} 저녁 9시의 달 · {lunarDate(cur.date)?.ko || ''}</div>
+        <div className="cap name" style={{ top: 'auto', bottom: 12, fontSize: '1.15em', color: 'var(--moon)' }}>
+          {phaseName(cur.p)}{phaseTerm(cur.p) && <small style={{ color: 'var(--muted)', fontWeight: 600, fontSize: '.7em' }}>{phaseTerm(cur.p)}</small>}
+        </div>
+        <div className="cap bottom right">{cur.rise ? '월출 ' + fmtKST(cur.rise) : ''}{cur.set ? ' · 월몰 ' + fmtKST(cur.set) : ''}</div>
+      </div>
 
-      <div className="grid" style={{ gridTemplateColumns: narrow ? '1fr' : `${side}px minmax(0,1fr)`, alignItems: 'stretch' }}>
-        {/* 왼쪽 — 고른 날의 달만 크게 */}
-        <div className="stage" style={{ width: side, maxWidth: '100%', minHeight: side, height: narrow ? side : '100%', margin: narrow ? '0 auto' : 0,
-          background: '#05070E', display: 'flex', flexDirection: 'column', alignItems: 'center',
-          justifyContent: 'center', gap: 10 }}>
-          <MoonImage size={bigR} phase={cur.p} elat={cur.lib.elat} elon={cur.lib.elon} />
-          <div className="big" style={{ color: 'var(--moon)', textAlign: 'center' }}>
-            {phaseName(cur.p)}{phaseTerm(cur.p) && <span className="term">{phaseTerm(cur.p)}</span>}
+      {/* 오른쪽 — 그날의 자료와 한 달 목록 */}
+      <div style={{ display: 'flex', flexDirection: 'column', gap, minWidth: 0, minHeight: 0 }}>
+        <div className="card month-head">
+          <div className="facts" style={{ gridTemplateColumns: 'repeat(4, minmax(0,1fr))', flex: '1 1 320px' }}>
+            {[['날짜', fmtMD(cur.date)], ['음력', lunarDate(cur.date)?.ko || '—'],
+              ['월출', fmtKST(cur.rise)], ['월몰', fmtKST(cur.set)]].map(([k, v]) => (
+              <div key={k} className="fact">
+                <div className="fact-k">{k}</div>
+                <div className="fact-v">{v}</div>
+              </div>
+            ))}
+          </div>
+          <div className="toolrow">
+            <button className={'btn' + (playing ? ' on' : '')} onClick={() => setPlaying(!playing)}>
+              {playing ? '■ 멈춤' : '▶ 한 달 재생'}
+            </button>
+            <button className="btn" onClick={() => { setPlaying(false); setDate(cur.date) }}>
+              이 날로 이동
+            </button>
           </div>
         </div>
 
-        {/* 오른쪽 — 그날의 자료와 한 달 목록 */}
-        <div style={{ display: 'flex', flexDirection: 'column', gap: 14, minWidth: 0 }}>
-          <div className="card">
-            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit,minmax(130px,180px))', gap: 8 }}>
-              {[['날짜', fmtMD(cur.date)], ['음력', lunarDate(cur.date)?.ko || '—'],
-                ['월출', fmtKST(cur.rise)], ['월몰', fmtKST(cur.set)]].map(([k, v]) => (
-                <div key={k} style={{ background: 'var(--panel-2)', borderRadius: 9, padding: '7px 11px' }}>
-                  <div style={{ color: 'var(--muted)', fontSize: '.78em' }}>{k}</div>
-                  <div style={{ fontWeight: 600, fontVariantNumeric: 'tabular-nums' }}>{v}</div>
-                </div>
-              ))}
-            </div>
-            <div className="toolrow" style={{ marginTop: 12 }}>
-              <button className={'btn' + (playing ? ' on' : '')} onClick={() => setPlaying(!playing)}>
-                {playing ? '멈춤' : '한 달 재생'}
-              </button>
-              <button className="btn" onClick={() => { setPlaying(false); setDate(cur.date) }}>
-                이 날로 이동
-              </button>
-            </div>
+        <div className="card" style={{ flex: '1 1 auto', minHeight: 0, display: 'flex', flexDirection: 'column' }}>
+          <h3>한 달 동안 달의 모양
+            <span style={{ color: 'var(--muted)', fontWeight: 400, fontSize: '.86em' }}>
+              달이 보이지 않는 날(음력 1일)부터 30일 · 날짜를 누르면 그날의 달
+            </span>
+          </h3>
+          <div className="month-grid" style={{ gridTemplateColumns: `repeat(${cols}, minmax(0,1fr))` }}>
+            {days.map(d => {
+              const active = d.i === cursor
+              return (
+                <button key={d.i} className={'day' + (active ? ' on' : '') + (d.isToday ? ' today' : '')}
+                  onClick={() => { setPlaying(false); setCursor(d.i) }}>
+                  <MoonImage size={icon} phase={d.p} elat={d.lib.elat} elon={d.lib.elon} ring={false} />
+                  <span className="mono day-md">{fmtMD(d.date)}</span>
+                  <span className="mono day-rise">{d.rise ? fmtKST(d.rise) + ' 뜸' : '—'}</span>
+                </button>
+              )
+            })}
           </div>
-
-          <div className="card">
-            <h3>한 달 동안 달의 모양</h3>
-            <div style={{
-              display: 'grid', gap: 8,
-              gridTemplateColumns: 'repeat(auto-fill,minmax(' + (big ? 104 : 88) + 'px,1fr))'
-            }}>
-              {days.map(d => {
-                const active = d.i === cursor
-                const r = big ? 40 : 34
-                return (
-                  <button key={d.i}
-                    onClick={() => { setPlaying(false); setCursor(d.i) }}
-                    style={{
-                      background: active ? 'var(--panel-2)' : 'transparent',
-                      border: '1px solid ' + (active ? 'var(--moon)' : d.isToday ? 'var(--sky)' : 'var(--line-soft)'),
-                      borderRadius: 11, padding: '9px 4px 7px', cursor: 'pointer',
-                      display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 4
-                    }}>
-                    <MoonImage size={r} phase={d.p} elat={d.lib.elat} elon={d.lib.elon} ring={false} />
-                    <span className="mono" style={{ fontSize: '.78em', color: 'var(--text-2)' }}>
-                      {fmtMD(d.date)}
-                    </span>
-                    <span className="mono" style={{ fontSize: '.72em', color: 'var(--muted)' }}>
-                      {d.rise ? fmtKST(d.rise) + ' 뜸' : '—'}
-                    </span>
-                  </button>
-                )
-              })}
-            </div>
-            <p className="hint">
-              파란 테두리가 오늘입니다. 달은 하루에 약 50분씩 늦게 뜹니다 — 목록의 월출 시각을 따라가 보세요.
-            </p>
-          </div>
+          <p className="hint" style={{ margin: '8px 0 0' }}>
+            파란 테두리가 오늘입니다. 달은 하루에 약 50분씩 늦게 뜹니다. 목록의 월출 시각을 따라가 보세요.
+            초승달, 상현달, 보름달, 하현달, 그믐달이 <b>약 30일</b>({SYNODIC.toFixed(1)}일)마다 되풀이되고, 음력 한 달은 29일 또는 30일이 됩니다.
+          </p>
         </div>
       </div>
-
-      <More title="무엇이 되풀이될까">
-      <div className="card">
-        <h3>무엇이 되풀이될까</h3>
-        <p style={{ color: 'var(--text-2)', margin: 0, fontSize: '.95em' }}>
-          초승달 → 상현달 → 보름달 → 하현달 → 그믐달 → 다시 초승달.
-          이 되풀이가 <b>약 30일</b>마다 한 바퀴입니다. 정확히는 {SYNODIC.toFixed(1)}일이어서, 음력 한 달은 29일 또는 30일이 됩니다.
-          모양뿐 아니라 <b>뜨는 시각</b>도 규칙적으로 늦어진다는 점을 함께 보면 좋습니다.
-        </p>
-      </div>
-      </More>
-    </>
+    </div>
   )
 }

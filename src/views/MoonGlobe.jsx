@@ -1,17 +1,16 @@
 import React, { useEffect, useRef, useState } from 'react'
-import More from '../lib/More.jsx'
 import * as THREE from 'three'
 import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls.js'
 import { FEATURES, FEATURE_KIND, lonLatToVec3 } from '../lib/moon.jsx'
 import { moonPhase01, Astronomy } from '../lib/astro.js'
-import { useViewport } from '../lib/useViewport.js'
+import { useFit, oneSquare } from '../lib/useFit.js'
 
 const BASE = import.meta.env.BASE_URL
 
 export default function MoonGlobe({ date }) {
   const hostRef = useRef(null)
   const layerRef = useRef(null)
-  const vp = useViewport()
+  const rootRef = useRef(null)
   const [labels, setLabels] = useState(true)
   const [realLight, setRealLight] = useState(false)
   const [spin, setSpin] = useState(false)
@@ -24,10 +23,10 @@ export default function MoonGlobe({ date }) {
   stateRef.current.phase = moonPhase01(date)
 
   /* 달은 둥글다 — 무대도 정사각형으로, 화면 높이에 맞춰 최대한 크게 */
-  const narrow = vp.w < 1000
-  const side = narrow
-    ? Math.max(280, Math.min(vp.w - 24, Math.round(vp.h * 0.55)))
-    : Math.max(340, Math.min(Math.round(vp.w * 0.46), Math.round(vp.h * 0.7)))
+  const box = useFit(rootRef)
+  const L = oneSquare(box)
+  const { sq, gap } = L
+  const wide = L.mode === 'wide'
 
   useEffect(() => {
     const on = () => setFs(!!document.fullscreenElement)
@@ -191,68 +190,62 @@ export default function MoonGlobe({ date }) {
   }, [])
 
   const lib = Astronomy.Libration(date)
+  const sqStyle = sq ? { width: sq, height: sq } : undefined
 
   return (
-    <>
-      <p className="hint" style={{ color: 'var(--muted)', margin: 0, maxWidth: 'none' }}>
-        마우스나 손가락으로 끌어 돌리고, 휠이나 두 손가락으로 확대해 보세요.
-        미국 항공우주국 달 정찰 궤도선(LRO)이 찍은 실제 표면 사진과 높낮이 자료입니다.
-      </p>
-
-      <div className="grid" style={{ gridTemplateColumns: narrow ? '1fr' : `${side}px minmax(280px,1fr)`, alignItems: 'start' }}>
-        <div className="stage" ref={hostRef} style={{ width: side, maxWidth: '100%', height: side, margin: narrow ? '0 auto' : 0, background: '#05070E' }}>
-          <div ref={layerRef} style={{ position: 'absolute', inset: 0, pointerEvents: 'none' }} />
-          <button className="fsbtn" onClick={toggleFs} aria-label={fs ? '전체 화면 닫기' : '전체 화면으로 보기'}>
-            {fs ? '✕ 닫기' : '⛶ 전체 화면'}
-          </button>
-        </div>
-
-        <div style={{ display: 'flex', flexDirection: 'column', gap: 14, minWidth: 0 }}>
-          <div className="card">
-            <h3>이렇게 보세요</h3>
-            <div className="toolrow">
-              <button className={'btn' + (labels ? ' on' : '')} onClick={() => setLabels(!labels)}>이름 보기</button>
-              <button className={'btn' + (spin ? ' on' : '')} onClick={() => setSpin(!spin)}>천천히 돌리기</button>
-              <button className={'btn' + (realLight ? ' on' : '')} onClick={() => setRealLight(!realLight)}>
-                오늘의 햇빛으로 비추기
-              </button>
-              <button className="btn" onClick={toggleFs}>⛶ 달만 크게 보기</button>
-            </div>
-            <div className="legend" style={{ marginTop: 10 }}>
-              <span><i style={{ background: 'var(--moon)' }} />바다 · 크레이터</span>
-              <span><i style={{ background: 'var(--sky)' }} />사람이 내린 곳</span>
-            </div>
-          </div>
-
-          <div className="card">
-            <h3>오늘의 칭동
-              <span style={{ color: 'var(--muted)', fontWeight: 400, fontSize: '.86em' }}>달이 살짝 흔들려 보이는 정도</span>
-            </h3>
-            <div className="rows">
-              <div className="r"><span>위아래로 기운 정도</span><b>{lib.elat.toFixed(2)}°</b></div>
-              <div className="r"><span>좌우로 흔들린 정도</span><b>{lib.elon.toFixed(2)}°</b></div>
-              <div className="r"><span>달의 겉보기 크기</span><b>{(lib.diam_deg * 60).toFixed(1)}′</b></div>
-            </div>
-            <div className="note" style={{ marginTop: 12 }}>
-              <b style={{ color: 'var(--moon)' }}>칭동이 뭐지?</b> 달은 늘 같은 면만 보여 주지만, 지구를 도는 길이 타원이고
-              자전축도 살짝 기울어 있어서 가장자리가 조금씩 위아래·좌우로 흔들려 보입니다.
-              이 흔들림을 <b>칭동</b>이라고 합니다. 덕분에 오랜 기간 모아 보면 표면의 약 59%까지 볼 수 있습니다.
-            </div>
-          </div>
-
-          <div className="card">
-            <h3>왜 늘 같은 면만 보일까</h3>
-            <p style={{ color: 'var(--text-2)', fontSize: '.94em', margin: 0 }}>
-              달이 스스로 한 바퀴 도는 시간과 지구를 한 바퀴 도는 시간이 똑같아서
-              지구에서는 언제나 같은 쪽만 보입니다. 반대쪽은 우주선을 보내야 볼 수 있어서,
-              <b> 남극-에이트켄 분지</b>는 지구에서 절대 보이지 않습니다.
-            </p>
-          </div>
-        </div>
+    <div ref={rootRef} className={'fit globe ' + L.mode}
+      style={wide ? { gridTemplateColumns: `${sq}px minmax(0,1fr)`, height: sq } : undefined}>
+      <div className="stage globe-sq" ref={hostRef} style={{ ...sqStyle, margin: wide ? 0 : '0 auto', background: '#05070E' }}>
+        <div ref={layerRef} style={{ position: 'absolute', inset: 0, pointerEvents: 'none' }} />
+        <div className="cap">미국 항공우주국 달 정찰 궤도선(LRO)이 찍은 실제 표면 사진과 높낮이 자료</div>
+        <div className="cap bottom">끌어서 돌리기 · 휠이나 두 손가락으로 확대</div>
+        <button className="fsbtn" onClick={toggleFs} aria-label={fs ? '전체 화면 닫기' : '전체 화면으로 보기'}>
+          {fs ? '✕ 닫기' : '⛶ 전체 화면'}
+        </button>
       </div>
 
-      <More title="달에 대해 더 알아보기" count="2">
-      <div className="grid" style={{ gridTemplateColumns: 'repeat(auto-fit,minmax(300px,1fr))' }}>
+      {/* 옆 칸: 넓으면 두 줄, 좁으면 한 줄로 카드가 흐른다. 정사각형보다 길어지면 안에서 스크롤 */}
+      <div className="side-cards" style={wide ? { maxHeight: sq } : undefined}>
+        <div className="card">
+          <h3>이렇게 보세요</h3>
+          <div className="toolrow">
+            <button className={'btn' + (labels ? ' on' : '')} onClick={() => setLabels(!labels)}>이름 보기</button>
+            <button className={'btn' + (spin ? ' on' : '')} onClick={() => setSpin(!spin)}>천천히 돌리기</button>
+            <button className={'btn' + (realLight ? ' on' : '')} onClick={() => setRealLight(!realLight)}>
+              오늘의 햇빛으로 비추기
+            </button>
+          </div>
+          <div className="legend" style={{ marginTop: 10 }}>
+            <span><i style={{ background: 'var(--moon)' }} />바다 · 크레이터</span>
+            <span><i style={{ background: 'var(--sky)' }} />사람이 내린 곳</span>
+          </div>
+        </div>
+
+        <div className="card">
+          <h3>오늘의 칭동
+            <span style={{ color: 'var(--muted)', fontWeight: 400, fontSize: '.86em' }}>달이 살짝 흔들려 보이는 정도</span>
+          </h3>
+          <div className="rows">
+            <div className="r"><span>위아래로 기운 정도</span><b>{lib.elat.toFixed(2)}°</b></div>
+            <div className="r"><span>좌우로 흔들린 정도</span><b>{lib.elon.toFixed(2)}°</b></div>
+            <div className="r"><span>달의 겉보기 크기</span><b>{(lib.diam_deg * 60).toFixed(1)}′</b></div>
+          </div>
+          <div className="note" style={{ marginTop: 12 }}>
+            <b style={{ color: 'var(--moon)' }}>칭동이 뭐지?</b> 달은 늘 같은 면만 보여 주지만, 지구를 도는 길이 타원이고
+            자전축도 살짝 기울어 있어서 가장자리가 조금씩 위아래·좌우로 흔들려 보입니다.
+            이 흔들림을 <b>칭동</b>이라고 합니다. 덕분에 오랜 기간 모아 보면 표면의 약 59%까지 볼 수 있습니다.
+          </div>
+        </div>
+
+        <div className="card">
+          <h3>왜 늘 같은 면만 보일까</h3>
+          <p style={{ color: 'var(--text-2)', fontSize: '.94em', margin: 0 }}>
+            달이 스스로 한 바퀴 도는 시간과 지구를 한 바퀴 도는 시간이 똑같아서
+            지구에서는 언제나 같은 쪽만 보입니다. 반대쪽은 우주선을 보내야 볼 수 있어서,
+            <b> 남극-에이트켄 분지</b>는 지구에서 절대 보이지 않습니다.
+          </p>
+        </div>
+
         <div className="card">
           <h3>달의 바다는 바다가 아닙니다</h3>
           <p style={{ color: 'var(--text-2)', fontSize: '.94em', margin: 0 }}>
@@ -261,6 +254,7 @@ export default function MoonGlobe({ date }) {
             밝고 오톨도톨한 곳은 운석이 부딪혀 파인 자국인 크레이터입니다.
           </p>
         </div>
+
         <div className="card">
           <h3>크레이터는 어떻게 생겼을까</h3>
           <p style={{ color: 'var(--text-2)', fontSize: '.94em', margin: 0 }}>
@@ -270,7 +264,6 @@ export default function MoonGlobe({ date }) {
           </p>
         </div>
       </div>
-      </More>
-    </>
+    </div>
   )
 }
