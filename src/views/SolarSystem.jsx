@@ -1,4 +1,4 @@
-import React, { useEffect, useRef, useState } from 'react'
+import React, { useEffect, useLayoutEffect, useRef, useState } from 'react'
 import { PLANETS, planetXY, addDays, fmtDateKST } from '../lib/astro.js'
 import PlanetGlobe from '../lib/PlanetGlobe.jsx'
 import More from '../lib/More.jsx'
@@ -24,16 +24,58 @@ const FACTS = {
     note: '가장 바깥 행성입니다. 시속 2,000km가 넘는, 태양계에서 가장 빠른 바람이 붑니다. 햇빛이 지구의 900분의 1밖에 닿지 않습니다.' }
 }
 
-const W = 900, H = 720, CX = W / 2, CY = H / 2, RMAX = 330
+/* 궤도 그림은 정사각형. 아래쪽 도구 줄 자리를 남기려고 중심을 조금 위로 둔다 */
+const W = 720, CX = W / 2, CY = 348, RMAX = 296
 const maxDia = 142984
+const EARTH = 12756
+const GAP = 14, STRIP = 138, STRIP_COMPACT = 106   /* 칸 사이 간격 · 크기 비교 띠 높이 */
+
+function MaybeMore({ fold, children }) {
+  return fold ? <More title="더 알아보기" count="2">{children}</More> : <div className="solar-extra">{children}</div>
+}
 
 function Fact({ k, v }) {
   return (
-    <div style={{ background: 'var(--panel-2)', borderRadius: 9, padding: '7px 11px', minWidth: 0 }}>
-      <div style={{ color: 'var(--muted)', fontSize: '.78em' }}>{k}</div>
-      <div style={{ fontWeight: 600, fontVariantNumeric: 'tabular-nums', whiteSpace: 'nowrap', fontSize: '.95em' }}>{v}</div>
+    <div className="fact">
+      <div className="fact-k">{k}</div>
+      <div className="fact-v">{v}</div>
     </div>
   )
+}
+
+/*
+ * 세 칸 배치: [궤도 정사각형] [행성 정사각형] [설명]  +  아래에 크기 비교 띠.
+ * 정사각형 한 변은 남은 높이와 폭 중 작은 쪽으로 JS 에서 잰다.
+ * 폭이 모자라면(태블릿·폰) 한 줄로 쌓는다.
+ */
+function useSquare(rootRef) {
+  const [sq, setSq] = useState(0)
+  const [compact, setCompact] = useState(false)
+  useLayoutEffect(() => {
+    const root = rootRef.current
+    if (!root) return
+    const measure = () => {
+      const r = root.getBoundingClientRect()
+      const gap = GAP
+      const availW = root.clientWidth
+      const availH = window.innerHeight - r.top - 18
+      const sideW = Math.max(300, Math.min(400, availW * 0.23))
+      const compact = availH < 640
+      const stripH = compact ? STRIP_COMPACT : STRIP
+      const byW = (availW - sideW - gap * 2) / 2
+      const byH = availH - stripH - gap
+      setSq(Math.floor(Math.min(byW, byH)))
+      setCompact(compact)
+    }
+    measure()
+    const ro = new ResizeObserver(measure)
+    ro.observe(root)
+    /* 큰 글씨 모드·제목 줄 높이가 바뀌면 위쪽 여백이 달라진다. 부모 높이 변화로 알아챈다 */
+    if (root.parentElement) ro.observe(root.parentElement)
+    window.addEventListener('resize', measure)
+    return () => { ro.disconnect(); window.removeEventListener('resize', measure) }
+  }, [rootRef])
+  return { sq, compact }
 }
 
 export default function SolarSystem({ date }) {
@@ -44,6 +86,9 @@ export default function SolarSystem({ date }) {
   const [fs, setFs] = useState(false)
   const raf = useRef(0)
   const globeRef = useRef(null)
+  const rootRef = useRef(null)
+  const { sq, compact } = useSquare(rootRef)
+  const narrow = sq < 380
 
   useEffect(() => {
     if (!playing) return
@@ -75,182 +120,176 @@ export default function SolarSystem({ date }) {
   const sel = PLANETS.find(p => p.ko === picked)
   const f = FACTS[picked]
   const isSun = picked === '태양'
+  const sqStyle = narrow ? undefined : { width: sq, height: sq }
+
+  /* 이름표가 겹치면 아래로, 그래도 겹치면 옆으로 옮긴다 */
+  const items = PLANETS.map((p, i) => {
+    const R = radiusOf(p, i)
+    const v = planetXY(p, at)
+    const ang = Math.atan2(v.y, v.x)
+    const rr = 6 + 10 * Math.sqrt(p.dia / maxDia)
+    return { p, R, x: CX + R * Math.cos(ang), y: CY - R * Math.sin(ang), rr }
+  })
+  const taken = [{ x: CX, y: CY + 52 }]
+  const clash = (x, y) => taken.some(t => Math.abs(t.x - x) < 64 && Math.abs(t.y - y) < 22)
+  items.forEach(q => {
+    let lx = q.x, ly = q.y - q.rr - 10
+    if (clash(lx, ly)) ly = q.y + q.rr + 22
+    if (clash(lx, ly)) { lx = q.x + q.rr + 34; ly = q.y + 6 }
+    q.lx = lx; q.ly = ly; taken.push({ x: lx, y: ly })
+  })
 
   return (
-    <>
-      {/* 윗줄: 궤도 그림 | 고른 천체 (정사각 사진 + 설명 + 숫자) */}
-      <div className="grid" style={{ gridTemplateColumns: 'minmax(0,1fr) minmax(320px,1fr)', alignItems: 'stretch' }}>
-        <div className="stage" style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', minHeight: 0, maxHeight: '70vh' }}>
-          <svg viewBox={`0 0 ${W} ${H}`} style={{ width: '100%', height: '100%', maxHeight: 'none' }} role="img" aria-label="태양계">
-            <defs>
-              <radialGradient id="sun2">
-                <stop offset="0%" stopColor="#FFF3C4" />
-                <stop offset="55%" stopColor="#FFAE33" />
-                <stop offset="100%" stopColor="#C25A00" />
-              </radialGradient>
-            </defs>
+    <div ref={rootRef} className={'solar' + (narrow ? ' narrow' : '') + (compact ? ' compact' : '')}
+      style={narrow ? undefined : {
+        gridTemplateColumns: `${sq}px ${sq}px minmax(0,1fr)`,
+        gridTemplateRows: `${sq}px minmax(0,1fr)`,
+        height: sq + GAP + (compact ? STRIP_COMPACT : STRIP)
+      }}>
 
-            <text x="16" y="28" fill="var(--muted)" fontSize="15">북쪽 위에서 내려다본 태양계 · 행성을 누르면 오른쪽에 실제 모습</text>
+      {/* 1. 궤도 그림 — 정사각형, 도구는 그림 안 아래쪽 */}
+      <div className="stage solar-orbit" style={sqStyle}>
+        <svg viewBox={`0 0 ${W} ${W}`} role="img" aria-label="태양계">
+          <defs>
+            <radialGradient id="sun2">
+              <stop offset="0%" stopColor="#FFF3C4" />
+              <stop offset="55%" stopColor="#FFAE33" />
+              <stop offset="100%" stopColor="#C25A00" />
+            </radialGradient>
+          </defs>
 
-            <g onClick={() => setPicked('태양')} style={{ cursor: 'pointer' }}>
-              {isSun && <circle cx={CX} cy={CY} r="40" fill="none" stroke="var(--moon)" strokeWidth="2" />}
-              <circle cx={CX} cy={CY} r="30" fill="url(#sun2)" />
-              <text x={CX} y={CY + 52} textAnchor="middle" fill="var(--sun)" fontSize="20" fontWeight="700">태양</text>
-            </g>
+          <g onClick={() => setPicked('태양')} style={{ cursor: 'pointer' }}>
+            {isSun && <circle cx={CX} cy={CY} r="40" fill="none" stroke="var(--moon)" strokeWidth="2" />}
+            <circle cx={CX} cy={CY} r="30" fill="url(#sun2)" />
+            <text x={CX} y={CY + 52} textAnchor="middle" fill="var(--sun)" fontSize="20" fontWeight="700">태양</text>
+          </g>
 
-            {(() => {
-              /* 이름표가 겹치면 아래로, 그래도 겹치면 옆으로 옮긴다 */
-              const items = PLANETS.map((p, i) => {
-                const R = radiusOf(p, i)
-                const v = planetXY(p, at)
-                const ang = Math.atan2(v.y, v.x)
-                const rr = 6 + 10 * Math.sqrt(p.dia / maxDia)
-                return { p, R, x: CX + R * Math.cos(ang), y: CY - R * Math.sin(ang), rr }
-              })
-              const taken = [{ x: CX, y: CY + 52 }]
-              const clash = (x, y) => taken.some(t => Math.abs(t.x - x) < 64 && Math.abs(t.y - y) < 22)
-              items.forEach(q => {
-                let lx = q.x, ly = q.y - q.rr - 10
-                if (clash(lx, ly)) ly = q.y + q.rr + 22
-                if (clash(lx, ly)) { lx = q.x + q.rr + 34; ly = q.y + 6 }
-                q.lx = lx; q.ly = ly; taken.push({ x: lx, y: ly })
-              })
-              return items
-            })().map(({ p, R, x, y, rr, lx, ly }) => {
-              const on = p.ko === picked
-              return (
-                <g key={p.ko}>
-                  <circle cx={CX} cy={CY} r={R} fill="none"
-                    stroke={on ? 'var(--moon)' : 'var(--line)'} strokeOpacity={on ? 0.75 : 1} strokeWidth="1.2" />
-                  <g onClick={() => setPicked(p.ko)} style={{ cursor: 'pointer' }}>
-                    <circle cx={x} cy={y} r={rr + 12} fill="transparent" />
-                    {on && <circle cx={x} cy={y} r={rr + 8} fill="none" stroke="var(--moon)" strokeWidth="2" />}
-                    <circle cx={x} cy={y} r={rr} fill={p.color} />
-                    <text x={lx} y={ly} textAnchor="middle"
-                      fill={on ? 'var(--moon)' : 'var(--text-2)'} fontSize="19" fontWeight={on ? 700 : 500}>
-                      {p.ko}
-                    </text>
-                  </g>
+          {items.map(({ p, R, x, y, rr, lx, ly }) => {
+            const on = p.ko === picked
+            return (
+              <g key={p.ko}>
+                <circle cx={CX} cy={CY} r={R} fill="none"
+                  stroke={on ? 'var(--moon)' : 'var(--line)'} strokeOpacity={on ? 0.75 : 1} strokeWidth="1.2" />
+                <g onClick={() => setPicked(p.ko)} style={{ cursor: 'pointer' }}>
+                  <circle cx={x} cy={y} r={rr + 12} fill="transparent" />
+                  {on && <circle cx={x} cy={y} r={rr + 8} fill="none" stroke="var(--moon)" strokeWidth="2" />}
+                  <circle cx={x} cy={y} r={rr} fill={p.color} />
+                  <text x={lx} y={ly} textAnchor="middle"
+                    fill={on ? 'var(--moon)' : 'var(--text-2)'} fontSize="19" fontWeight={on ? 700 : 500}>
+                    {p.ko}
+                  </text>
                 </g>
-              )
-            })}
-            <text x={W - 16} y={H - 16} textAnchor="end" fill="var(--muted)" fontSize="15">
-              {fmtDateKST(at)} · {mode === 'real' ? '거리 실제 비율' : '거리를 고르게 벌린 그림'}
-            </text>
-          </svg>
+              </g>
+            )
+          })}
+        </svg>
+
+        <div className="solar-cap">북쪽 위에서 내려다본 태양계 · 행성을 누르면 옆에 실제 모습</div>
+
+        <div className="solar-tools">
+          <div className="seg">
+            <button aria-pressed={mode === 'even'} onClick={() => setMode('even')}>고르게</button>
+            <button aria-pressed={mode === 'real'} onClick={() => setMode('real')}>실제 비율</button>
+          </div>
+          <button className={'btn' + (playing ? ' on' : '')} onClick={() => setPlaying(!playing)}>
+            {playing ? '■ 멈춤' : '▶ 돌려보기'}
+          </button>
+          <button className="btn" onClick={() => { setPlaying(false); setOffset(0) }} disabled={offset === 0 && !playing}>오늘로</button>
+          <span className="solar-date mono">{fmtDateKST(at)}</span>
+        </div>
+      </div>
+
+      {/* 2. 고른 천체 — 행성은 둥그니 칸도 정사각형 */}
+      <div ref={globeRef} className="stage solar-globe globe-sq" style={sqStyle}>
+        <PlanetGlobe texture={f.tex} ring={!!f.ring} tilt={f.tilt} sun={isSun} fill />
+        <button className="fsbtn" onClick={toggleFs} aria-label={fs ? '전체 화면 닫기' : '전체 화면으로 보기'}>
+          {fs ? '✕ 닫기' : '⛶ 전체 화면'}
+        </button>
+        <div className="solar-cap solar-cap-name">
+          <i style={{ background: isSun ? 'var(--sun)' : sel.color }} />{picked}
+        </div>
+        <div className="solar-cap solar-cap-hint">끌어서 돌리기 · 휠로 확대</div>
+      </div>
+
+      {/* 3. 설명과 숫자 */}
+      <aside className="card solar-info">
+        <h3 className="solar-name">{picked}
+          <span className="solar-sub">{isSun ? '태양계의 중심 별' : `태양에서 ${PLANETS.indexOf(sel) + 1}번째 행성`}</span>
+        </h3>
+        <p className="solar-note">{f.note}</p>
+        <div className="facts">
+          {sel && <>
+            <Fact k="지름" v={sel.dia.toLocaleString() + ' km'} />
+            <Fact k="지구의 몇 배" v={(sel.dia / EARTH).toFixed(2) + '배'} />
+            <Fact k="태양까지 거리" v={sel.au.toFixed(2) + ' AU'} />
+          </>}
+          {isSun && <>
+            <Fact k="지름" v="1,392,700 km" />
+            <Fact k="지구의 몇 배" v="109배" />
+            <Fact k="표면 온도" v="약 5,500 ℃" />
+          </>}
+          {f.period && <Fact k="공전 주기" v={f.period < 1 ? (f.period * 365.25).toFixed(0) + '일' : f.period + '년'} />}
+          <Fact k="자전 주기" v={f.day} />
+          <Fact k="자전축 기울기" v={f.tilt + '°'} />
         </div>
 
-        <div className="card" style={{ padding: 0, overflow: 'hidden', display: 'flex', flexDirection: 'column', minWidth: 0 }}>
-          <div style={{ display: 'flex', minHeight: 0, flexWrap: 'wrap', flex: 1 }}>
-            {/* 행성은 둥글다 — 보기 칸도 정사각형으로 */}
-            <div ref={globeRef} className="globe-sq"
-              style={{ flex: '1 1 300px', maxWidth: 'min(62%, 56vh)', aspectRatio: '1 / 1', position: 'relative', background: '#05070E' }}>
-              <PlanetGlobe texture={f.tex} ring={!!f.ring} tilt={f.tilt} sun={isSun} fill />
-              <button className="fsbtn" onClick={toggleFs} aria-label={fs ? '전체 화면 닫기' : '전체 화면으로 보기'}>
-                {fs ? '✕ 닫기' : '⛶ 전체 화면'}
-              </button>
-            </div>
-            <div style={{ flex: '1 1 220px', padding: '16px', display: 'flex', flexDirection: 'column',
-              justifyContent: 'center', gap: 12, minWidth: 0 }}>
-              <h3 style={{ marginBottom: 0 }}>{picked}</h3>
-              <p style={{ color: 'var(--text-2)', fontSize: '.92em', margin: 0 }}>{f.note}</p>
-              {/* 숫자 타일을 사진 옆 칸 아래쪽에 붙여, 사진 높이만큼 칸이 채워지게 한다 */}
-              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit,minmax(120px,1fr))', gap: 8 }}>
-                {sel && <>
-                  <Fact k="지름" v={sel.dia.toLocaleString() + ' km'} />
-                  <Fact k="지구의 몇 배" v={(sel.dia / 12756).toFixed(2) + '배'} />
-                  <Fact k="태양까지 거리" v={sel.au.toFixed(2) + ' AU'} />
-                </>}
-                {isSun && <>
-                  <Fact k="지름" v="1,392,700 km" />
-                  <Fact k="지구의 몇 배" v="109배" />
-                  <Fact k="표면 온도" v="약 5,500 ℃" />
-                </>}
-                {f.period && <Fact k="공전 주기" v={f.period < 1 ? (f.period * 365.25).toFixed(0) + '일' : f.period + '년'} />}
-                <Fact k="자전 주기" v={f.day} />
-                <Fact k="자전축 기울기" v={f.tilt + '°'} />
+        {/* 넓은 화면에서는 설명 칸에 자리가 남으니 바로 보여 준다. 좁은 화면에서만 접는다 */}
+        <MaybeMore fold={narrow}>
+          <div className="solar-more">
+            <div>
+              <h4>태양계의 다른 식구들</h4>
+              <div className="rows">
+                <div className="r"><span>위성</span><b>행성 둘레를 도는 천체 · 달</b></div>
+                <div className="r"><span>왜소행성</span><b>명왕성 · 세레스</b></div>
+                <div className="r"><span>소행성</span><b>화성과 목성 사이에 많음</b></div>
+                <div className="r"><span>혜성</span><b>얼음과 먼지 · 긴 꼬리</b></div>
               </div>
-              <p className="hint" style={{ margin: 0 }}>끌어서 돌리고, 휠로 확대합니다. 전체 화면으로 크게 볼 수도 있습니다.</p>
+              <p className="hint">
+                태양계는 태양과 8개 행성만이 아닙니다. 행성 둘레를 도는 위성, 명왕성 같은 왜소행성,
+                수많은 소행성과 혜성이 모두 태양의 힘에 붙들려 함께 돕니다.
+              </p>
+            </div>
+            <div>
+              <h4>거리와 빠르기</h4>
+              <p style={{ color: 'var(--text-2)', margin: 0, fontSize: '.94em' }}>
+                '실제 비율'로 보면 안쪽 네 행성이 태양 가까이 몰려 있습니다. 태양계는 거의 텅 빈 공간입니다.
+                1 AU는 태양과 지구 사이 거리로 약 1억 5천만 km입니다.
+              </p>
+              <p className="hint">
+                돌려보기에서 <b>수성이 어떤 곳에서는 빨리, 어떤 곳에서는 천천히</b> 가는 것은 실제 위치를 그대로 그렸기 때문입니다.
+                수성 궤도는 찌그러진 타원이라 태양에 가까운 쪽에서 더 빨리 돕니다(케플러의 법칙).
+              </p>
             </div>
           </div>
+        </MaybeMore>
+      </aside>
+
+      {/* 4. 크기 비교 띠 — 두 정사각형 아래 폭을 그대로 쓴다. 눌러서 고를 수 있다 */}
+      <div className="card solar-sizes">
+        <div className="solar-sizes-head">
+          <h3>크기 비교 <small>실제 비율</small></h3>
+          <p className="hint">눌러서 고르기 · 사진은 탐사선 자료로 만든 지도</p>
+        </div>
+        <div className="sizes">
+          <button className={'size-cell sun' + (isSun ? ' on' : '')} onClick={() => setPicked('태양')} aria-pressed={isSun}>
+            <span className="size-sun" aria-hidden="true" />
+            <span className="size-name">태양<small>109배</small></span>
+          </button>
+          {PLANETS.map(p => {
+            const d = Math.max(7, Math.round((compact ? 52 : 72) * p.dia / maxDia))
+            const on = p.ko === picked
+            const ratio = p.dia / EARTH
+            return (
+              <button key={p.ko} className={'size-cell' + (on ? ' on' : '')} onClick={() => setPicked(p.ko)} aria-pressed={on}>
+                <span className="size-disc" aria-hidden="true">
+                  <i style={{ width: d, height: d, background: p.color }} />
+                </span>
+                <span className="size-name">{p.ko}<small>{ratio.toFixed(ratio < 1 ? 2 : 1)}배</small></span>
+              </button>
+            )
+          })}
         </div>
       </div>
-
-      {/* 아랫줄: 궤도 그림 도구 | 크기 비교 | 태양계의 다른 식구들 */}
-      <div className="grid" style={{ gridTemplateColumns: 'repeat(auto-fit,minmax(300px,1fr))', alignItems: 'start' }}>
-        <div className="card">
-          <h3>궤도 그림 움직이기</h3>
-          <div className="toolrow">
-            <div className="seg">
-              <button aria-pressed={mode === 'even'} onClick={() => setMode('even')}>고르게</button>
-              <button aria-pressed={mode === 'real'} onClick={() => setMode('real')}>실제 비율</button>
-            </div>
-            <button className={'btn' + (playing ? ' on' : '')} onClick={() => setPlaying(!playing)}>
-              {playing ? '멈춤' : '돌려보기'}
-            </button>
-            <button className="btn" onClick={() => { setPlaying(false); setOffset(0) }}>오늘로</button>
-          </div>
-          <p className="hint">행성 위치는 오늘의 실제 위치입니다.</p>
-        </div>
-
-        <div className="card">
-          <h3>크기 비교 (실제 비율)</h3>
-          <div style={{ overflowX: 'auto' }}>
-            <svg viewBox="0 0 440 100" style={{ width: '100%', minWidth: 300, height: 'auto', maxHeight: 150 }}
-              role="img" aria-label="행성 크기 비교">
-              {(() => {
-                let x = 6
-                return PLANETS.map((p, i) => {
-                  const r = 3 + 40 * (p.dia / maxDia)
-                  const cx = x + r
-                  x += r * 2 + 9
-                  const small = r < 12
-                  const ly = small ? (i % 2 ? 92 : 80) : 92
-                  return (
-                    <g key={p.ko} onClick={() => setPicked(p.ko)} style={{ cursor: 'pointer' }}>
-                      <circle cx={cx} cy={52} r={r} fill={p.color}
-                        stroke={p.ko === picked ? 'var(--moon)' : 'none'} strokeWidth="2" />
-                      {small && <line x1={cx} y1={52 + r + 2} x2={cx} y2={ly - 9} stroke="var(--line)" strokeWidth="1" />}
-                      <text x={cx} y={ly} textAnchor="middle"
-                        fill={p.ko === picked ? 'var(--moon)' : 'var(--muted)'} fontSize="11">{p.ko}</text>
-                    </g>
-                  )
-                })
-              })()}
-            </svg>
-          </div>
-          <p className="hint">행성 사진은 실제 탐사선이 찍은 자료로 만든 지도입니다. 여기서 눌러도 골라집니다.</p>
-        </div>
-      </div>
-
-      <More title="더 알아보기 — 태양계의 다른 식구들 · 거리와 빠르기" count="2">
-        <div className="grid" style={{ gridTemplateColumns: 'repeat(auto-fit,minmax(300px,1fr))' }}>
-          <div className="card">
-            <h3>태양계의 다른 식구들</h3>
-            <div className="rows">
-              <div className="r"><span>위성</span><b>행성 둘레를 도는 천체 · 달</b></div>
-              <div className="r"><span>왜소행성</span><b>명왕성 · 세레스</b></div>
-              <div className="r"><span>소행성</span><b>화성과 목성 사이에 많음</b></div>
-              <div className="r"><span>혜성</span><b>얼음과 먼지 · 긴 꼬리</b></div>
-            </div>
-            <p className="hint">
-              태양계는 태양과 8개 행성만이 아닙니다. 행성 둘레를 도는 위성, 명왕성 같은 왜소행성,
-              수많은 소행성과 혜성이 모두 태양의 힘에 붙들려 함께 돕니다.
-            </p>
-          </div>
-          <div className="card">
-            <h3>거리와 빠르기</h3>
-            <p style={{ color: 'var(--text-2)', margin: 0, fontSize: '.94em' }}>
-              '실제 비율'로 보면 안쪽 네 행성이 태양 가까이 몰려 있습니다 — 태양계는 거의 텅 빈 공간입니다.
-              1 AU는 태양과 지구 사이 거리로 약 1억 5천만 km입니다.
-            </p>
-            <p className="hint">
-              돌려보기에서 <b>수성이 어떤 곳에서는 빨리, 어떤 곳에서는 천천히</b> 가는 것은 실제 위치를 그대로 그렸기 때문입니다.
-              수성 궤도는 찌그러진 타원이라 태양에 가까운 쪽에서 더 빨리 돕니다(케플러의 법칙).
-            </p>
-          </div>
-        </div>
-      </More>
-    </>
+    </div>
   )
 }

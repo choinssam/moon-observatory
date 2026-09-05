@@ -262,3 +262,80 @@ body[data-big="on"]{ --stage-max:52vh }
 .btn:disabled{opacity:.45;cursor:not-allowed}
 .btn:disabled:hover{color:var(--text-2);border-color:var(--line)}
 .modal .spacer{flex:1 1 auto}
+
+/* ---------- 태양계: 정사각형 두 개 + 설명 + 크기 비교 띠 ----------
+   한 변 길이는 SolarSystem.jsx 가 남은 높이·폭을 재서 넣는다. */
+.solar{display:grid;gap:14px;align-items:stretch}
+.solar-orbit{grid-column:1;grid-row:1}
+.solar-globe{grid-column:2;grid-row:1;background:#05070E}
+.solar-info{grid-column:3;grid-row:1 / span 2;min-height:0;overflow:auto;display:flex;flex-direction:column;gap:12px;padding:18px}
+.solar-sizes{grid-column:1 / span 2;grid-row:2;min-height:0}
+.solar-orbit > svg{width:100%;height:100%;max-height:none}
+.solar-cap{
+  position:absolute;left:12px;top:10px;z-index:2;pointer-events:none;
+  color:var(--muted);font-size:.84em;text-shadow:0 0 6px var(--panel),0 0 12px var(--panel);
+}
+.solar-cap-name{display:flex;align-items:center;gap:7px;color:var(--text);font-weight:700;font-size:1.02em}
+.solar-cap-name i{width:10px;height:10px;border-radius:50%;display:inline-block;box-shadow:0 0 8px currentColor}
+.solar-cap-hint{top:auto;bottom:10px;font-size:.8em}
+.solar-tools{
+  position:absolute;left:10px;right:10px;bottom:10px;z-index:2;
+  display:flex;gap:8px;align-items:center;flex-wrap:wrap;
+}
+.solar-tools .seg,.solar-tools .btn{background:rgba(26,33,52,.85);backdrop-filter:blur(4px)}
+.solar-date{margin-left:auto;color:var(--muted);font-size:.84em;white-space:nowrap}
+.solar-name{font-size:1.5em;letter-spacing:-.02em;margin:0;display:flex;align-items:baseline;gap:10px;flex-wrap:wrap}
+.solar-sub{font-size:.58em;font-weight:600;color:var(--muted);letter-spacing:0}
+.solar-note{color:var(--text-2);margin:0;font-size:1em;line-height:1.7}
+.facts{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px}
+.fact{background:var(--panel-2);border-radius:10px;padding:9px 12px;min-width:0}
+.fact-k{color:var(--muted);font-size:.78em}
+.fact-v{font-weight:700;font-variant-numeric:tabular-nums;white-space:nowrap;font-size:1.05em}
+.solar-info .more{gap:12px;margin-top:2px}
+.solar-extra{border-top:1px solid var(--line);padding-top:14px;margin-top:2px}
+.solar-more{display:flex;flex-direction:column;gap:16px}
+.solar.compact .sizes{height:76px}
+.solar.compact .solar-sizes{padding:8px 16px}
+.solar.compact .size-name{font-size:.82em}
+.solar-more h4{font-size:.95em;margin-bottom:8px;color:var(--text)}
+.solar-sizes{display:flex;gap:16px;align-items:center;padding:12px 16px}
+.solar-sizes-head{flex:0 0 auto;width:150px}
+.solar-sizes-head h3{margin-bottom:2px;flex-direction:column;align-items:flex-start;gap:0}
+.solar-sizes-head h3 small{color:var(--muted);font-size:.8em;font-weight:600}
+.solar-sizes-head .hint{margin:4px 0 0;font-size:.8em;line-height:1.45}
+.sizes{flex:1 1 auto;display:flex;align-items:stretch;min-width:0;height:108px}
+.size-cell{
+  flex:1 1 0;min-width:0;border:0;background:transparent;cursor:pointer;border-radius:10px;
+  display:flex;flex-direction:column;align-items:center;justify-content:flex-end;gap:4px;padding:4px 2px;
+  color:var(--muted);position:relative;
+}
+.size-cell:hover{background:var(--panel-2);color:var(--text-2)}
+.size-cell.on{color:var(--moon)}
+.size-cell:focus-visible{outline:2px solid var(--sky);outline-offset:1px}
+.size-disc{flex:1 1 auto;display:flex;align-items:center;justify-content:center;width:100%}
+.size-disc i{display:block;border-radius:50%;transition:box-shadow .12s}
+.size-cell.on .size-disc i{box-shadow:0 0 0 3px var(--panel),0 0 0 5px var(--moon)}
+.size-name{font-size:.9em;font-weight:600;white-space:nowrap;line-height:1.15;display:flex;flex-direction:column;align-items:center}
+.size-name small{font-size:.76em;font-weight:500;color:var(--muted);font-variant-numeric:tabular-nums}
+.size-cell.on .size-name small{color:var(--moon);opacity:.8}
+/* 태양은 같은 비율로 그리면 칸을 한참 넘친다. 가장자리만 보이게 잘라 그 크기를 느끼게 한다 */
+.size-cell.sun{flex:0 0 84px;overflow:hidden;justify-content:flex-end;border-radius:10px}
+.size-sun{
+  position:absolute;left:-176px;top:50%;width:250px;height:250px;border-radius:50%;
+  transform:translateY(-50%);background:radial-gradient(circle at 70% 50%,#FFF3C4,#FFAE33 45%,#C25A00);
+  opacity:.9;
+}
+.size-cell.sun .size-name{position:relative;z-index:1;color:#181205;text-shadow:0 0 4px #FFD98A}
+.size-cell.sun .size-name small{color:#3a2a08}
+.size-cell.sun.on{outline:2px solid var(--moon);outline-offset:-2px}
+
+/* 폭이 모자라면 한 줄로 쌓는다 */
+.solar.narrow{grid-template-columns:1fr;grid-template-rows:none}
+.solar.narrow > *{grid-column:auto;grid-row:auto}
+.solar.narrow .solar-orbit,.solar.narrow .solar-globe{width:min(100%,70vh);aspect-ratio:1/1;margin:0 auto}
+.solar.narrow .solar-info{overflow:visible}
+.solar.narrow .solar-sizes{flex-direction:column;align-items:stretch}
+.solar.narrow .solar-sizes-head{width:auto}
+.solar.narrow .sizes{height:96px}
+.solar.narrow .size-name{font-size:.8em}
+@media (pointer:coarse){ .size-cell{min-height:44px} }
