@@ -1,0 +1,111 @@
+<!doctype html>
+<html lang="ko">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+
+    <title>밤하늘 관찰 · 달의 위상과 별자리 시뮬레이터 | Night Sky Lab</title>
+    <meta name="description" content="달의 위상 변화, 달 표면, 별자리, 태양계, 밀물과 썰물을 브라우저에서 바로 관찰하는 무료 천문 시뮬레이터. 설치도 가입도 없습니다. 2022 개정 초등 과학 교육과정에 맞췄고 중·고등학생과 일반인도 씁니다." />
+    <meta name="author" content="초인쌤 (김상백)" />
+    <meta name="robots" content="index, follow, max-image-preview:large, max-snippet:-1" />
+    <link rel="canonical" href="https://choinssam.github.io/moon-observatory/" />
+    <link rel="alternate" hreflang="ko" href="https://choinssam.github.io/moon-observatory/" />
+    <link rel="alternate" hreflang="en" href="https://choinssam.github.io/moon-observatory/?lang=en" />
+    <link rel="alternate" hreflang="zh" href="https://choinssam.github.io/moon-observatory/?lang=zh" />
+    <link rel="alternate" hreflang="es" href="https://choinssam.github.io/moon-observatory/?lang=es" />
+    <link rel="alternate" hreflang="hi" href="https://choinssam.github.io/moon-observatory/?lang=hi" />
+    <link rel="alternate" hreflang="ar" href="https://choinssam.github.io/moon-observatory/?lang=ar" />
+    <link rel="alternate" hreflang="pt" href="https://choinssam.github.io/moon-observatory/?lang=pt" />
+    <link rel="alternate" hreflang="ru" href="https://choinssam.github.io/moon-observatory/?lang=ru" />
+    <link rel="alternate" hreflang="ja" href="https://choinssam.github.io/moon-observatory/?lang=ja" />
+    <link rel="alternate" hreflang="fr" href="https://choinssam.github.io/moon-observatory/?lang=fr" />
+    <link rel="alternate" hreflang="de" href="https://choinssam.github.io/moon-observatory/?lang=de" />
+    <link rel="alternate" hreflang="x-default" href="https://choinssam.github.io/moon-observatory/" />
+    <meta name="theme-color" content="#0B1020" />
+
+    <!-- 카카오톡·페이스북·인디스쿨에 붙일 때 보이는 카드 -->
+    <meta property="og:type" content="website" />
+    <meta property="og:site_name" content="밤하늘 관찰" />
+    <meta property="og:locale" content="ko_KR" />
+    <meta property="og:locale:alternate" content="en_US" />
+    <meta property="og:url" content="https://choinssam.github.io/moon-observatory/" />
+    <meta property="og:title" content="밤하늘 관찰 · 달의 위상과 별자리 시뮬레이터" />
+    <meta property="og:description" content="달의 위상 변화, 달 표면, 별자리, 태양계, 밀물과 썰물을 브라우저에서 바로 관찰합니다. 설치도 가입도 없는 무료 천문 시뮬레이터." />
+    <meta property="og:image" content="https://choinssam.github.io/moon-observatory/og.png" />
+    <meta property="og:image:width" content="1200" />
+    <meta property="og:image:height" content="630" />
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta name="twitter:title" content="밤하늘 관찰 · 달의 위상과 별자리 시뮬레이터" />
+    <meta name="twitter:description" content="달의 위상, 별자리, 태양계, 밀물과 썰물을 브라우저에서 바로 관찰하는 무료 천문 시뮬레이터." />
+    <meta name="twitter:image" content="https://choinssam.github.io/moon-observatory/og.png" />
+
+    <!-- 꼬리표 그림. 머리글 로고와 같은 모양을 그대로 넣어 파일을 하나 덜 받게 한다 -->
+    <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='-13 -13 26 26'%3E%3Ccircle r='12.5' fill='%230B1020'/%3E%3Cpath d='M0,-12 A12,12 0 0 1 0,12 A4.6,12 0 0 1 0,-12' fill='%23F2C879'/%3E%3C/svg%3E" />
+    <link rel="apple-touch-icon" href="https://choinssam.github.io/moon-observatory/og.png" />
+
+    <script type="application/ld+json">
+    {
+      "@context": "https://schema.org",
+      "@type": "WebApplication",
+      "name": "밤하늘 관찰",
+      "alternateName": "Night Sky Lab",
+      "url": "https://choinssam.github.io/moon-observatory/",
+      "applicationCategory": "EducationalApplication",
+      "applicationSubCategory": "Astronomy",
+      "operatingSystem": "Web browser",
+      "browserRequirements": "WebGL 을 지원하는 최신 브라우저",
+      "inLanguage": ["ko", "en"],
+      "isAccessibleForFree": true,
+      "offers": { "@type": "Offer", "price": "0", "priceCurrency": "KRW" },
+      "license": "https://creativecommons.org/licenses/by-nc-sa/4.0/",
+      "description": "달의 위상 변화, 달 표면, 별자리, 태양계, 밀물과 썰물을 브라우저에서 관찰하는 무료 천문 시뮬레이터입니다. 천체 위치는 astronomy-engine 으로 계산하고 달 표면은 NASA LRO 자료를 씁니다.",
+      "educationalUse": ["수업", "탐구 활동", "자율 학습"],
+      "audience": { "@type": "EducationalAudience", "educationalRole": "student" },
+      "typicalAgeRange": "9-18",
+      "author": {
+        "@type": "Person",
+        "name": "김상백",
+        "alternateName": "초인쌤",
+        "jobTitle": "초등교사",
+        "email": "choinssam@gmail.com"
+      },
+      "featureList": [
+        "달의 위상 변화 시뮬레이션",
+        "NASA LRO 자료로 만든 달 표면 3D 지구본",
+        "오늘 밤 달이 지나가는 길 (평면·반구·하늘 3D)",
+        "한 달 동안의 달 모양",
+        "태양계 행성 크기와 궤도",
+        "계절별 별자리와 하늘의 일주 운동",
+        "밀물과 썰물",
+        "일식과 월식"
+      ]
+    }
+    </script>
+    <script type="module" crossorigin src="./assets/index-CVhmrhI5.js"></script>
+    <link rel="stylesheet" crossorigin href="./assets/index-D4Q9M_pt.css">
+  </head>
+  <body>
+    <!--
+      아직 자바스크립트가 돌기 전에 보이는 글. 리액트가 붙으면 지워진다.
+      자바스크립트를 안 돌리는 검색 로봇(네이버 Yeti 등)이 읽을 내용이기도 하다.
+    -->
+    <div id="root">
+      <div style="max-width:680px;margin:14vh auto;padding:0 24px;font-family:system-ui,'Malgun Gothic',sans-serif;color:#B7C0DA;line-height:1.7">
+        <h1 style="color:#E9EDF8;font-size:1.6rem;margin:0 0 6px">밤하늘 관찰</h1>
+        <p style="color:#F2C879;margin:0 0 18px">달의 위상과 별자리를 브라우저에서 바로 보는 과학 시뮬레이터</p>
+        <p>달의 위상 변화, 달 표면, 오늘 밤 달이 지나가는 길, 한 달 동안의 달 모양, 태양계, 별자리,
+          밀물과 썰물, 일식과 월식을 관찰합니다. 설치도 가입도 필요 없습니다.</p>
+        <p>천체 위치는 astronomy-engine 으로 계산하고, 달 표면은 NASA LRO 자료를 씁니다.
+          2022 개정 초등 과학 교육과정에 맞췄지만 중·고등학생과 일반인도 그대로 쓸 수 있습니다.</p>
+        <p style="color:#7C89A8;font-size:.92em">만든 사람 초인쌤(김상백) · 경남 초등교사 · CC BY-NC-SA 4.0</p>
+        <p style="color:#7C89A8;font-size:.92em">Night Sky Lab — a free astronomy simulator for classrooms.
+          Moon phases, lunar surface, constellations, the solar system, tides and eclipses, right in the browser.</p>
+      </div>
+    </div>
+    <noscript>
+      <div style="max-width:680px;margin:20px auto;padding:0 24px;font-family:system-ui,sans-serif;color:#B7C0DA">
+        이 시뮬레이터는 자바스크립트로 하늘을 그립니다. 브라우저에서 자바스크립트를 켜 주세요.
+      </div>
+    </noscript>
+  </body>
+</html>
