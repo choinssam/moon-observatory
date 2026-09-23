@@ -1,0 +1,106 @@
+<!doctype html>
+<html lang="ru">
+  <head>
+    <meta charset="utf-8" />
+    <!-- 이 쪽은 한 칸 아래에 있다. 그림과 자바스크립트는 윗칸에서 가져온다 -->
+    <base href="../" />
+    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+
+    <title>Night Sky Lab — бесплатный симулятор фаз Луны и созвездий</title>
+    <meta name="description" content="Наблюдайте фазы Луны, её поверхность в 3D, созвездия, Солнечную систему, приливы и затмения прямо в браузере. Бесплатно, без регистрации." />
+    <meta name="author" content="Choinssam (Kim Sang-baek)" />
+    <meta name="robots" content="index, follow, max-image-preview:large, max-snippet:-1" />
+    <link rel="canonical" href="https://cosmos.choinssam.com/ru/" />
+    <link rel="alternate" hreflang="ko" href="https://cosmos.choinssam.com/" />
+    <link rel="alternate" hreflang="en" href="https://cosmos.choinssam.com/en/" />
+    <link rel="alternate" hreflang="zh" href="https://cosmos.choinssam.com/zh/" />
+    <link rel="alternate" hreflang="es" href="https://cosmos.choinssam.com/es/" />
+    <link rel="alternate" hreflang="hi" href="https://cosmos.choinssam.com/hi/" />
+    <link rel="alternate" hreflang="ar" href="https://cosmos.choinssam.com/ar/" />
+    <link rel="alternate" hreflang="pt" href="https://cosmos.choinssam.com/pt/" />
+    <link rel="alternate" hreflang="ru" href="https://cosmos.choinssam.com/ru/" />
+    <link rel="alternate" hreflang="ja" href="https://cosmos.choinssam.com/ja/" />
+    <link rel="alternate" hreflang="fr" href="https://cosmos.choinssam.com/fr/" />
+    <link rel="alternate" hreflang="de" href="https://cosmos.choinssam.com/de/" />
+    <link rel="alternate" hreflang="x-default" href="https://cosmos.choinssam.com/" />
+    <meta name="theme-color" content="#0B1020" />
+
+    <meta property="og:type" content="website" />
+    <meta property="og:site_name" content="Night Sky Lab" />
+    <meta property="og:locale" content="ru_RU" />
+    <meta property="og:url" content="https://cosmos.choinssam.com/ru/" />
+    <meta property="og:title" content="Night Sky Lab — бесплатный симулятор фаз Луны и созвездий" />
+    <meta property="og:description" content="Наблюдайте фазы Луны, её поверхность в 3D, созвездия, Солнечную систему, приливы и затмения прямо в браузере. Бесплатно, без регистрации." />
+    <meta property="og:image" content="https://cosmos.choinssam.com/og.png" />
+    <meta property="og:image:width" content="1200" />
+    <meta property="og:image:height" content="630" />
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta name="twitter:title" content="Night Sky Lab — бесплатный симулятор фаз Луны и созвездий" />
+    <meta name="twitter:description" content="Наблюдайте фазы Луны, её поверхность в 3D, созвездия, Солнечную систему, приливы и затмения прямо в браузере. Бесплатно, без регистрации." />
+    <meta name="twitter:image" content="https://cosmos.choinssam.com/og.png" />
+
+    <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='-13 -13 26 26'%3E%3Ccircle r='12.5' fill='%230B1020'/%3E%3Cpath d='M0,-12 A12,12 0 0 1 0,12 A4.6,12 0 0 1 0,-12' fill='%23F2C879'/%3E%3C/svg%3E" />
+    <link rel="apple-touch-icon" href="https://cosmos.choinssam.com/og.png" />
+
+    <script type="application/ld+json">
+    {
+      "@context": "https://schema.org",
+      "@type": "WebApplication",
+      "name": "Night Sky Lab",
+      "alternateName": "Night Sky Lab",
+      "url": "https://cosmos.choinssam.com/ru/",
+      "applicationCategory": "EducationalApplication",
+      "applicationSubCategory": "Astronomy",
+      "operatingSystem": "Web browser",
+      "inLanguage": [
+        "ko",
+        "en",
+        "zh",
+        "es",
+        "hi",
+        "ar",
+        "pt",
+        "ru",
+        "ja",
+        "fr",
+        "de"
+      ],
+      "isAccessibleForFree": true,
+      "offers": {
+        "@type": "Offer",
+        "price": "0",
+        "priceCurrency": "KRW"
+      },
+      "license": "https://creativecommons.org/licenses/by-nc-sa/4.0/",
+      "description": "Наблюдайте фазы Луны, её поверхность в 3D, созвездия, Солнечную систему, приливы и затмения прямо в браузере. Бесплатно, без регистрации.",
+      "audience": {
+        "@type": "EducationalAudience",
+        "educationalRole": "student"
+      },
+      "typicalAgeRange": "9-18",
+      "author": {
+        "@type": "Person",
+        "name": "김상백",
+        "alternateName": "Choinssam",
+        "jobTitle": "Primary school teacher"
+      }
+    }
+    </script>
+  </head>
+  <body>
+    <!-- 주소가 말을 정한다. 자바스크립트가 이걸 보고 그 말로 연다 -->
+    <script>window.__LANG__ = "ru"</script>
+    <div id="root">
+      <div style="max-width:680px;margin:14vh auto;padding:0 24px;font-family:system-ui,sans-serif;color:#B7C0DA;line-height:1.7;text-align:left">
+        <h1 style="color:#E9EDF8;font-size:1.6rem;margin:0 0 6px">Night Sky Lab</h1>
+        <p style="color:#F2C879;margin:0 0 18px">Наблюдайте за движением Луны и звёзд прямо в браузере</p>
+        <p>Посмотрите, как Луна меняет форму ночь за ночью, поверните её поверхность рукой, проследите путь Луны по небу этой ночью и охватите взглядом целый месяц сразу. Здесь же Солнечная система, созвездия каждого времени года, приливы и отливы, солнечные и лунные затмения.</p>
+        <p>Положения светил вычисляет astronomy-engine, поверхность Луны построена по данным NASA LRO. Ничего не нужно устанавливать, не нужен аккаунт, никакие данные учеников не собираются. Написано для урока природоведения в начальной школе, но старшие школьники и взрослые пользуются им как есть.</p>
+        <p style="color:#7C89A8;font-size:.92em">Сделал Чхоинссам (Ким Сан Бэк), учитель начальной школы в Кёнпнаме, Южная Корея · CC BY-NC-SA 4.0</p>
+        <p style="color:#7C89A8;font-size:.92em;line-height:2"><a href="https://cosmos.choinssam.com/" hreflang="ko" style="color:#7C89A8">한국어</a> · <a href="https://cosmos.choinssam.com/en/" hreflang="en" style="color:#7C89A8">English</a> · <a href="https://cosmos.choinssam.com/zh/" hreflang="zh" style="color:#7C89A8">简体中文</a> · <a href="https://cosmos.choinssam.com/es/" hreflang="es" style="color:#7C89A8">Español</a> · <a href="https://cosmos.choinssam.com/hi/" hreflang="hi" style="color:#7C89A8">हिन्दी</a> · <a href="https://cosmos.choinssam.com/ar/" hreflang="ar" style="color:#7C89A8">العربية</a> · <a href="https://cosmos.choinssam.com/pt/" hreflang="pt" style="color:#7C89A8">Português</a> · <a href="https://cosmos.choinssam.com/ja/" hreflang="ja" style="color:#7C89A8">日本語</a> · <a href="https://cosmos.choinssam.com/fr/" hreflang="fr" style="color:#7C89A8">Français</a> · <a href="https://cosmos.choinssam.com/de/" hreflang="de" style="color:#7C89A8">Deutsch</a></p>
+      </div>
+    </div>
+    <script type="module" crossorigin src="./assets/index-C0BlTJFw.js"></script>
+    <link rel="stylesheet" crossorigin href="./assets/index-rYV7WTei.css">
+  </body>
+</html>
