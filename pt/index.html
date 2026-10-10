@@ -1,0 +1,155 @@
+<!doctype html>
+<html lang="pt">
+  <head>
+    <meta charset="utf-8" />
+    <script>
+      /* 학교망 예비 주소(2026-10-06). 본 주소가 열리는 망이면 그리로 넘기고, 막힌 망이면 여기서 그대로 쓴다.
+         어느 주소가 이 망에서 열리는지 재서 기기마다 하루 한 번 보낸다. 원본은 tools/pages.mjs SCHOOL_NET */
+      (function () {
+        var l = location, n = navigator
+        if (!/\.github\.io$/.test(l.hostname) || !window.fetch || !window.Promise) return
+        var stay = /[?&]stay\b/.test(l.search)
+        var to = 'https://cosmos.choinssam.com' + (l.pathname.replace(/^\/moon-observatory(?=\/|$)/, '') || '/') + l.search + l.hash
+        var W = 'https://cosmos.choinssam.workers.dev'
+        var GAS = 'https://script.google.com/macros/s/AKfycbxnNXLsnTHDSMn_8gxLHTDgRQ15rN0TjLBBtDzGW2AKPMLLlrl_NGYXjMu6qkX2Es3t/exec'
+        function probe(url, json) {
+          return new Promise(function (ok) {
+            var done = 0, ctl = window.AbortController ? new AbortController() : null
+            var t = setTimeout(function () { end(0); if (ctl) ctl.abort() }, 3500)
+            function end(v) { if (!done) { done = 1; clearTimeout(t); ok(v) } }
+            fetch(url, { cache: 'no-store', signal: ctl ? ctl.signal : undefined })
+              .then(function (r) { return !r.ok ? null : json ? r.json() : { ok: 1 } })
+              .then(function (j) { end(j && j.ok ? 1 : 0) }, function () { end(0) })
+          })
+        }
+        function kind() {
+          var ua = n.userAgent, touch = (n.maxTouchPoints || 0) > 1
+          if (/CrOS/.test(ua)) return '크롬북'
+          if (/iPhone|iPod/.test(ua)) return '휴대폰'
+          if (/iPad/.test(ua) || (/Macintosh/.test(ua) && touch)) return '태블릿'
+          if (/Android/.test(ua)) return /Mobi/.test(ua) ? '휴대폰' : '태블릿'
+          return '데스크톱'
+        }
+        function report(r) {
+          if (n.webdriver || !n.sendBeacon) return
+          var day = new Date(Date.now() + 324e5).toISOString().slice(0, 10)
+          try { if (localStorage.getItem('cosmos-door-day') === day) return; localStorage.setItem('cosmos-door-day', day) } catch (e) {}
+          var blob = function (s) { return new Blob([s], { type: 'text/plain;charset=utf-8' }) }
+          if (r.c || r.w) return n.sendBeacon((r.c ? 'https://cosmos.choinssam.com' : W) + '/api/net', blob(JSON.stringify({ c: r.c, w: r.w, e: r.e, d: r.d, h: r.h, dv: kind() })))
+          n.sendBeacon(GAS, blob(JSON.stringify({ t: 'stat', cid: '', device: kind(), viewport: '', ev: [['기능', '예비문 · ' + (r.e ? 'Cloudflare 막힘' : 'ECH 막힘')]] })))
+        }
+        var r = {}
+        var rest = Promise.all([
+          probe(W + '/api/ping', 1).then(function (v) { r.w = v }),
+          probe('https://cloudflare-ech.com/cdn-cgi/trace').then(function (v) { r.e = v }),
+          probe('https://xn--hy1b4d.com/cdn-cgi/trace').then(function (v) { r.d = v }),
+          probe('https://xn--xx4b52fb1f.com/cdn-cgi/trace').then(function (v) { r.h = v })
+        ])
+        probe('https://cosmos.choinssam.com/api/ping', 1).then(function (c) {
+          r.c = c
+          var go = c && !stay
+          Promise.race([rest, new Promise(function (ok) { setTimeout(ok, go ? 1200 : 4000) })]).then(function () {
+            report(r)
+            if (go) l.replace(to)
+          })
+        })
+      })()
+    </script>
+    <!-- 이 쪽은 한 칸 아래에 있다. 그림과 자바스크립트는 윗칸에서 가져온다 -->
+    <base href="../" />
+    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+
+    <title>Night Sky Lab — simulador das fases da Lua</title>
+    <meta name="description" content="Observe as fases da Lua, a superfície lunar em 3D, as constelações, o Sistema Solar, as marés e os eclipses no navegador. Sem cadastro." />
+    <meta name="author" content="Choinssam" />
+    <meta name="robots" content="index, follow, max-image-preview:large, max-snippet:-1" />
+    <link rel="canonical" href="https://cosmos.choinssam.com/pt/" />
+    <link rel="alternate" hreflang="ko" href="https://cosmos.choinssam.com/" />
+    <link rel="alternate" hreflang="en" href="https://cosmos.choinssam.com/en/" />
+    <link rel="alternate" hreflang="zh" href="https://cosmos.choinssam.com/zh/" />
+    <link rel="alternate" hreflang="es" href="https://cosmos.choinssam.com/es/" />
+    <link rel="alternate" hreflang="hi" href="https://cosmos.choinssam.com/hi/" />
+    <link rel="alternate" hreflang="ar" href="https://cosmos.choinssam.com/ar/" />
+    <link rel="alternate" hreflang="pt" href="https://cosmos.choinssam.com/pt/" />
+    <link rel="alternate" hreflang="ru" href="https://cosmos.choinssam.com/ru/" />
+    <link rel="alternate" hreflang="ja" href="https://cosmos.choinssam.com/ja/" />
+    <link rel="alternate" hreflang="fr" href="https://cosmos.choinssam.com/fr/" />
+    <link rel="alternate" hreflang="de" href="https://cosmos.choinssam.com/de/" />
+    <link rel="alternate" hreflang="x-default" href="https://cosmos.choinssam.com/" />
+    <meta name="theme-color" content="#0B1020" />
+
+    <meta property="og:type" content="website" />
+    <meta property="og:site_name" content="Night Sky Lab" />
+    <meta property="og:locale" content="pt_BR" />
+    <meta property="og:url" content="https://cosmos.choinssam.com/pt/" />
+    <meta property="og:title" content="Night Sky Lab — simulador das fases da Lua" />
+    <meta property="og:description" content="Observe as fases da Lua, a superfície lunar em 3D, as constelações, o Sistema Solar, as marés e os eclipses no navegador. Sem cadastro." />
+    <meta property="og:image" content="https://cosmos.choinssam.com/og.png" />
+    <meta property="og:image:width" content="1200" />
+    <meta property="og:image:height" content="630" />
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta name="twitter:title" content="Night Sky Lab — simulador das fases da Lua" />
+    <meta name="twitter:description" content="Observe as fases da Lua, a superfície lunar em 3D, as constelações, o Sistema Solar, as marés e os eclipses no navegador. Sem cadastro." />
+    <meta name="twitter:image" content="https://cosmos.choinssam.com/og.png" />
+
+    <!-- <base href="../"> 를 따라 윗칸 것을 쓴다. / 로 시작하면 github.io 사본(/moon-observatory/ 아래)에서 빗나간다 -->
+    <link rel="icon" href="favicon.ico" sizes="16x16 32x32 48x48" />
+    <link rel="icon" href="favicon.svg" type="image/svg+xml" />
+    <link rel="apple-touch-icon" href="apple-touch-icon.png" />
+
+    <script type="application/ld+json">
+    {
+      "@context": "https://schema.org",
+      "@type": "WebApplication",
+      "name": "Night Sky Lab",
+      "alternateName": "Night Sky Lab",
+      "url": "https://cosmos.choinssam.com/pt/",
+      "applicationCategory": "EducationalApplication",
+      "applicationSubCategory": "Astronomy",
+      "operatingSystem": "Web browser",
+      "inLanguage": [
+        "ko",
+        "en",
+        "zh",
+        "es",
+        "hi",
+        "ar",
+        "pt",
+        "ru",
+        "ja",
+        "fr",
+        "de"
+      ],
+      "license": "https://creativecommons.org/licenses/by-nc-sa/4.0/",
+      "description": "Observe as fases da Lua, a superfície lunar em 3D, as constelações, o Sistema Solar, as marés e os eclipses no navegador. Sem cadastro.",
+      "audience": {
+        "@type": "EducationalAudience",
+        "educationalRole": "student"
+      },
+      "typicalAgeRange": "9-18",
+      "author": {
+        "@type": "Person",
+        "name": "초인쌤",
+        "alternateName": "Choinssam",
+        "url": "https://choinssam.com/"
+      }
+    }
+    </script>
+  </head>
+  <body>
+    <!-- 주소가 말을 정한다. 자바스크립트가 이걸 보고 그 말로 연다 -->
+    <script>window.__LANG__ = "pt"</script>
+    <div id="root">
+      <div style="max-width:680px;margin:14vh auto;padding:0 24px;font-family:system-ui,sans-serif;color:#B7C0DA;line-height:1.7;text-align:left">
+        <h1 style="color:#E9EDF8;font-size:1.6rem;margin:0 0 6px">Night Sky Lab</h1>
+        <p style="color:#F2C879;margin:0 0 18px">Veja a Lua e as estrelas se moverem, direto no navegador</p>
+        <p>Veja a Lua mudar de forma noite após noite, gire a superfície lunar com a mão, acompanhe o caminho que a Lua faz no céu desta noite e olhe um mês inteiro de uma vez. O Sistema Solar, as constelações de cada estação, as marés e os eclipses do Sol e da Lua também estão aqui.</p>
+        <p>As posições são calculadas com o astronomy-engine e a superfície lunar vem de dados da NASA (LRO). Nada para instalar, nenhuma conta, nenhum dado de aluno coletado. Foi escrito para a aula de ciências do ensino fundamental, mas estudantes mais velhos e curiosos de todas as idades usam do jeito que está.</p>
+        <p style="color:#7C89A8;font-size:.92em">Feito por Choinssam · CC BY-NC-SA 4.0</p>
+        <p style="color:#7C89A8;font-size:.92em;line-height:2"><a href="https://cosmos.choinssam.com/" hreflang="ko" style="color:#7C89A8">한국어</a> · <a href="https://cosmos.choinssam.com/en/" hreflang="en" style="color:#7C89A8">English</a> · <a href="https://cosmos.choinssam.com/zh/" hreflang="zh" style="color:#7C89A8">简体中文</a> · <a href="https://cosmos.choinssam.com/es/" hreflang="es" style="color:#7C89A8">Español</a> · <a href="https://cosmos.choinssam.com/hi/" hreflang="hi" style="color:#7C89A8">हिन्दी</a> · <a href="https://cosmos.choinssam.com/ar/" hreflang="ar" style="color:#7C89A8">العربية</a> · <a href="https://cosmos.choinssam.com/ru/" hreflang="ru" style="color:#7C89A8">Русский</a> · <a href="https://cosmos.choinssam.com/ja/" hreflang="ja" style="color:#7C89A8">日本語</a> · <a href="https://cosmos.choinssam.com/fr/" hreflang="fr" style="color:#7C89A8">Français</a> · <a href="https://cosmos.choinssam.com/de/" hreflang="de" style="color:#7C89A8">Deutsch</a></p>
+      </div>
+    </div>
+    <script type="module" crossorigin src="./assets/index-R4UtOKAu.js"></script>
+    <link rel="stylesheet" crossorigin href="./assets/index-CUo5rY9b.css">
+  </body>
+</html>
