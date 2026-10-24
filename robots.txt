@@ -1,0 +1,7 @@
+User-agent: *
+Content-Signal: search=yes, ai-input=yes, ai-train=no
+Allow: /
+
+Sitemap: https://cosmos.choinssam.com/sitemap.xml
+
+#DaumWebMasterTool:1387c6f66cc643028ae09cacc6bd352c383cd860504cc3e582b9795f73461742:jFYtrG8dYK+3XeBcGgtb4Q==
