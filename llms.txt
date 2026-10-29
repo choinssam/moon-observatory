@@ -1,0 +1,33 @@
+# Night Sky Lab · 밤하늘 관찰
+
+> 밤하늘 관찰은 스텔라리움보다 간편하게 별자리와 우주를 관측해요. 달의 위상 변화, 달 표면, 별자리, 태양계, 밀물과 썰물을 브라우저에서 바로 관찰하는 천문 시뮬레이터. 설치도 가입도 없습니다.
+> Moon phases, the lunar surface in 3D, constellations, the solar system, tides and eclipses — right in your browser. No sign-up, made for classrooms.
+
+달이 날마다 모양을 바꾸는 것을 보고, 달 표면을 손으로 돌려 보고, 오늘 밤 달이 지나가는 길을 따라가고, 한 달 치를 한눈에 봅니다. 태양계, 계절마다 다른 별자리, 밀물과 썰물, 일식과 월식도 함께 있습니다.
+
+천체 위치는 astronomy-engine 으로 계산하고, 달 표면은 NASA LRO 자료를 씁니다. 설치도 가입도 필요 없고 학생 기록을 받지 않습니다. 2022 개정 초등 과학 교육과정에 맞췄지만 중·고등학생과 일반인도 그대로 씁니다.
+
+See the Moon change shape night after night, turn the lunar surface in your hands, follow the path the Moon takes across tonight's sky, and take in a whole month at a glance. The solar system, the constellations of each season, the tides, and solar and lunar eclipses are all here.
+
+Positions are computed with astronomy-engine and the lunar surface is built from NASA LRO data. Nothing to install, no account, no student data collected. Written for a primary science class, but secondary students and curious adults use it as it is.
+
+## 말별 쪽 (Pages by language)
+
+- [한국어 · 밤하늘 관찰 · 달의 위상과 별자리 시뮬레이터 | Night Sky Lab](https://cosmos.choinssam.com/): 밤하늘 관찰은 스텔라리움보다 간편하게 별자리와 우주를 관측해요. 달의 위상 변화, 달 표면, 별자리, 태양계, 밀물과 썰물을 브라우저에서 바로 관찰하는 천문 시뮬레이터. 설치도 가입도 없습니다.
+- [English · Night Sky Lab — moon phase & constellation simulator](https://cosmos.choinssam.com/en/): Moon phases, the lunar surface in 3D, constellations, the solar system, tides and eclipses — right in your browser. No sign-up, made for classrooms.
+- [简体中文 · 夜空观察 — 月相与星座模拟器 | Night Sky Lab](https://cosmos.choinssam.com/zh/): 在浏览器里直接观察月相变化、月球表面、星座、太阳系、潮汐和日月食。无需安装和注册，为课堂而做。
+- [Español · Night Sky Lab — simulador de fases de la Luna](https://cosmos.choinssam.com/es/): Observa las fases de la Luna, su superficie en 3D, las constelaciones, el Sistema Solar, las mareas y los eclipses desde el navegador. Sin registro.
+- [हिन्दी · रात का आकाश — चाँद की कलाएँ और तारामंडल सिम्युलेटर | Night Sky Lab](https://cosmos.choinssam.com/hi/): चाँद की कलाएँ, चाँद की सतह 3D में, तारामंडल, सौरमंडल, ज्वार-भाटा और ग्रहण — सीधे ब्राउज़र में देखें। बिना रजिस्ट्रेशन, कक्षा के लिए बना।
+- [العربية · مختبر سماء الليل — محاكي أطوار القمر والكوكبات | Night Sky Lab](https://cosmos.choinssam.com/ar/): راقب أطوار القمر وسطحه بالأبعاد الثلاثة والكوكبات والمجموعة الشمسية والمد والجزر والكسوف والخسوف من المتصفح مباشرة. بلا تسجيل.
+- [Português · Night Sky Lab — simulador das fases da Lua](https://cosmos.choinssam.com/pt/): Observe as fases da Lua, a superfície lunar em 3D, as constelações, o Sistema Solar, as marés e os eclipses no navegador. Sem cadastro.
+- [Русский · Night Sky Lab — симулятор фаз Луны и созвездий](https://cosmos.choinssam.com/ru/): Наблюдайте фазы Луны, её поверхность в 3D, созвездия, Солнечную систему, приливы и затмения прямо в браузере. Без регистрации.
+- [日本語 · 夜空観察 — 月の満ち欠けと星座のシミュレーター | Night Sky Lab](https://cosmos.choinssam.com/ja/): 月の満ち欠け、月の表面、星座、太陽系、潮の満ち引き、日食と月食をブラウザでそのまま観察できます。登録不要、教室で使うために作りました。
+- [Français · Night Sky Lab — simulateur des phases de la Lune](https://cosmos.choinssam.com/fr/): Observez les phases de la Lune, sa surface en 3D, les constellations, le Système solaire, les marées et les éclipses depuis votre navigateur. Sans inscription.
+- [Deutsch · Night Sky Lab — Mondphasen- und Sternbild-Simulator](https://cosmos.choinssam.com/de/): Mondphasen, Mondoberfläche in 3D, Sternbilder, Sonnensystem, Gezeiten und Finsternisse direkt im Browser beobachten. Ohne Anmeldung.
+
+## 만든 사람과 이용 조건 (About)
+
+- 만든 사람: 초인쌤(Choinssam), 초등교사 — https://choinssam.com/
+- 이용 조건: CC BY-NC-SA 4.0 — https://creativecommons.org/licenses/by-nc-sa/4.0/
+- 검색과 AI 답변에서 소개하고 링크를 걸어 주는 것은 환영합니다. AI 모델 학습에는 쓰지 말아 주세요.
+  Citing and linking in search and AI answers is welcome. Please do not use this site to train AI models.
