@@ -1,0 +1,152 @@
+<!doctype html>
+<!--
+  개인정보 처리방침 (2026-10-14 선생님 결정: 모든 앱에 처리방침, 받는 것은 가장 적게).
+  실제로 저장하는 것과 같아야 한다. 받는 항목·보관 기간·옮겨지는 곳을 바꾸면 여기도 같이 고치고 시행일을 올린다.
+  받는 곳: 의견 src/lib/Feedback.jsx → apps-script/Code.js(receive_·tidy_), 방문 통계 src/lib/track.js → worker/index.js(D1 cosmos-stats),
+  공용 계측 m.choinssam.com(C:/projects/metrics). 빌드하면 dist/privacy/index.html 로 그대로 나간다(tools/pages.mjs 가 sitemap 에 넣음).
+-->
+<html lang="ko">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>개인정보 처리방침 · 밤하늘 관찰</title>
+    <meta name="description" content="밤하늘 관찰(cosmos.choinssam.com)이 받는 정보와 보관 기간, 옮겨지는 곳을 적은 개인정보 처리방침입니다." />
+    <meta name="author" content="초인쌤" />
+    <meta name="robots" content="noindex, follow" />
+    <meta name="theme-color" content="#0B1020" />
+    <link rel="icon" href="../favicon.svg" type="image/svg+xml" />
+    <style>
+      :root { --bg:#080B13; --panel:#111729; --line:#252E47; --text:#E9EDF8; --text-2:#B7C0DA; --muted:#7F8AAC; --moon:#F2C879; }
+      * { box-sizing: border-box; }
+      body { margin:0; background:var(--bg); color:var(--text);
+        font-family:Pretendard,"Apple SD Gothic Neo","Malgun Gothic","맑은 고딕",system-ui,sans-serif;
+        line-height:1.7; word-break:keep-all; overflow-wrap:break-word; }
+      main { max-width:860px; margin:0 auto; padding:28px 20px 60px; }
+      .back { color:var(--text-2); text-decoration:none; font-size:.95em; }
+      .back:hover { color:var(--moon); }
+      h1 { font-size:1.6em; margin:18px 0 6px; }
+      h2 { font-size:1.15em; margin:30px 0 8px; color:var(--moon); }
+      p, li { color:var(--text-2); }
+      ul { padding-left:1.3em; margin:6px 0; }
+      li { margin:3px 0; }
+      .wrap { overflow-x:auto; margin:10px 0; }
+      table { width:100%; border-collapse:collapse; font-size:.93em; min-width:560px; }
+      th, td { border:1px solid var(--line); padding:8px 10px; text-align:left; vertical-align:top; }
+      th { background:var(--panel); color:var(--text); font-weight:600; }
+      td { color:var(--text-2); }
+      code { background:var(--panel); padding:1px 5px; border-radius:4px; font-size:.92em; }
+      a { color:var(--moon); }
+      .muted { color:var(--muted); font-size:.92em; }
+    </style>
+  </head>
+  <body>
+    <main>
+      <a class="back" href="../">← 밤하늘 관찰로 돌아가기</a>
+      <h1>개인정보 처리방침</h1>
+      <p>밤하늘 관찰(cosmos.choinssam.com, 이하 「사이트」) 운영자 초인쌤은 개인정보 보호법에 따라 이용자의 개인정보를 보호하고, 관련 고충을 빨리 처리할 수 있도록 이 처리방침을 둡니다.
+        사이트는 가입과 로그인이 없습니다. 이름과 학교는 받지 않고, 받는 것은 가능한 한 적게 만들었습니다.</p>
+
+      <h2>1. 처리 목적</h2>
+      <ul>
+        <li>이용자가 보낸 의견을 읽고 사이트를 고치며, 답을 원하는 어른에게 답장합니다.</li>
+        <li>몇 명이 어느 화면을 쓰는지 세어 사이트를 고칩니다.</li>
+        <li>학교 인터넷에서 사이트가 막히는지 알아내 접속 문제를 고칩니다.</li>
+      </ul>
+
+      <h2>2. 처리하는 항목</h2>
+      <div class="wrap">
+        <table>
+          <thead><tr><th>누구</th><th>항목</th><th>어떻게 받나</th></tr></thead>
+          <tbody>
+            <tr><td>모두</td><td>브라우저가 만든 무작위 번호(기기 번호), 그 번호를 만든 날, 마지막으로 온 날, 온 날수. 이 번호로는 누구인지 알 수 없습니다.</td><td>사이트를 열 때 자동</td></tr>
+            <tr><td>모두</td><td>본 화면, 퀴즈 답이 맞았는지, 화면에 머문 시간, 학년 보기, 창 크기, 기기 종류(데스크톱·크롬북·태블릿·휴대폰), 화면 언어, 들어온 사이트 이름(주소는 빼고 사이트 이름만). 날마다 더한 숫자로만 저장합니다.</td><td>사이트를 쓰는 동안 자동</td></tr>
+            <tr><td>모두</td><td>접속한 시도와 통신망 이름, 학교 인터넷에서 다른 초인쌤 사이트가 열리는지, 크롬이 보내는 접속 실패 종류. 날마다 더한 숫자로만 저장합니다. 접속 주소(IP)는 저장하지 않습니다.</td><td>자동</td></tr>
+            <tr><td>모두</td><td>익명 방문 통계: 본 화면, 기기 종류, 브라우저 이름과 판, 화면 오류 글, 화면이 뜨는 데 걸린 시간, 하루마다 바뀌는 무작위 번호. 이름·글·IP·쿠키는 보내지 않습니다.</td><td>자동(m.choinssam.com)</td></tr>
+            <tr><td>의견을 보낸 사람</td><td>보낸 사람 구분(선생님·학생·학부모·그 밖), 의견 글과 종류, 보던 화면·학년·날짜, 고른 지역 이름(직접 입력한 위치는 위도·경도를 소수 한 자리로 줄인 값), 창 크기, 화면 언어, 브라우저 정보 앞 60자</td><td>의견 보내기를 쓸 때만</td></tr>
+            <tr><td>어른(선택)</td><td>답장 받을 메일 주소. 답을 받고 싶을 때만 적습니다. 학생에게는 이 칸이 나오지 않습니다.</td><td>의견 보내기에 직접 적을 때만</td></tr>
+          </tbody>
+        </table>
+      </div>
+      <p>의견 글에 실제 이름, 학교, 전화번호를 쓰지 말아 주세요.</p>
+
+      <h2>3. 보유 기간과 파기</h2>
+      <ul>
+        <li>의견: 받은 날부터 1년이 지나면 답장 메일·창 크기·브라우저 정보·직접 입력한 위치를 지워 누구인지 알 수 없게 바꾸고(익명 처리), 글과 보던 화면·학년·지역 이름·날짜만 서비스 개선에 남깁니다. 운영자의 의견 모음 도구로 옮긴 사본도 같습니다.</li>
+        <li>기기 번호와 처음·마지막 온 날: 마지막으로 온 날부터 1년이 지나면 파기합니다.</li>
+        <li>지금 보는 사람을 세는 기록(기기 번호와 시각): 1시간 뒤 파기합니다.</li>
+        <li>익명 방문 통계(m.choinssam.com)의 무작위 번호: 7일 뒤 파기합니다.</li>
+        <li>날마다 더한 숫자처럼 개인을 알 수 없는 통계는 사이트를 운영하는 동안 보관합니다.</li>
+        <li>파기는 데이터베이스와 스프레드시트에서 지우는 방법으로 하며 되살릴 수 없습니다.</li>
+      </ul>
+
+      <h2>4. 제3자 제공</h2>
+      <p>개인정보를 다른 사람이나 기관에 제공하지 않습니다. 법령에 따라 수사기관이 요구하는 경우는 예외입니다.</p>
+
+      <h2>5. 처리 위탁과 국외 이전</h2>
+      <p>사이트를 돌리기 위해 아래 회사에 처리를 맡깁니다. 이 회사들의 서버가 국외(미국 등)에 있어 정보가 국외로 옮겨집니다. 사이트를 쓸 때 인터넷으로 그때그때 전송됩니다.
+        국외 이전을 원하지 않으면 의견 보내기를 쓰지 않으시면 됩니다. 방문 통계는 사이트를 열면 자동으로 전송되므로, 원하지 않으면 사이트를 쓰지 않으셔야 합니다.</p>
+      <div class="wrap">
+        <table>
+          <thead><tr><th>받는 곳(나라)</th><th>옮겨지는 항목</th><th>목적</th><th>보유 기간</th></tr></thead>
+          <tbody>
+            <tr><td>Cloudflare, Inc.(미국)</td><td>방문 통계 항목 전부(기기 번호, 날마다 더한 숫자, 익명 방문 통계)</td><td>사이트와 통계 데이터베이스 운영</td><td>위 3번 기간</td></tr>
+            <tr><td>Google LLC(미국)</td><td>의견 항목 전부(답장 메일 포함)</td><td>의견을 받아 스프레드시트에 보관(Google Apps Script, Google Sheets)</td><td>받은 날부터 1년(그 뒤 익명 처리)</td></tr>
+            <tr><td>Anthropic, PBC(미국)</td><td>의견 글과 보던 화면·학년·지역 이름(이름과 메일 주소는 넘기지 않음)</td><td>운영자가 의견을 분류하고 정리할 때(AI 도구 Claude). 의견 정리는 학습 사용을 끈 운영자 계정으로 함</td><td>30일 안에 삭제(Anthropic 정책). AI 학습에 쓰지 않음</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <h2>6. 만 14세 미만 아동</h2>
+      <p>학생에게는 이름이나 연락처를 받지 않습니다. 의견 보내기에서 학생을 고르면 메일 칸이 나오지 않습니다.
+        사이트는 선생님이 지도하는 수업에서 쓰도록 만들었습니다. 만 14세 미만 학생과 쓸 때는 학교 지침에 따라 보호자 안내를 챙겨 주세요.</p>
+
+      <h2>7. 이용자의 권리</h2>
+      <p>이용자는 자기 개인정보를 열람하고, 고치고, 지우고, 처리를 멈추라고 요구할 수 있습니다. 아래 메일로 요청하면 처리합니다.
+        보낸 의견을 지우고 싶으면 보낸 날짜와 글 일부를 알려 주세요. 만 14세 미만 학생의 요구는 보호자가 대신할 수 있습니다.
+        기기 번호는 브라우저의 사이트 데이터를 지우면 이 기기에서 바로 사라집니다.</p>
+
+      <h2>8. 안전하게 지키는 방법</h2>
+      <ul>
+        <li>모든 통신을 암호화(HTTPS)합니다.</li>
+        <li>의견과 통계는 운영자 계정으로만 볼 수 있고, 관리용 열쇠가 있어야 꺼낼 수 있습니다.</li>
+        <li>접속 주소(IP)는 저장하지 않고, 지역과 통신망은 날마다 더한 숫자로만 남깁니다.</li>
+      </ul>
+
+      <h2>9. 자동으로 모으는 장치</h2>
+      <p>사이트는 쿠키를 쓰지 않습니다. 대신 기기의 브라우저 저장소(localStorage)에 아래 값을 둡니다. 브라우저 설정에서 사이트 데이터를 지우면 함께 지워집니다.</p>
+      <ul>
+        <li><code>moon-obs:cid</code>, <code>moon-obs:cid-born</code>: 방문 통계용 무작위 번호와 만든 날</li>
+        <li><code>moon-obs:net-day</code>: 학교 인터넷 검사를 오늘 했는지</li>
+        <li><code>moon-obs:sender</code>: 의견 보내기에서 고른 보낸 사람 구분과 답장 메일(다음에 다시 쓰지 않도록, 이 기기에만)</li>
+        <li><code>moon-obs:feedback-drafts</code>: 보낸 의견 최근 20개(전송이 실패해도 글이 날아가지 않도록, 이 기기에만)</li>
+        <li><code>cm.d</code>, <code>cm.f</code>: 익명 방문 통계의 하루짜리 무작위 번호와 처음 온 날</li>
+        <li>학년, 지역, 글씨 크기, 재생 빠르기, 화면 언어 같은 화면 설정</li>
+      </ul>
+      <p>「사용법 영상」 창은 YouTube 의 개인정보 보호 모드(youtube-nocookie.com)로 영상을 엽니다. 영상을 틀면 YouTube(Google)의 정책이 적용됩니다.</p>
+
+      <h2>10. 개인정보 보호책임자</h2>
+      <ul>
+        <li>개인정보 보호책임자: 초인쌤(운영자)</li>
+        <li>연락처: <a href="mailto:choinssam@gmail.com">choinssam@gmail.com</a></li>
+      </ul>
+      <p>개인정보와 관련한 문의, 불만, 피해 구제는 위 메일로 보내 주세요. 빨리 답하고 처리하겠습니다.</p>
+
+      <h2>11. 권익 침해 구제</h2>
+      <ul>
+        <li>개인정보침해 신고센터: <a href="https://privacy.kisa.or.kr" rel="noopener">privacy.kisa.or.kr</a>, 국번 없이 118</li>
+        <li>개인정보 분쟁조정위원회: <a href="https://www.kopico.go.kr" rel="noopener">www.kopico.go.kr</a>, 1833-6972</li>
+        <li>대검찰청: <a href="https://www.spo.go.kr" rel="noopener">www.spo.go.kr</a>, 국번 없이 1301</li>
+        <li>경찰청: <a href="https://ecrm.police.go.kr" rel="noopener">ecrm.police.go.kr</a>, 국번 없이 182</li>
+      </ul>
+
+      <h2>12. 시행일</h2>
+      <p>이 처리방침은 2026년 10월 14일부터 시행합니다.</p>
+      <p class="muted"><a class="back" href="../">← 밤하늘 관찰로 돌아가기</a></p>
+    </main>
+    <script>
+      /* 공용 익명 계측에 이 쪽을 본 것만 센다(앱의 track.js cmark 와 같은 길) */
+      if (window.cm && window.cm.screen) window.cm.screen('개인정보 처리방침')
+      else (window.cmq = window.cmq || []).push(['screen', '개인정보 처리방침'])
+    </script>
+  </body>
+</html>
