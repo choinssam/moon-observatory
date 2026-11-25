@@ -1,0 +1,60 @@
+아폴로 11호 착륙지 걷기 — 자료와 출처
+(좌표: 착륙선 하강단 중심을 원점, x 동쪽, z 남쪽, 미터)
+
+1. 지형(높낮이)
+NASA / GSFC / Arizona State University, LROC NAC_DTM_APOLLO11, 2m 간격 DTM(M150368601)
+https://data.lroc.im-ldi.com/lroc/view_rdr/NAC_DTM_APOLLO11
+착륙선 둘레 218m×196m(110×99칸)를 잘라 terrain.bin 에 0.025m 단위로 담았다.
+
+2. 작은 지도(map.webp)
+같은 제품의 정사 사진 0.5m/px(M150361817), 착륙선 서쪽 40m~동쪽 90m, 북쪽 45m~남쪽 45m 를 잘랐다.
+https://data.lroc.im-ldi.com/lroc/view_rdr_product/NAC_DTM_APOLLO11_M150361817_50CM
+궤도 사진은 해가 서쪽에서 비춘 때라 1969년(해가 동쪽)과 그늘 방향이 반대다. 그래서 3D 땅에는 깔지 않고 작은 지도에만 쓴다.
+3D 땅의 그늘은 1번 지형과 4번 해의 각도로 만든다. 땅의 고운 알갱이 무늬는 화면을 위해 그린 것이다.
+
+3. 장비 위치
+LROC Apollo 11 Mission Spatio-Temporal Mapping, APOLLO_11_EQUIPMENT 셰이프파일(정사 사진 M150361817 위에서 잰 위치)
+https://data.lroc.im-ldi.com/lroc/view_rdr/SHAPEFILE_APOLLO_11
+인용: Gonzales et al. (2019) LPS L, Abstract #3089 https://www.hou.usra.edu/meetings/lpsc2019/pdf/3089.pdf
+깃발 (-7.05, -7.30) · 텔레비전 카메라 (-15.83, -19.00) · 레이저 반사경 (-1.60, 21.36) · 지진계 (0.68, 28.12)
+리틀 웨스트 구덩이 촬영점(핫셀블라드 5954~5961) (59.48, 7.94)
+
+4. 해의 높이와 방향
+1969-07-21 04:42 UTC(비행 경과 111:10)에 착륙지(북위 0.674도, 동경 23.473도)에서 고도 15.0도, 방위 88.8도(거의 정동).
+three 앱이 이미 쓰는 astronomy-engine 의 IAU 달 자전 모형으로 계산했다(109:24 에 14.1도).
+NASA 는 착륙 때 해가 지평선 위 5~13도가 되도록 골랐다. https://www.nasa.gov/wp-content/uploads/static/history/alsj/a11/a11.summary.html
+
+5. 착륙선 3D 모형
+NASA 3D Resources, Apollo Lunar Module (glTF, Draco 압축 716KB) 그대로
+https://github.com/nasa/NASA-3D-Resources/tree/master/3D%20Models/Apollo%20Lunar%20Module
+이용 조건: NASA 3D 모형·텍스처는 미국에서 대개 저작권이 없고 교육용으로 쓸 수 있다. NASA 를 출처로 밝히고 보증처럼 보이게 하지 않는다.
+https://www.nasa.gov/nasa-brand-center/images-and-media
+크기: 반대편 발판 끝 사이 9.4m 에 맞춰 1.46배. https://nssdc.gsfc.nasa.gov/nmc/spacecraft/display.action?id=1969-059C
+방향: 사다리는 서쪽 다리(ALSJ a11.step.html 109:23:35 설명). 착륙 때 13도쯤 틀어진 것은 넣지 않았다.
+압축 풀기: three.js 0.169 의 Draco 해독기(draco/).
+
+6. 공식 3D 모형이 없는 장비(간단한 모형)
+NASA 3D Resources 에는 아폴로 11호 깃발·레이저 반사경·지진계·텔레비전 카메라 모형이 없다(2026-11-25 목록 227개 확인).
+NASA 3D Resources 의 「Apollo 11 – Landing Site」는 30km 넓이를 높이 60배로 키운 인쇄용 STL 이라 걷기에 쓰지 않았다.
+https://science.nasa.gov/3d-resources/apollo-11-landing-site/
+그래서 아래 크기와 사진을 보고 상자·막대로 만들었다.
+깃발: 나일론 천 3피트×5피트(약 0.9m×1.5m), 위쪽 가로 막대. ALSJ https://www.nasa.gov/wp-content/uploads/static/history/alsj/a11/a11.step.html
+깃대 높이 약 2.3m 는 사진 AS11-40-5875 를 보고 맞췄다.
+레이저 반사경·지진계·카메라 크기는 사진(AS11-40-5952, 5948)을 보고 어림했다.
+
+7. 한 줄 사실
+착륙선: "The Apollo 11 Lunar Module (LM) "Eagle" was the first crewed vehicle to land on the Moon." NSSDC(5번 주소)
+깃발: 위 6번 ALSJ a11.step.html
+레이저 반사경: "measuring the distance between their telescopes and the LR-cubed" ALSJ https://www.nasa.gov/wp-content/uploads/static/history/alsj/a11/a11.clsout.html
+지진계: "a passive seismometer, designed to measure seismic activity", "two solar panels to provide power (the EASEP could only operate during lunar day)" NSSDC(5번 주소)
+리틀 웨스트 구덩이: "a 30-meter crater about 60 meters east of the LM" ALSJ https://www.nasa.gov/wp-content/uploads/static/history/alsj/a11/a11EastCraterRIP.html
+
+8. 실제 사진(NASA, 640px 안으로 줄여 WebP)
+AS11-40-5927 착륙선 · AS11-40-5875 깃발 · AS11-40-5948 지진계 · AS11-40-5952 레이저 반사경 · AS11-40-5954 리틀 웨스트 구덩이(rim.webp)
+목록 https://www.nasa.gov/wp-content/uploads/static/history/alsj/a11/images11.html
+받은 곳: NASA Image Library https://images-assets.nasa.gov/image/as11-40-5875/as11-40-5875~medium.jpg (5875·5927·5948),
+ALSJ 보존 사본 https://www.apollojournals.org/alsj/a11/AS11-40-5952.jpg (5952)
+
+9. 달의 중력
+1.62 m/s², 지구의 0.165배. https://nssdc.gsfc.nasa.gov/planetary/factsheet/moonfact.html
+뛰기는 위로 1.5m/s 로 시작해 이 중력으로 떨어진다(약 0.7m 높이, 1.9초).
